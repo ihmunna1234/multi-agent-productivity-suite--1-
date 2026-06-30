@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { apiFetch } from "../utils/api";
 import { 
   MapPin, 
   Search, 
@@ -125,7 +126,7 @@ export default function GoogleMapsExtractor() {
     setApiError(null);
 
     try {
-      const res = await fetch("/api/extract-maps-data", {
+      const res = await apiFetch("/api/extract-maps-data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ keyword, location, mode, clientApiKey }),

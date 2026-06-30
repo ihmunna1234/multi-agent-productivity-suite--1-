@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   LayoutDashboard, 
   Database, 
@@ -14,7 +14,8 @@ import {
   Moon,
   Contrast,
   Eraser,
-  PenTool
+  PenTool,
+  LogOut
 } from "lucide-react";
 import { ActiveAgent } from "./types";
 
@@ -29,6 +30,7 @@ import PdfEditor from "./components/PdfEditor";
 import ProductFinder from "./components/ProductFinder";
 import ResumeMaker from "./components/ResumeMaker";
 import GoogleMapsExtractor from "./components/GoogleMapsExtractor";
+import Login from "./components/Login";
 import { MapPin } from "lucide-react";
 
 export default function App() {
@@ -45,6 +47,16 @@ export default function App() {
     }
     return "light";
   });
+  
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return !!localStorage.getItem("workspace_token");
+  });
+
+  useEffect(() => {
+    const handleUnauthorized = () => setIsAuthenticated(false);
+    window.addEventListener("auth-unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("auth-unauthorized", handleUnauthorized);
+  }, []);
 
   const handleThemeChange = (newTheme: "light" | "dark" | "night") => {
     setTheme(newTheme);
@@ -73,6 +85,13 @@ export default function App() {
   };
 
   const themeClass = theme === "dark" ? "theme-dark" : theme === "night" ? "theme-night" : "theme-light";
+
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={(token) => {
+      localStorage.setItem("workspace_token", token);
+      setIsAuthenticated(true);
+    }} />;
+  }
 
   return (
     <div className={`flex flex-col h-screen bg-slate-50 font-sans text-slate-800 antialiased overflow-hidden relative ${themeClass}`}>
@@ -115,6 +134,18 @@ export default function App() {
                 {theme === "light" && <Sun size={20} className="text-amber-500 stroke-[2.5]" />}
                 {theme === "dark" && <Moon size={20} className="text-amber-300 stroke-[2.5]" />}
                 {theme === "night" && <Contrast size={20} className="text-rose-400 stroke-[2.5]" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem("workspace_token");
+                  setIsAuthenticated(false);
+                }}
+                className="p-2.5 rounded-2xl transition-all cursor-pointer flex items-center justify-center border border-slate-200/50 bg-rose-50 hover:bg-rose-100 text-rose-600 shadow-xs active:scale-95"
+                title="Logout"
+              >
+                <LogOut size={20} className="stroke-[2.5]" />
               </button>
 
               {/* Mobile phone style hamburger menu toggle (Active on all devices & screens) */}

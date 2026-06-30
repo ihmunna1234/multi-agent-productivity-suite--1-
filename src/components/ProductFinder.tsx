@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { apiFetch } from "../utils/api";
 import { 
   Search, 
   Sparkles, 
@@ -260,7 +261,7 @@ export default function ProductFinder() {
     }
 
     try {
-      const response = await fetch("/api/find-products", {
+      const response = await apiFetch("/api/find-products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

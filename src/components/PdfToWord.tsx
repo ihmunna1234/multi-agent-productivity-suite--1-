@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { apiFetch } from "../utils/api";
 import { 
   FileText, 
   Upload, 
@@ -150,7 +151,7 @@ export default function PdfToWord() {
           const dataUrl = canvas.toDataURL("image/png");
           const base64Data = dataUrl.split(",")[1];
 
-          const response = await fetch("/api/ocr-pdf-page", {
+          const response = await apiFetch("/api/ocr-pdf-page", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { apiFetch } from "../utils/api";
 import * as XLSX from "xlsx";
 import { 
   Upload, 
@@ -282,7 +283,7 @@ export default function IqamaExtractor() {
     const rawMimeType = file.type || "image/jpeg";
 
     try {
-      const response = await fetch("/api/extract-iqama", {
+      const response = await apiFetch("/api/extract-iqama", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
