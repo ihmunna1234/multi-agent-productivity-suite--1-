@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
-import { createServer as createViteServer } from "vite";
+
 import { GoogleGenAI, Type } from "@google/genai";
 
 dotenv.config({ override: true });
@@ -1273,6 +1273,7 @@ To fully utilize advanced multi-lingual and formatting recognition, ensure GEMIN
 // Setup Vite Dev Server / Static Asset Handler
 async function serveApp() {
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
