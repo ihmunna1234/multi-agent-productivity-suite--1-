@@ -1937,7 +1937,7 @@ export default function IqamaExtractor() {
                         <div>
                           <h5 className="text-[11px] font-bold uppercase tracking-wider leading-none">Simulated Extraction Profile Enabled</h5>
                           <p className="text-[10px] text-amber-700 mt-1 leading-snug">
-                            The Gemini API did not process the card. The system dynamically returned mock citizen structures to preview columns, verify tables, and inspect Excel files perfectly!
+                            The OpenAI API did not process the card. The system dynamically returned mock citizen structures to preview columns, verify tables, and inspect Excel files perfectly!
                           </p>
                         </div>
                       </div>
@@ -1954,10 +1954,10 @@ export default function IqamaExtractor() {
                             <p className="font-bold text-[10px]">What you have to do to get real data:</p>
                             <ul className="list-disc list-inside space-y-0.5 text-[9.5px]">
                               <li>
-                                <strong>Exceeded Spend Cap (429):</strong> Change your Gemini key or adjust your monthly spending limit at <a href="https://ai.studio/spend" target="_blank" rel="noopener noreferrer" className="underline text-teal-700 hover:text-teal-950 font-bold">ai.studio/spend</a>.
+                                <strong>Exceeded Spend Cap (429):</strong> Change your OpenAI key or adjust your monthly spending limit at <a href="https://ai.studio/spend" target="_blank" rel="noopener noreferrer" className="underline text-teal-700 hover:text-teal-950 font-bold">ai.studio/spend</a>.
                               </li>
                               <li>
-                                <strong>Change API Key:</strong> Open the <strong>.env file</strong> in your project files and replace the value of <code>GEMINI_API_KEY</code> with your own active key.
+                                <strong>Change API Key:</strong> Open the <strong>.env file</strong> in your project files and replace the value of <code>OPENAI_API_KEY</code> with your own active key.
                               </li>
                             </ul>
                           </div>
@@ -2060,7 +2060,7 @@ export default function IqamaExtractor() {
                             <div className="mt-4 pt-3 border-t border-red-100">
                               <h5 className="text-[11px] font-bold text-slate-700 uppercase">Why am I seeing this?</h5>
                               <p className="text-[11px] text-slate-500 mt-1 leading-normal">
-                                Google's <strong>Gemini Free Tier API keys</strong> are strictly limited by Google to <strong>20 requests per day</strong> or 15 requests per minute. Batch uploading multiple images in quick succession will rapidly exhaust this free quota.
+                                Google's <strong>OpenAI Free Tier API keys</strong> are strictly limited by Google to <strong>20 requests per day</strong> or 15 requests per minute. Batch uploading multiple images in quick succession will rapidly exhaust this free quota.
                               </p>
                               <h5 className="text-[11px] font-bold text-slate-700 uppercase mt-3">How to resolve:</h5>
                               <ul className="list-disc pl-4 text-[11px] text-slate-500 mt-1 space-y-1">

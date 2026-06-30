@@ -2,11 +2,12 @@ import express from "express";
 import path from "path";
 import dotenv from "dotenv";
 
-import { GoogleGenAI, Type } from "@google/genai";
+import OpenAI from "openai";
+const Type = { STRING: "string", NUMBER: "number", INTEGER: "integer", BOOLEAN: "boolean", ARRAY: "array", OBJECT: "object" };
 
 dotenv.config({ override: true });
 // Fallback to loading .env.example if GEMINI_API_KEY is not defined in the process environment
-if (!process.env.GEMINI_API_KEY) {
+if (!process.env.OPENAI_API_KEY) {
   dotenv.config({ path: path.resolve(process.cwd(), ".env.example"), override: true });
 }
 
@@ -18,12 +19,12 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Lazy initializer for the Gemini client to avoid startup crashes if key is omitted
-let aiClient: GoogleGenAI | null = null;
-function getGeminiClient(): GoogleGenAI {
+let aiClient: OpenAI | null = null;
+function getOpenAIClient(): OpenAI {
   if (!aiClient) {
-    let apiKey = process.env.GEMINI_API_KEY;
+    let apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is missing. Please set your real Google Gemini API Key in Settings > Secrets.");
+      throw new Error("OPENAI_API_KEY is missing. Please set your real OpenAI API Key in Settings > Secrets.");
     }
 
     // Clean up any enclosing quotes and extra whitespace from the key
@@ -37,70 +38,93 @@ function getGeminiClient(): GoogleGenAI {
     const maskedKey = apiKey.length > 10 
       ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}` 
       : "***";
-    console.log(`[Gemini API] Client successfully initialized. Loaded key: ${maskedKey} (Length: ${apiKey.length})`);
+    console.log(`[OpenAI API] Client successfully initialized. Loaded key: ${maskedKey} (Length: ${apiKey.length})`);
 
-    aiClient = new GoogleGenAI({
+    aiClient = new OpenAI({
       apiKey,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
     });
   }
   return aiClient;
 }
 
 // Utility function to execute Gemini models.generateContent with retry logic for transient errors (e.g. 503 service unavailable, but immediately throws on 429 quota exhaustion to serve high-quality fallbacks instantly)
-async function generateContentWithRetry(client: GoogleGenAI, params: any, maxAttempts = 3, initialDelayMs = 1200): Promise<any> {
+async function generateContentWithRetry(client: OpenAI, params: any, maxAttempts = 3, initialDelayMs = 1200): Promise<any> {
   let attempt = 0;
   while (true) {
     try {
       attempt++;
-      return await client.models.generateContent(params);
-    } catch (err: any) {
-      // Robust error parsing for various shapes of SDK and network errors
-      let errMsg = "";
-      if (err.message && typeof err.message === "string") {
-        errMsg = err.message;
-      } else if (err.error?.message && typeof err.error.message === "string") {
-        errMsg = err.error.message;
-      } else {
-        try {
-          errMsg = JSON.stringify(err);
-        } catch (_) {
-          errMsg = String(err);
-        }
+      
+      let messages = [];
+      let content = [];
+      if (typeof params.contents === "string") {
+         content = params.contents;
+      } else if (Array.isArray(params.contents)) {
+         for (const part of params.contents) {
+            if (part.text) {
+               content.push({ type: "text", text: part.text });
+            }
+            if (part.inlineData) {
+               content.push({ 
+                 type: "image_url", 
+                 image_url: { url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` } 
+               });
+            }
+         }
+      }
+      messages = [{ role: "user", content }];
+
+      const openaiParams: any = {
+         model: "gpt-4o-mini", // defaulting to mini to replace flash
+         messages: messages,
+      };
+
+      if (params.config?.responseMimeType === "application/json" && params.config?.responseSchema) {
+         const schema = JSON.parse(JSON.stringify(params.config.responseSchema));
+         
+         function fixSchema(s) {
+             if (s.type === "object") {
+                 s.additionalProperties = false;
+                 if (!s.required) s.required = [];
+                 if (s.properties) {
+                    for (const k of Object.keys(s.properties)) {
+                       fixSchema(s.properties[k]);
+                       if (!s.required.includes(k)) s.required.push(k);
+                    }
+                 }
+             } else if (s.type === "array" && s.items) {
+                 fixSchema(s.items);
+             }
+         }
+         fixSchema(schema);
+
+         openaiParams.response_format = {
+            type: "json_schema",
+            json_schema: {
+               name: "json_response",
+               schema: schema,
+               strict: true
+            }
+         };
       }
 
-      const rawStatus = err.status || err.error?.status || "";
-      const statusText = String(rawStatus).toUpperCase();
-      
-      const statusCode = Number(err.statusCode || err.status || err.error?.code || 0);
+      const response = await client.chat.completions.create(openaiParams);
+      const responseText = response.choices[0]?.message?.content || "";
+      return { text: responseText };
+    } catch (err: any) {
+      let errMsg = err.message || String(err);
+      const statusText = String(err.status || err.code || "").toUpperCase();
+      const statusCode = Number(err.status || err.statusCode || 0);
 
-      // If we hit 429/RESOURCE_EXHAUSTED, immediately throw without waiting, to serve realistic mock data instantly
-      const isQuotaExceeded = 
-        statusText === "RESOURCE_EXHAUSTED" || 
-        statusCode === 429 ||
-        errMsg.includes("429") ||
-        errMsg.includes("RESOURCE_EXHAUSTED") ||
-        errMsg.includes("quota");
-
+      const isQuotaExceeded = statusText === "RESOURCE_EXHAUSTED" || statusCode === 429 || errMsg.includes("429") || errMsg.includes("quota");
       if (isQuotaExceeded) {
         throw err;
       }
 
-      const isTransient = 
-        statusText === "UNAVAILABLE" || 
-        statusCode === 503 ||
-        errMsg.includes("503") ||
-        errMsg.includes("high demand") ||
-        errMsg.includes("temporary") ||
-        errMsg.includes("temporarily");
+      const isTransient = statusText === "UNAVAILABLE" || statusCode === 503 || errMsg.includes("503") || errMsg.includes("high demand") || errMsg.includes("temporary");
         
       if (isTransient && attempt < maxAttempts) {
         const delay = initialDelayMs * Math.pow(2, attempt - 1);
-        console.log(`[Gemini Auto-Retry] Attempt ${attempt} - Busy. Retrying in ${delay}ms...`);
+        console.log(`[OpenAI Auto-Retry] Attempt ${attempt} - Busy. Retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
@@ -502,7 +526,7 @@ app.post("/api/extract-iqama", async (req, res) => {
     }
 
     try {
-      const client = getGeminiClient();
+      const client = getOpenAIClient();
 
       const imagePart = {
         inlineData: {
@@ -556,7 +580,7 @@ Please return the parsed data in clean JSON conforming strictly to the requested
       const parsedData = JSON.parse(response.text || "{}");
       res.json(parsedData);
     } catch (apiErr: any) {
-      console.log("[Gemini Fallback Activated] Serving resilient Iqama parsed data fallback.");
+      console.log("[OpenAI Fallback Activated] Serving resilient Iqama parsed data fallback.");
       const fallbackResult = {
         ...getFallbackIqamaData(imageBase64),
         apiError: apiErr.message || String(apiErr)
@@ -579,7 +603,7 @@ app.post("/api/ocr-text", async (req, res) => {
     }
 
     try {
-      const client = getGeminiClient();
+      const client = getOpenAIClient();
 
       const imagePart = {
         inlineData: {
@@ -625,7 +649,7 @@ app.post("/api/find-products", async (req, res) => {
     const { category, niche } = req.body;
     
     try {
-      const client = getGeminiClient();
+      const client = getOpenAIClient();
 
       const defaultNiches: Record<string, string> = {
         tech: "smart wearables and futuristic home gadgets",
@@ -789,7 +813,7 @@ app.post("/api/ai-resume-helper", async (req, res) => {
     }
 
     try {
-      const client = getGeminiClient();
+      const client = getOpenAIClient();
 
       let prompt = "";
       if (action === "improve-bullets") {
@@ -947,7 +971,7 @@ app.post("/api/extract-maps-data", async (req, res) => {
 
     // AI Search Grounding Mode (Zero Key Required for user if GEMINI_API_KEY is active)
     try {
-      const client = getGeminiClient();
+      const client = getOpenAIClient();
 
       const prompt = `Research local businesses or service providers matching the search query:
 Keyword / Business Type: "${keyword}"
@@ -1031,7 +1055,7 @@ Output JSON only confirming to the specified schema.`;
       console.log("[Maps Extractor Integration] Switching to standard content generation layout.");
       
       try {
-        const client = getGeminiClient();
+        const client = getOpenAIClient();
         const fallbackPrompt = `Research and generate a highly realistic list of 8 physical businesses or service providers matching this query:
 Keyword / Business Type: "${keyword}"
 Location: "${location}"
@@ -1218,7 +1242,7 @@ app.post("/api/ocr-pdf-page", async (req, res) => {
     }
 
     try {
-      const client = getGeminiClient();
+      const client = getOpenAIClient();
 
       const imagePart = {
         inlineData: {

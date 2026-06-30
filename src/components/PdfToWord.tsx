@@ -691,7 +691,7 @@ export default function PdfToWord() {
                       AI Project Quota Reached or Prepayment Depleted (RESOURCE_EXHAUSTED)
                     </h4>
                     <p className="text-[11px] leading-relaxed text-amber-800">
-                      Your Gemini API quota is completed or has run out of prepay key credits. To ensure continuous testing of the PDF-to-Word layouts, the system has automatically rendered a high-fidelity formatted document fallback.
+                      Your OpenAI API quota is completed or has run out of prepay key credits. To ensure continuous testing of the PDF-to-Word layouts, the system has automatically rendered a high-fidelity formatted document fallback.
                     </p>
                     {extractedPages.find((p) => p.apiError)?.apiError && (
                       <div className="mt-2 text-left">

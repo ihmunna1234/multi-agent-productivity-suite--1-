@@ -661,7 +661,7 @@ export default function ResumeMaker() {
             Creative Resume Studio
           </h2>
           <p className="text-xs text-slate-400">
-            Construct high-fidelity, ATS-optimized print-ready blueprints with side-by-side Gemini AI support.
+            Construct high-fidelity, ATS-optimized print-ready blueprints with side-by-side OpenAI AI support.
           </p>
         </div>
 
@@ -1376,7 +1376,7 @@ export default function ResumeMaker() {
                 <div className="flex items-center gap-2">
                   <Sparkles size={16} className="text-teal-400 animate-spin" />
                   <span className="text-xs font-bold uppercase tracking-wider text-teal-300">
-                    Gemini AI Suggestions
+                    OpenAI AI Suggestions
                   </span>
                 </div>
                 <button 
@@ -1400,7 +1400,7 @@ export default function ResumeMaker() {
                   {isAiFallback && (
                     <div className="bg-amber-400/10 rounded-xl p-3 border border-amber-500/20 text-amber-200 text-[10px] sm:text-[11px] leading-relaxed mb-1 space-y-1">
                       <span className="font-extrabold uppercase block text-amber-400">SIMULATED WRITER ENGINE ACTIVE</span>
-                      The Gemini free API quota is currently sleeping. The system has gracefully mapped offline executive templates to draft ATS-optimized sections perfectly without disruption!
+                      The OpenAI free API quota is currently sleeping. The system has gracefully mapped offline executive templates to draft ATS-optimized sections perfectly without disruption!
                       {aiApiError && (
                         <div className="mt-2 pt-1.5 border-t border-amber-500/15 text-left">
                           <p className="text-[9px] font-bold text-amber-400 uppercase tracking-tight">Exact API Error Response:</p>
