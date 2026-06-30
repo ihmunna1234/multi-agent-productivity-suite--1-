@@ -1,0 +1,6 @@
+{
+  "name": "Injamus's AI Workspace",
+  "description": "Multi-agent utility platform featuring a Google Maps Leads Extractor, a smart Iqama data extractor with Excel export, PDF to image, image to PDF, and an AI trending product finder.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

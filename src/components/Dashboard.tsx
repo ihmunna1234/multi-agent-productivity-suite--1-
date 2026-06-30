@@ -1,0 +1,231 @@
+import React, { useState } from "react";
+import { 
+  FileCheck, 
+  FileText, 
+  Search, 
+  Database,
+  Layers,
+  Sparkles,
+  ArrowRight,
+  BookmarkCheck,
+  MapPin,
+  HelpCircle,
+  TrendingUp,
+  Eraser,
+  PenTool
+} from "lucide-react";
+import { ActiveAgent } from "../types";
+
+interface DashboardProps {
+  onNavigate: (agent: ActiveAgent) => void;
+}
+
+export default function Dashboard({ onNavigate }: DashboardProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+
+  const categories = [
+    "All",
+    "PDF Utilities",
+    "Data & Crawlers",
+    "AI Systems"
+  ];
+
+  const tools = [
+    {
+      id: "extractor" as ActiveAgent,
+      title: "Iqama & ID Extractor",
+      category: "Data & Crawlers",
+      description: "Surgically extract structured names, dates of birth, and ID card numbers from scanned official images using smart AI OCR.",
+      icon: <Database size={24} />,
+      bgClass: "bg-teal-50 text-teal-600 border border-teal-100",
+      pill: "AI OCR"
+    },
+    {
+      id: "pdf-to-img" as ActiveAgent,
+      title: "PDF to Image Slicer",
+      category: "PDF Utilities",
+      description: "Instantly slice multi-page PDF documents into high-grade JPEG or PNG raster images with custom resolution profiles.",
+      icon: <FileText size={24} />,
+      bgClass: "bg-blue-50 text-blue-600 border border-blue-100",
+      pill: "Slicer"
+    },
+    {
+      id: "img-to-pdf" as ActiveAgent,
+      title: "Image to PDF Binder",
+      category: "PDF Utilities",
+      description: "Combine scattered photo files, design renders, or receipts into a single, highly optimized PDF binder document.",
+      icon: <FileCheck size={24} />,
+      bgClass: "bg-orange-50 text-orange-600 border border-orange-100",
+      pill: "Binder"
+    },
+    {
+      id: "pdf-to-word" as ActiveAgent,
+      title: "PDF to Word Converter",
+      category: "PDF Utilities",
+      description: "Deconstruct PDF pages to extract document contents, format structural headings, and compile perfectly editable Word documents.",
+      icon: <FileText size={24} />,
+      bgClass: "bg-rose-50 text-rose-600 border border-rose-100",
+      pill: "Word"
+    },
+    {
+      id: "watermark-remover" as ActiveAgent,
+      title: "Watermark Remover from Image/PDF",
+      category: "PDF Utilities",
+      description: "Erase stamp watermarks, signature overlays, or faint background markings from image scans and PDF pages using smart filters.",
+      icon: <Eraser size={24} />,
+      bgClass: "bg-teal-50 text-teal-600 border border-teal-100",
+      pill: "Clean"
+    },
+    {
+      id: "pdf-editor" as ActiveAgent,
+      title: "Interactive PDF Editor",
+      category: "PDF Utilities",
+      description: "Draw annotations, blackout/redact confidential content, place customized corporate approval seals, and add comments on active page layers.",
+      icon: <PenTool size={24} />,
+      bgClass: "bg-rose-50 text-rose-600 border border-rose-100",
+      pill: "Edit"
+    },
+    {
+      id: "products" as ActiveAgent,
+      title: "Product Trend Scout",
+      category: "AI Systems",
+      description: "Analyze trending e-commerce product sectors, consumer categories, and active market intelligence with smart filters.",
+      icon: <Search size={22} />,
+      bgClass: "bg-rose-50 text-rose-500 border border-rose-100",
+      pill: "Market AI"
+    },
+    {
+      id: "resume-maker" as ActiveAgent,
+      title: "AI Resume Studio",
+      category: "AI Systems",
+      description: "Build high-grade professional resumes customized to your target job role using modern layout structures.",
+      icon: <Sparkles size={22} />,
+      bgClass: "bg-indigo-50 text-indigo-600 border border-indigo-100",
+      pill: "Career AI"
+    },
+    {
+      id: "maps-extractor" as ActiveAgent,
+      title: "G-Maps Lead Extractor",
+      category: "Data & Crawlers",
+      description: "Compile high-quality physical store coordinates, telephone numbers, and email listings straight from active map graphs.",
+      icon: <MapPin size={24} />,
+      bgClass: "bg-emerald-50 text-emerald-600 border border-emerald-100",
+      pill: "G-Maps Leads"
+    }
+  ];
+
+  const filteredTools = selectedCategory === "All" 
+    ? tools 
+    : tools.filter(t => t.category === selectedCategory);
+
+  return (
+    <div className="space-y-10 animate-fade-in text-slate-800 pb-12">
+      
+      {/* High Fidelity Centered Greeting Panel */}
+      <div className="text-center space-y-4 pt-6">
+        <h2 className="text-3xl font-semibold tracking-tight text-slate-800 sm:text-4xl">
+          Hi Injamul Hoque, let's get started
+        </h2>
+        <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
+          Select an intelligent workspace adapter or micro-tool pipeline below to start compiling leads, processing metadata, or transforming documents.
+        </p>
+      </div>
+
+      {/* Horizontal Category Filtering Row (matches UI in screenshot) */}
+      <div className="flex justify-center">
+        <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl px-4">
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-200 cursor-pointer ${
+                  isSelected 
+                    ? "bg-[#1f2937] text-white border-[#1f2937] shadow-sm" 
+                    : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Pure White Card Grid Matrix */}
+      <div className="max-w-7xl mx-auto px-1 sm:px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+          {filteredTools.map((tool) => (
+            <div
+              key={tool.id}
+              onClick={() => onNavigate(tool.id)}
+              className="group bg-white rounded-3xl p-6 border border-[#e4e4e7] hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[220px]"
+            >
+              <div className="space-y-4">
+                {/* Micro Icon Badge with subtle backdrop */}
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${tool.bgClass}`}>
+                  {tool.icon}
+                </div>
+
+                {/* Content Area */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-bold text-slate-800 text-[16px] tracking-tight group-hover:text-teal-600 transition-colors">
+                      {tool.title}
+                    </h3>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border border-slate-100 px-2 py-0.5 rounded">
+                      {tool.pill}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    {tool.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Prompt */}
+              <div className="pt-4 flex items-center justify-between text-[11px] font-bold text-teal-600 group-hover:text-teal-700">
+                <span className="text-slate-400 font-normal font-mono uppercase text-[9px] tracking-wider">
+                  {tool.category}
+                </span>
+                <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  Launch workspace
+                  <ArrowRight size={12} />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Embedded Workspace Trust Banner */}
+      <div className="max-w-7xl mx-auto px-1 sm:px-4 pt-4">
+        <div className="bg-white border border-[#e4e4e7] rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex gap-4 items-start text-left">
+            <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-100 text-emerald-600 shrink-0 hidden sm:block">
+              <BookmarkCheck size={22} />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                Secure Client Sandboxing Active
+              </h4>
+              <p className="text-xs text-slate-500 max-w-2xl leading-relaxed">
+                All document parsing, data extractions, and PDF transformations happen entirely inside secure local memory caches. No data ever leaves your device without explicit request.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigate("extractor")}
+            className="w-full md:w-auto text-xs font-bold text-white bg-slate-900 hover:bg-teal-700 px-6 py-3 rounded-2xl shadow-sm transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+          >
+            <span>Quick Start OCR Extractor</span>
+            <ArrowRight size={12} />
+          </button>
+        </div>
+      </div>
+
+    </div>
+  );
+}
