@@ -3,7 +3,6 @@ import path from "path";
 import dotenv from "dotenv";
 
 import OpenAI from "openai";
-import jwt from "jsonwebtoken";
 const Type = { STRING: "string", NUMBER: "number", INTEGER: "integer", BOOLEAN: "boolean", ARRAY: "array", OBJECT: "object" };
 
 dotenv.config({ override: true });
@@ -134,49 +133,6 @@ async function generateContentWithRetry(client: OpenAI, params: any, maxAttempts
   }
 }
 
-// Authentication Middleware
-const JWT_SECRET = process.env.JWT_SECRET || "default-unsafe-secret";
-
-app.post("/api/login", (req, res) => {
-  const { passcode } = req.body;
-  const expectedPasscode = process.env.APP_PASSCODE;
-
-  if (!expectedPasscode) {
-    // If no passcode is configured, allow anyone in for development, or reject.
-    // Let's reject to be safe.
-    res.status(500).json({ error: "Server authentication is not configured." });
-    return;
-  }
-
-  if (passcode === expectedPasscode) {
-    const token = jwt.sign({ authenticated: true }, JWT_SECRET, { expiresIn: "7d" });
-    res.json({ token });
-  } else {
-    res.status(401).json({ error: "Invalid passcode." });
-  }
-});
-
-// Middleware to protect API routes
-app.use("/api", (req, res, next) => {
-  // Allow health check and login without auth
-  if (req.path === "/health" || req.path === "/login") {
-    return next();
-  }
-
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Unauthorized: Missing token" });
-    return;
-  }
-
-  const token = authHeader.split(" ")[1];
-  try {
-    jwt.verify(token, JWT_SECRET);
-    next();
-  } catch (err) {
-    res.status(401).json({ error: "Unauthorized: Invalid token" });
-  }
-});
 
 // Ensure the client-facing APIs are placed BEFORE Vite middleware
 app.get("/api/health", (req, res) => {
