@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import { PDFDocument, degrees } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 
-// Set worker source
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
+// Set worker source to local bundled worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface PageThumbnail {
   originalIndex: number; // 0-based
@@ -235,7 +236,7 @@ export default function OrganizePdf() {
       {!isState3 ? (
         <div className="mt-4 border border-outline-variant/60 rounded-xl bg-surface-container-lowest overflow-hidden flex flex-col lg:flex-row shadow-sm">
           {/* LEFT COLUMN */}
-          <div className="flex-1 p-8 relative min-h-[420px]">
+          <div className="flex-1 p-8 relative flex flex-col min-h-[420px]">
             {loading && !isState2 ? (
               <div className="flex flex-col items-center justify-center h-full text-center animate-fade-in z-20">
                 <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
@@ -315,7 +316,8 @@ export default function OrganizePdf() {
                 onDragOver={handleDrag}
                 onDragLeave={handleDrag}
                 onDrop={handleDrop}
-                className={`w-full h-full border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center transition-all absolute inset-8 ${
+                onClick={() => fileInputRef.current?.click()}
+                className={`w-full flex-1 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center transition-all cursor-pointer min-h-[300px] ${
                   dragActive
                     ? "border-primary bg-primary-fixed/30 scale-[1.01]"
                     : "border-outline-variant/60 hover:bg-surface-container-low/50"
@@ -324,11 +326,11 @@ export default function OrganizePdf() {
                 <input
                   type="file"
                   ref={fileInputRef}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  className="hidden"
                   onChange={handleFileChange}
                   accept=".pdf,application/pdf"
                 />
-                <div className="flex-1 flex flex-col items-center justify-center w-full">
+                <div className="flex-1 flex flex-col items-center justify-center w-full pointer-events-none">
                   <Layers size={46} strokeWidth={2.5} className="text-primary mb-5" />
                   <h3 className="text-xl font-bold text-on-surface mb-2">Drag & drop your PDF here</h3>
                   <p className="text-sm text-on-surface-variant">

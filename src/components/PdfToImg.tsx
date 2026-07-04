@@ -17,10 +17,10 @@ import {
   Settings
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 
-// Bind the worker externally to a reliable unpkg source matching the exact active pdfjs-dist version.
-// This completely circumvents bundle/loader limitations in local compilation sandboxes, guaranteeing standard execution.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || "6.0.227"}/build/pdf.worker.min.mjs`;
+// Set worker source
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface ExtractedPage {
   pageNumber: number;
@@ -228,21 +228,23 @@ export default function PdfToImg() {
                 onDragOver={handleDrag}
                 onDragLeave={handleDrag}
                 onDrop={handleDrop}
-                className={`w-full h-full border-2 border-dashed rounded-xl flex flex-col items-center p-6 text-center transition-all ${
+                onClick={() => fileInputRef.current?.click()}
+                className={`w-full h-64 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center transition-all cursor-pointer relative z-10 ${
                   dragActive
-                    ? "border-primary bg-primary-fixed/30 scale-[1.01]"
+                    ? "border-primary bg-primary-fixed/30 scale-[1.02] shadow-sm"
                     : "border-outline-variant/60 hover:bg-surface-container-low/50"
                 }`}
               >
                 <input
                   type="file"
+                  title=""
                   ref={fileInputRef}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  className="hidden"
                   onChange={handleFileChange}
                   accept=".pdf,application/pdf"
                 />
                 
-                <div className="flex-1 flex flex-col items-center justify-center w-full">
+                <div className="flex flex-col items-center justify-center pointer-events-none">
                   <FileText size={46} strokeWidth={2.5} className="text-primary mb-5" />
                   <h3 className="text-xl font-bold text-on-surface mb-2">Drag & drop your PDF here</h3>
                   <p className="text-sm text-on-surface-variant">

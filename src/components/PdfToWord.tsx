@@ -36,9 +36,10 @@ import {
   EyeOff
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 
-// Bind the worker externally to keep consistency with the other PDF utilities in the suite
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || "6.0.227"}/build/pdf.worker.min.mjs`;
+// Set worker source
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface PageInfo {
   pageNumber: number;
@@ -514,7 +515,8 @@ export default function PdfToWord() {
             onDragOver={handleDrag}
             onDragLeave={handleDrag}
             onDrop={handleDrop}
-            className={`relative w-full max-w-3xl h-64 sm:h-72 border-2 border-dashed rounded-xl flex flex-col items-center justify-center transition-all bg-surface-container-lowest ${
+            onClick={() => fileInputRef.current?.click()}
+            className={`relative w-full max-w-3xl h-64 sm:h-72 border-2 border-dashed rounded-xl flex flex-col items-center justify-center transition-all bg-surface-container-lowest cursor-pointer ${
               dragActive
                 ? "border-primary bg-primary-fixed/30 scale-[1.01]"
                 : "border-outline-variant/60 hover:border-primary/50 hover:bg-surface-container-low/50"
@@ -523,7 +525,7 @@ export default function PdfToWord() {
             <input
               type="file"
               ref={fileInputRef}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              className="hidden"
               onChange={handleFileChange}
               accept=".pdf,application/pdf"
             />
