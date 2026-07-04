@@ -182,7 +182,8 @@ export default function SplitPdf() {
                 onDragOver={handleDrag}
                 onDragLeave={handleDrag}
                 onDrop={handleDrop}
-                className={`w-full h-full border-2 border-dashed rounded-xl flex flex-col items-center p-6 text-center transition-all ${
+                onClick={() => fileInputRef.current?.click()}
+                className={`w-full h-full border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center transition-all cursor-pointer ${
                   dragActive
                     ? "border-primary bg-primary-fixed/30 scale-[1.01]"
                     : "border-outline-variant/60 hover:bg-surface-container-low/50"
@@ -191,11 +192,11 @@ export default function SplitPdf() {
                 <input
                   type="file"
                   ref={fileInputRef}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  className="hidden"
                   onChange={handleFileChange}
                   accept=".pdf,application/pdf"
                 />
-                <div className="flex-1 flex flex-col items-center justify-center w-full">
+                <div className="flex-1 flex flex-col items-center justify-center w-full pointer-events-none">
                   <Scissors size={46} strokeWidth={2.5} className="text-primary mb-5" />
                   <h3 className="text-xl font-bold text-on-surface mb-2">Drag & drop your PDF here</h3>
                   <p className="text-sm text-on-surface-variant">

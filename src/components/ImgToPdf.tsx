@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { jsPDF } from "jspdf";
 import {
   Upload,
@@ -28,6 +28,7 @@ interface UploadedImage {
 }
 
 export default function ImgToPdf() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [pageSize, setPageSize] = useState<"a4" | "letter" | "executive">("a4");
@@ -184,7 +185,8 @@ export default function ImgToPdf() {
             onDragOver={handleDrag}
             onDragLeave={handleDrag}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all relative ${
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all relative cursor-pointer ${
               dragActive
                 ? "border-primary bg-primary-fixed/50 scale-[1.01]"
                 : "border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low"
@@ -193,15 +195,16 @@ export default function ImgToPdf() {
             <input
               type="file"
               multiple
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              ref={fileInputRef}
+              className="hidden"
               onChange={handleFileChange}
               accept="image/*"
             />
-            <div className="mx-auto w-12 h-12 text-primary mb-4 flex items-center justify-center">
+            <div className="mx-auto w-12 h-12 text-primary mb-4 flex items-center justify-center pointer-events-none">
               <FileImage size={40} strokeWidth={1.5} className={dragActive ? "animate-bounce" : ""} />
             </div>
-            <h3 className="text-xl font-bold text-on-surface mb-2">Drag & drop images here</h3>
-            <p className="text-sm text-outline mb-6">Supports JPG, PNG, TIFF. Max 50MB total.</p>
+            <h3 className="text-xl font-bold text-on-surface mb-2 pointer-events-none">Drag & drop images here</h3>
+            <p className="text-sm text-outline mb-6 pointer-events-none">Supports JPG, PNG, TIFF. Max 50MB total.</p>
             <button
               type="button"
               className="mx-auto flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-DEFAULT font-semibold text-sm transition-colors cursor-pointer pointer-events-none relative z-0 shadow-sm"

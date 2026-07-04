@@ -23,9 +23,10 @@ import {
   FileCheck
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import { jsPDF } from "jspdf";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || "6.0.227"}/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface ConvertedPage {
   pageIndex: number;
@@ -497,7 +498,8 @@ export default function WatermarkRemover() {
           onDragOver={handleDrag}
           onDragLeave={handleDrag}
           onDrop={handleDrop}
-          className={`min-h-[280px] rounded-lg border-2 border-dashed transition-all flex flex-col justify-center items-center p-8 bg-surface-container-lowest relative ${
+          onClick={() => !loading && fileInputRef.current?.click()}
+          className={`min-h-[280px] rounded-lg border-2 border-dashed transition-all flex flex-col justify-center items-center p-8 bg-surface-container-lowest relative cursor-pointer ${
             dragActive
               ? "border-primary bg-primary-fixed/20 scale-[0.99]"
               : "border-outline-variant hover:border-teal-450 hover:shadow-none"
@@ -506,7 +508,7 @@ export default function WatermarkRemover() {
           <input
             type="file"
             ref={fileInputRef}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            className="hidden"
             onChange={handleFileChange}
             accept=".pdf,application/pdf,image/*"
             disabled={loading}

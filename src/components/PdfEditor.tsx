@@ -45,9 +45,10 @@ import {
   HelpCircle
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import { jsPDF } from "jspdf";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || "6.0.227"}/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface EditorTextOverlay {
   id: string;
@@ -1073,7 +1074,8 @@ export default function PdfEditor() {
             onDragOver={handleDrag}
             onDragLeave={handleDrag}
             onDrop={handleDrop}
-            className={`w-full max-w-xl min-h-[300px] border-2 border-dashed rounded-lg transition-all flex flex-col justify-center items-center p-8 bg-surface-container-lowest ${
+            onClick={() => !loading && fileInputRef.current?.click()}
+            className={`w-full max-w-xl min-h-[300px] border-2 border-dashed rounded-lg transition-all flex flex-col justify-center items-center p-8 bg-surface-container-lowest cursor-pointer ${
               dragActive
                 ? "border-red-500 bg-red-50/10 scale-[0.99]"
                 : "border-outline-variant hover:border-red-400 hover:shadow-none"
@@ -1082,7 +1084,7 @@ export default function PdfEditor() {
             <input
               type="file"
               ref={fileInputRef}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              className="hidden"
               onChange={handleFileChange}
               accept=".pdf,application/pdf"
               disabled={loading}
