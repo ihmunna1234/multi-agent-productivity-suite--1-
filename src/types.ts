@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-export type ActiveAgent = "dashboard" | "pdf-to-img" | "img-to-pdf" | "pdf-to-word" | "watermark-remover" | "pdf-editor" | "extractor" | "products" | "resume-maker" | "maps-extractor";
+export type ActiveAgent = "dashboard" | "pdf-to-img" | "img-to-pdf" | "pdf-to-word" | "watermark-remover" | "pdf-editor" | "extractor" | "products" | "resume-maker" | "maps-extractor" | "merge-pdf" | "split-pdf" | "organize-pdf";
 
 export interface IqamaRecord {
   id: string;

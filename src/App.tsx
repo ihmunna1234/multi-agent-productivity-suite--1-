@@ -14,7 +14,10 @@ import {
   Moon,
   Contrast,
   Eraser,
-  PenTool
+  PenTool,
+  Combine,
+  Scissors,
+  Layers
 } from "lucide-react";
 import { ActiveAgent } from "./types";
 
@@ -29,6 +32,9 @@ import PdfEditor from "./components/PdfEditor";
 import ProductFinder from "./components/ProductFinder";
 import ResumeMaker from "./components/ResumeMaker";
 import GoogleMapsExtractor from "./components/GoogleMapsExtractor";
+import MergePdf from "./components/MergePdf";
+import SplitPdf from "./components/SplitPdf";
+import OrganizePdf from "./components/OrganizePdf";
 import { MapPin } from "lucide-react";
 
 export default function App() {
@@ -60,6 +66,9 @@ export default function App() {
     { id: "pdf-to-img" as ActiveAgent, name: "PDF to Image", icon: <FileText size={16} />, pill: "Slicer" },
     { id: "img-to-pdf" as ActiveAgent, name: "Image to PDF", icon: <FileCheck size={16} />, pill: "Binder" },
     { id: "pdf-to-word" as ActiveAgent, name: "PDF to Word", icon: <FileText size={16} />, pill: "Convert" },
+    { id: "merge-pdf" as ActiveAgent, name: "Merge PDF", icon: <Combine size={16} />, pill: "Merge" },
+    { id: "split-pdf" as ActiveAgent, name: "Split PDF", icon: <Scissors size={16} />, pill: "Split" },
+    { id: "organize-pdf" as ActiveAgent, name: "Organize PDF", icon: <Layers size={16} />, pill: "Organize" },
     { id: "watermark-remover" as ActiveAgent, name: "Watermark Remover", icon: <Eraser size={16} />, pill: "Clean" },
     { id: "pdf-editor" as ActiveAgent, name: "PDF Editor", icon: <PenTool size={16} />, pill: "Edit" },
     { id: "products" as ActiveAgent, name: "Product Scout", icon: <Search size={16} />, pill: "Market" },
@@ -75,23 +84,23 @@ export default function App() {
   const themeClass = theme === "dark" ? "theme-dark" : theme === "night" ? "theme-night" : "theme-light";
 
   return (
-    <div className={`flex flex-col h-screen bg-slate-50 font-sans text-slate-800 antialiased overflow-hidden relative ${themeClass}`}>
+    <div className={`flex flex-col h-screen bg-background font-sans text-on-background antialiased overflow-hidden relative ${themeClass}`}>
       
       {/* Premium Top Navigation Bar */}
-      <header className="bg-white border-b border-slate-100 flex-shrink-0 z-50 relative shadow-sm">
+      <header className="bg-surface-container-lowest border-b border-outline-variant flex-shrink-0 z-50 relative shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-18">
             
             {/* Logo/Branding Node */}
             <div className="flex items-center gap-2.5 cursor-pointer select-none" onClick={() => handleNavigate("dashboard")}>
-              <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-sm shadow-teal-500/20 active:scale-95 transition-transform">
+              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-sm shadow-primary/20 active:scale-95 transition-transform">
                 <BrainCircuit size={19} />
               </div>
               <div>
-                <h1 className="font-bold text-slate-800 text-sm tracking-tight leading-none">
+                <h1 className="font-bold text-on-background text-sm tracking-tight leading-none">
                   Injamus's AI Workspace
                 </h1>
-                <span className="text-[10px] text-teal-600 font-semibold tracking-wider uppercase mt-1 block">
+                <span className="text-[10px] text-primary font-semibold tracking-wider uppercase mt-1 block">
                   Multi-Agent Suite
                 </span>
               </div>
@@ -109,7 +118,7 @@ export default function App() {
                   else if (theme === "dark") handleThemeChange("night");
                   else handleThemeChange("light");
                 }}
-                className="p-2.5 rounded-2xl transition-all cursor-pointer flex items-center justify-center border border-slate-200/50 bg-slate-50 hover:bg-slate-100 text-slate-700 shadow-xs active:scale-95"
+                className="p-2.5 rounded-2xl transition-all cursor-pointer flex items-center justify-center border border-outline-variant/50 bg-surface hover:bg-surface-container-low text-on-surface-variant shadow-xs active:scale-95"
                 title={`Theme: ${theme.toUpperCase()} (Click to toggle)`}
               >
                 {theme === "light" && <Sun size={20} className="text-amber-500 stroke-[2.5]" />}
@@ -122,10 +131,10 @@ export default function App() {
               <button
                 id="hamburger-menu-toggle-btn"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2.5 text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/50 rounded-2xl cursor-pointer transition-colors active:scale-95 flex items-center justify-center shadow-xs"
+                className="p-2.5 text-on-surface-variant bg-surface hover:bg-surface-container-low border border-outline-variant/50 rounded-2xl cursor-pointer transition-colors active:scale-95 flex items-center justify-center shadow-xs"
                 aria-label="Toggle navigation menu"
               >
-                {isMobileMenuOpen ? <X size={20} className="text-slate-800" /> : <Menu size={20} className="text-slate-800" />}
+                {isMobileMenuOpen ? <X size={20} className="text-on-background" /> : <Menu size={20} className="text-on-background" />}
               </button>
             </div>
 
@@ -134,8 +143,8 @@ export default function App() {
 
         {/* Universal Mobile Dropdown Menu displayed on all devices */}
         {isMobileMenuOpen && (
-          <div className="border-t border-slate-100 bg-white absolute top-16 left-0 right-0 md:left-auto md:right-8 md:w-80 md:rounded-3xl md:border md:shadow-xl px-5 py-4 space-y-1.5 animate-fade-in z-50">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-2">
+          <div className="border-t border-outline-variant bg-surface-container-lowest absolute top-16 left-0 right-0 md:left-auto md:right-8 md:w-80 md:rounded-3xl md:border md:shadow-xl px-5 py-4 space-y-1.5 animate-fade-in z-50">
+            <h3 className="text-[10px] font-bold text-outline uppercase tracking-widest px-3 mb-2">
               Select Agent Tool
             </h3>
             {navigationItems.map((item) => {
@@ -146,19 +155,19 @@ export default function App() {
                   onClick={() => handleNavigate(item.id)}
                   className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${
                     isActive
-                      ? "bg-teal-50/70 text-teal-800 border border-teal-50"
-                      : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/50 border border-transparent"
+                      ? "bg-primary-container text-on-primary-container border border-primary-container"
+                      : "text-on-surface-variant hover:text-on-background hover:bg-surface-container-low border border-transparent"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={isActive ? "text-teal-600" : "text-slate-400"}>
+                    <span className={isActive ? "text-primary" : "text-outline"}>
                       {item.icon}
                     </span>
                     <span>{item.name}</span>
                   </div>
                   {item.pill && (
                     <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase ${
-                      isActive ? "bg-teal-100 text-teal-800" : "bg-slate-100 text-slate-400"
+                      isActive ? "bg-primary text-on-primary" : "bg-surface-variant text-on-surface-variant"
                     }`}>
                       {item.pill}
                     </span>
@@ -173,10 +182,10 @@ export default function App() {
       </header>
 
       {/* Primary Main Content Node */}
-      <main className="flex-1 overflow-y-auto flex flex-col h-full bg-slate-50 min-w-0">
+      <main className="flex-1 overflow-y-auto flex flex-col h-full bg-background min-w-0">
         
         {/* Dynamic Workspaces */}
-        <div id="workspace-content-body" className="p-4 md:p-8 max-w-7xl w-full mx-auto flex-1 pb-16">
+        <div id="workspace-content-body" className="p-4 md:p-8 max-w-7xl w-full mx-auto flex-1 pb-16 bg-background">
           {activeAgent === "dashboard" && (
             <Dashboard onNavigate={handleNavigate} />
           )}
@@ -206,6 +215,15 @@ export default function App() {
           )}
           {activeAgent === "maps-extractor" && (
             <GoogleMapsExtractor />
+          )}
+          {activeAgent === "merge-pdf" && (
+            <MergePdf />
+          )}
+          {activeAgent === "split-pdf" && (
+            <SplitPdf />
+          )}
+          {activeAgent === "organize-pdf" && (
+            <OrganizePdf />
           )}
         </div>
       </main>

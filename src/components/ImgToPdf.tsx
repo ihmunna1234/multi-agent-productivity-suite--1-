@@ -1,17 +1,23 @@
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
-import { 
-  Upload, 
-  Download, 
-  Trash2, 
-  FileImage, 
-  ArrowUp, 
-  ArrowDown, 
+import {
+  Upload,
+  Download,
+  Trash2,
+  FileImage,
+  ArrowUp,
+  ArrowDown,
   FileText,
   Settings,
   X,
   FileCheck,
-  Loader2
+  Loader2,
+  ArrowRight,
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Check,
+  GripVertical
 } from "lucide-react";
 
 interface UploadedImage {
@@ -25,10 +31,11 @@ export default function ImgToPdf() {
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [pageSize, setPageSize] = useState<"a4" | "letter" | "executive">("a4");
-  const [orientation, setOrientation] = useState<"p" | "l">("p"); // p: Portrait, l: Landscape
-  const [margin, setMargin] = useState<number>(10); // Standard 10mm margins
+  const [orientation, setOrientation] = useState<"p" | "l">("p");
+  const [margin, setMargin] = useState<number>(10);
   const [fileName, setFileName] = useState<string>("Converted_Document");
   const [compiling, setCompiling] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -87,19 +94,8 @@ export default function ImgToPdf() {
     if (images.length === 0) return;
     if (confirm("Are you sure you want to discard all uploaded images?")) {
       setImages([]);
+      setDownloadSuccess(false);
     }
-  };
-
-  const moveItem = (index: number, direction: "up" | "down") => {
-    if (direction === "up" && index === 0) return;
-    if (direction === "down" && index === images.length - 1) return;
-
-    const newIndex = direction === "up" ? index - 1 : index + 1;
-    const updated = [...images];
-    const temp = updated[index];
-    updated[index] = updated[newIndex];
-    updated[newIndex] = temp;
-    setImages(updated);
   };
 
   const compilePDF = async () => {
@@ -107,7 +103,6 @@ export default function ImgToPdf() {
     setCompiling(true);
 
     try {
-      // Initialize jsPDF instance with page settings
       const doc = new jsPDF({
         orientation: orientation,
         unit: "mm",
@@ -117,7 +112,6 @@ export default function ImgToPdf() {
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
-      // Printable boundaries with customizable margins
       const targetWidth = pageWidth - margin * 2;
       const targetHeight = pageHeight - margin * 2;
 
@@ -128,7 +122,6 @@ export default function ImgToPdf() {
 
         const img = images[i];
 
-        // Create an image element to read native dimensions and calculate appropriate proportions
         const sizeLoader = await new Promise<{ w: number; h: number }>((resolve) => {
           const tempImg = new Image();
           tempImg.onload = () => {
@@ -137,7 +130,6 @@ export default function ImgToPdf() {
           tempImg.src = img.dataUrl;
         });
 
-        // Calculate proportional scale dimensions that fit precisely into our printable page area
         const imageRatio = sizeLoader.w / sizeLoader.h;
         const pageRatio = targetWidth / targetHeight;
 
@@ -145,25 +137,23 @@ export default function ImgToPdf() {
         let renderHeight = targetHeight;
 
         if (imageRatio > pageRatio) {
-          // Constrain by width
           renderWidth = targetWidth;
           renderHeight = targetWidth / imageRatio;
         } else {
-          // Constrain by height
           renderHeight = targetHeight;
           renderWidth = targetHeight * imageRatio;
         }
 
-        // Center position the proportional image inside standard printable bounds
         const xOffset = margin + (targetWidth - renderWidth) / 2;
         const yOffset = margin + (targetHeight - renderHeight) / 2;
 
         doc.addImage(img.dataUrl, "JPEG", xOffset, yOffset, renderWidth, renderHeight);
       }
 
-      // Save document download
       const cleanFileName = fileName.trim() ? fileName.replace(/\s+/g, "_") : "document";
       doc.save(`${cleanFileName}.pdf`);
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 2500);
     } catch (e) {
       console.error("PDF Compilation Error:", e);
       alert("An error occurred during PDF compilation. Please try again.");
@@ -172,231 +162,207 @@ export default function ImgToPdf() {
     }
   };
 
+  const estimatedSizeMB = (images.reduce((acc, img) => acc + parseFloat(img.size), 0) * 0.9 / 1024).toFixed(1);
+
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Tool Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-teal-600 px-2 py-1 bg-teal-50 rounded-full">
-            PDF Utility Agent
-          </span>
-          <h2 className="text-2xl font-semibold text-slate-800 tracking-tight mt-1">
-            Image to PDF Converter
-          </h2>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">
-            Batch stitches uploaded images (JPG, PNG, WEBP) into a single, beautifully bound multi-page PDF document. Reorder elements and customize margins instantly.
-          </p>
-        </div>
+    <div className="animate-fade-in max-w-7xl mx-auto px-4 pb-12 pt-6">
+      {/* Header */}
+      <div className="text-center py-8">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-on-surface tracking-tight">Convert Images to PDF</h1>
+        <p className="text-outline mt-3 max-w-xl mx-auto leading-relaxed">
+          Easily combine multiple images into a single professional PDF document. Fast, secure, and formatting maintained.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Document Compilation Settings sidebar */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-6">
-            <h3 className="font-semibold text-slate-800 flex items-center gap-2 border-b border-slate-50 pb-3">
-              <Settings size={18} className="text-teal-600" />
-              Document Layout Config
-            </h3>
-
-            {/* Document Filename Input */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500 block">PDF Output Name</label>
-              <input
-                type="text"
-                value={fileName}
-                onChange={(e) => setFileName(e.target.value)}
-                placeholder="File name"
-                className="w-full text-xs font-medium bg-slate-50 border border-slate-200 focus:border-teal-500 focus:bg-white p-3 rounded-xl outline-none transition-all text-slate-700 font-mono"
-              />
-            </div>
-
-            {/* Document Size Selector */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500 block">Page Template Size</label>
-              <select
-                value={pageSize}
-                onChange={(e: any) => setPageSize(e.target.value)}
-                className="w-full text-xs font-medium bg-slate-50 border border-slate-200 p-3 rounded-xl focus:bg-white outline-none text-slate-700 cursor-pointer"
-              >
-                <option value="a4">A4 (Standard ISO Portrait Template)</option>
-                <option value="letter">Letter (US Graphic Template Size)</option>
-                <option value="executive">Executive Template</option>
-              </select>
-            </div>
-
-            {/* Margins Scale */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-500 block">Print Limits Margin</label>
-              <select
-                value={margin}
-                onChange={(e: any) => setMargin(parseInt(e.target.value))}
-                className="w-full text-xs font-medium bg-slate-50 border border-slate-200 p-3 rounded-xl focus:bg-white outline-none text-slate-700 cursor-pointer"
-              >
-                <option value="0">None (0mm Full Bleed Image View)</option>
-                <option value="5">Slim (5mm Content Padding Borders)</option>
-                <option value="10">Standard (10mm Default Margins)</option>
-                <option value="20">Wide (20mm High Contrast Margins)</option>
-              </select>
-            </div>
-
-            {/* PDF Orientation Selectors */}
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-500">Document Direction</span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setOrientation("p")}
-                  className={`py-2 px-3 text-xs font-medium rounded-xl border text-center transition-all cursor-pointer ${
-                    orientation === "p"
-                      ? "border-teal-500 bg-teal-50/50 text-teal-700 font-semibold"
-                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  Portrait View
-                </button>
-                <button
-                  onClick={() => setOrientation("l")}
-                  className={`py-2 px-3 text-xs font-medium rounded-xl border text-center transition-all cursor-pointer ${
-                    orientation === "l"
-                      ? "border-teal-500 bg-teal-50/50 text-teal-700 font-semibold"
-                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  Landscape View
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Upload Arena & Interactive List reorder */}
-        <div className="lg:col-span-8 space-y-6">
+      {/* Two Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start mt-4">
+        {/* LEFT COLUMN: Upload & Gallery */}
+        <div className="space-y-6">
+          {/* Main Dropzone */}
           <div
             onDragEnter={handleDrag}
             onDragOver={handleDrag}
             onDragLeave={handleDrag}
             onDrop={handleDrop}
-            className={`min-h-[180px] rounded-2xl border-2 border-dashed transition-all flex flex-col justify-center items-center p-6 bg-white relative ${
+            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all relative ${
               dragActive
-                ? "border-teal-500 bg-teal-50/50 scale-[0.99]"
-                : "border-slate-200 hover:border-teal-400"
+                ? "border-primary bg-primary-fixed/50 scale-[1.01]"
+                : "border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low"
             }`}
           >
             <input
               type="file"
               multiple
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               onChange={handleFileChange}
               accept="image/*"
             />
-            <div className="text-center space-y-3">
-              <div className="w-14 h-14 bg-teal-50 rounded-full flex items-center justify-center mx-auto text-teal-600 shadow-sm">
-                <FileImage size={24} />
-              </div>
-              <div>
-                <h4 className="font-medium text-slate-700">Drag multiple images here</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Or <span className="text-teal-600 underline">select images from folder</span> to convert to multi-page PDF
-                </p>
-              </div>
+            <div className="mx-auto w-12 h-12 text-primary mb-4 flex items-center justify-center">
+              <FileImage size={40} strokeWidth={1.5} className={dragActive ? "animate-bounce" : ""} />
             </div>
+            <h3 className="text-xl font-bold text-on-surface mb-2">Drag & drop images here</h3>
+            <p className="text-sm text-outline mb-6">Supports JPG, PNG, TIFF. Max 50MB total.</p>
+            <button
+              type="button"
+              className="mx-auto flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-DEFAULT font-semibold text-sm transition-colors cursor-pointer pointer-events-none relative z-0 shadow-sm"
+            >
+              <Upload size={16} /> Select Files
+            </button>
           </div>
 
-          {/* Re-order list sheet page sequence */}
+          {/* Uploaded Images Header + Grid */}
           {images.length > 0 && (
-            <div className="space-y-4 animate-slide-up">
-              <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-800">
-                    Document Order List ({images.length} Pages)
-                  </h4>
-                  <p className="text-xs text-slate-400">Rearrange slides before exporting PDF</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={clearAll}
-                    className="text-slate-500 hover:text-red-600 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-red-50 transition-all cursor-pointer"
-                  >
-                    Discard All
-                  </button>
-                  <button
-                    onClick={compilePDF}
-                    disabled={compiling}
-                    className="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all shadow-sm cursor-pointer"
-                  >
-                    {compiling ? (
-                      <>
-                        <Loader2 size={13} className="animate-spin" /> Compiling...
-                      </>
-                    ) : (
-                      <>
-                        <FileCheck size={14} /> Produce PDF Document
-                      </>
-                    )}
-                  </button>
-                </div>
+            <div className="border border-outline-variant rounded-xl bg-surface-container-lowest overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-surface-container-highest">
+                <h4 className="font-bold text-sm text-on-surface">Uploaded Images ({images.length})</h4>
+                <button
+                  onClick={clearAll}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-error transition-colors cursor-pointer"
+                >
+                  <Trash2 size={14} /> Clear All
+                </button>
               </div>
-
-              {/* Dynamic scroll list format */}
-              <div className="space-y-3">
+              <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-4 bg-surface-container-low/30">
                 {images.map((img, index) => (
                   <div
                     key={img.id}
-                    className="flex items-center gap-4 bg-white p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:shadow-sm transition-all"
+                    className="relative group border border-outline-variant rounded-lg overflow-hidden bg-surface-container-lowest shadow-none hover:shadow-md transition-all"
                   >
-                    {/* Page ID Number */}
-                    <span className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 text-slate-500 text-xs font-semibold flex items-center justify-center shrink-0">
-                      {index + 1}
-                    </span>
-
-                    {/* Image mini preview */}
-                    <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center">
+                    {/* Delete overlay button */}
+                    <button
+                      onClick={() => deleteImage(img.id)}
+                      className="absolute top-2 right-2 bg-white/95 p-1.5 rounded-DEFAULT text-error opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-red-50 shadow cursor-pointer border border-red-100"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                    {/* Image */}
+                    <div className="aspect-[4/3] bg-surface-container-low flex items-center justify-center overflow-hidden border-b border-outline-variant">
                       <img
                         src={img.dataUrl}
-                        alt="Preview node"
-                        className="w-full h-full object-cover"
+                        alt={img.name}
+                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
                         referrerPolicy="no-referrer"
                       />
                     </div>
-
-                    {/* File descriptive parameters */}
-                    <div className="flex-1 truncate">
-                      <p className="text-xs font-semibold text-slate-700 truncate leading-tight">
-                        {img.name}
-                      </p>
-                      <p className="text-[10px] text-slate-400 mt-1 font-mono">{img.size}</p>
+                    {/* Label */}
+                    <div className="absolute top-2 left-2 bg-white/95 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm flex items-center gap-1 border border-outline-variant">
+                      <GripVertical size={10} className="text-outline-variant" /> {index + 1}
                     </div>
-
-                    {/* Reordering Controls & Delete Action button */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => moveItem(index, "up")}
-                        disabled={index === 0}
-                        title="Move Up"
-                        className="p-1.5 text-slate-400 hover:text-teal-600 disabled:text-slate-200 rounded hover:bg-slate-50 cursor-pointer"
-                      >
-                        <ArrowUp size={14} />
-                      </button>
-                      <button
-                        onClick={() => moveItem(index, "down")}
-                        disabled={index === images.length - 1}
-                        title="Move Down"
-                        className="p-1.5 text-slate-400 hover:text-teal-600 disabled:text-slate-200 rounded hover:bg-slate-50 cursor-pointer"
-                      >
-                        <ArrowDown size={14} />
-                      </button>
-                      <button
-                        onClick={() => deleteImage(img.id)}
-                        title="Remove page"
-                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded cursor-pointer"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                    <div className="p-3 bg-surface-container-lowest">
+                      <p className="text-xs font-bold text-on-surface truncate" title={img.name}>{img.name}</p>
+                      <p className="text-[10px] text-outline mt-0.5">{img.size}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
+        </div>
+
+        {/* RIGHT COLUMN: Settings Sidebar */}
+        <div className="border border-outline-variant rounded-xl bg-surface-container-lowest p-6 sticky top-6">
+          <h3 className="font-bold text-lg text-on-surface mb-6">Document Settings</h3>
+
+          <div className="space-y-6">
+            {/* Page Size */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-outline">Page Size</label>
+              <select
+                value={pageSize}
+                onChange={(e: any) => setPageSize(e.target.value)}
+                className="w-full text-sm font-medium bg-surface-container-lowest border border-outline-variant p-3 rounded-DEFAULT hover:border-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface-variant cursor-pointer transition-colors"
+              >
+                <option value="a4">A4 (210 x 297 mm)</option>
+                <option value="letter">Letter (US)</option>
+                <option value="executive">Executive</option>
+              </select>
+            </div>
+
+            {/* Orientation */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-outline">Orientation</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setOrientation("p")}
+                  className={`py-4 px-2 rounded-DEFAULT border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
+                    orientation === "p"
+                      ? "border-primary bg-primary-fixed/50 text-primary-container"
+                      : "border-outline-variant text-on-surface-variant hover:bg-surface-container-low hover:border-outline"
+                  }`}
+                >
+                  <FileText size={20} strokeWidth={1.5} />
+                  <span className="text-xs font-bold">Portrait</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrientation("l")}
+                  className={`py-4 px-2 rounded-DEFAULT border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
+                    orientation === "l"
+                      ? "border-primary bg-primary-fixed/50 text-primary-container"
+                      : "border-outline-variant text-on-surface-variant hover:bg-surface-container-low hover:border-outline"
+                  }`}
+                >
+                  <FileImage size={20} strokeWidth={1.5} />
+                  <span className="text-xs font-bold">Landscape</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Margins */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-outline">Margins</label>
+              <select
+                value={margin}
+                onChange={(e: any) => setMargin(parseInt(e.target.value))}
+                className="w-full text-sm font-medium bg-surface-container-lowest border border-outline-variant p-3 rounded-DEFAULT hover:border-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface-variant cursor-pointer transition-colors"
+              >
+                <option value="0">No Margin</option>
+                <option value="5">Slim (5mm)</option>
+                <option value="10">Standard (10mm)</option>
+                <option value="20">Wide (20mm)</option>
+              </select>
+            </div>
+
+            <div className="h-[1px] bg-surface-container-highest my-6" />
+
+            {/* Action */}
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={compilePDF}
+                disabled={compiling || images.length === 0}
+                className={`w-full py-3.5 font-bold text-sm sm:text-base rounded-DEFAULT transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${
+                  images.length === 0
+                    ? "bg-surface-container-highest text-outline-variant shadow-none cursor-not-allowed"
+                    : downloadSuccess
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20"
+                    : compiling
+                    ? "bg-primary-fixed text-primary cursor-wait"
+                    : "bg-primary hover:bg-primary-container text-white shadow-lg shadow-primary/20"
+                }`}
+              >
+                {compiling ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" /> Compiling...
+                  </>
+                ) : downloadSuccess ? (
+                  <>
+                    <Check size={18} /> Downloaded!
+                  </>
+                ) : (
+                  <>
+                    <FileCheck size={18} /> Create PDF
+                  </>
+                )}
+              </button>
+              {images.length > 0 && (
+                <p className="text-[11px] text-outline mt-3 font-medium">
+                  Estimated size: ~{estimatedSizeMB} MB
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

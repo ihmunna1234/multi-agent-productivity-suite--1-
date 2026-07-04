@@ -84,11 +84,11 @@ export default function ProductFinder() {
       trendReason: "A high-capacity acceleration of screenless haptic guidance and non-invasive health metrics.",
       keywords: ["smart ring coach", "haptic response glasses", "bone conduction sound", "magnetic accessory tag", "TWS battery charger"],
       color: {
-        primary: "bg-teal-600",
-        bg: "bg-teal-50/50",
-        border: "border-teal-100",
-        text: "text-teal-700",
-        glow: "shadow-teal-500/10"
+        primary: "bg-primary",
+        bg: "bg-primary-fixed/50",
+        border: "border-primary-fixed-dim",
+        text: "text-primary-container",
+        glow: "shadow-primary/10"
       }
     },
     { 
@@ -190,9 +190,9 @@ export default function ProductFinder() {
       keywords: ["TikTok viral tools", "aesthetic dropshipping", "premium high ticket gadgets", "quiet luxury lifestyle"],
       color: {
         primary: "bg-slate-700",
-        bg: "bg-slate-50/80",
-        border: "border-slate-100",
-        text: "text-slate-800",
+        bg: "bg-surface-container-low/80",
+        border: "border-surface-container-highest",
+        text: "text-on-surface",
         glow: "shadow-slate-500/5"
       }
     }
@@ -351,40 +351,40 @@ export default function ProductFinder() {
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
       
       {/* Modern Dashboard Title Strip */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden transition-all duration-300">
+      <div className="bg-surface-container-lowest rounded-lg p-6 md:p-8 border border-surface-container-highest flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden transition-all duration-300">
         
         {/* Subtle decorative background lights */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-DEFAULT blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 rounded-DEFAULT blur-3xl pointer-events-none -ml-20 -mb-20" />
 
         <div className="space-y-2 relative z-10">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-100 px-2.5 py-1 rounded-full flex items-center gap-1.5 animate-pulse">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal-600 block" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary-container bg-primary-fixed border border-primary-fixed-dim px-2.5 py-1 rounded-DEFAULT flex items-center gap-1.5 animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-DEFAULT bg-primary block" />
               Intelligence Engine Active
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-violet-700 bg-violet-50 border border-violet-100 px-2.5 py-1 rounded-full flex items-center gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-violet-700 bg-violet-50 border border-violet-100 px-2.5 py-1 rounded-DEFAULT flex items-center gap-1">
               <Globe size={11} />
               Grounding Era: 2026
             </span>
           </div>
 
-          <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
-            Trend Scout <span className="text-teal-600">Research Core</span>
+          <h2 className="text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight">
+            Trend Scout <span className="text-primary">Research Core</span>
           </h2>
-          <p className="text-xs md:text-sm text-slate-500 font-medium max-w-3xl leading-relaxed">
+          <p className="text-xs md:text-sm text-outline font-medium max-w-3xl leading-relaxed">
             Crawls high-velocity digital sources utilizing Google Search Grounded models to isolate emerging Direct-To-Consumer trends, analyze competitive structures, and simulate B2B sourcing parameters.
           </p>
         </div>
 
         <div className="flex gap-3 md:self-center shrink-0">
-          <div className="bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl text-center shadow-xs">
-            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-mono font-bold">Web Crawled</p>
-            <p className="text-sm font-bold text-slate-700 font-mono mt-0.5">50+ Nodes</p>
+          <div className="bg-surface-container-low border border-surface-container-highest px-4 py-3 rounded-DEFAULT text-center shadow-none">
+            <p className="text-[9px] uppercase tracking-wider text-outline-variant font-mono font-bold">Web Crawled</p>
+            <p className="text-sm font-bold text-on-surface-variant font-mono mt-0.5">50+ Nodes</p>
           </div>
-          <div className="bg-teal-50/55 border border-teal-100/50 px-4 py-3 rounded-2xl text-center shadow-xs">
-            <p className="text-[9px] uppercase tracking-wider text-teal-600 font-mono font-bold">Accuracy</p>
-            <p className="text-sm font-bold text-teal-700 font-mono mt-0.5">Grounding</p>
+          <div className="bg-primary-fixed/55 border border-primary-fixed-dim/50 px-4 py-3 rounded-DEFAULT text-center shadow-none">
+            <p className="text-[9px] uppercase tracking-wider text-primary font-mono font-bold">Accuracy</p>
+            <p className="text-sm font-bold text-primary-container font-mono mt-0.5">Grounding</p>
           </div>
         </div>
       </div>
@@ -395,30 +395,30 @@ export default function ProductFinder() {
         <div className="lg:col-span-4 space-y-6">
           <form
             onSubmit={triggerSearch}
-            className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden space-y-6"
+            className="bg-surface-container-lowest rounded-lg p-6 border border-surface-container-highest shadow-none relative overflow-hidden space-y-6"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-full border-l border-b border-slate-100/50 -mr-6 -mt-6 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-24 h-24 bg-surface-container-low rounded-bl-full border-l border-b border-surface-container-highest/50 -mr-6 -mt-6 pointer-events-none" />
 
             <div className="flex items-center gap-2.5 border-b border-slate-50 pb-4">
-              <div className="w-8 h-8 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
+              <div className="w-8 h-8 rounded-DEFAULT bg-primary-fixed flex items-center justify-center text-primary">
                 <Cpu size={16} />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 text-sm tracking-tight">
+                <h3 className="font-bold text-on-surface text-sm tracking-tight">
                   Parameter Console
                 </h3>
-                <p className="text-[10px] text-slate-400 font-medium">Fine-tune scout intelligence filters</p>
+                <p className="text-[10px] text-outline-variant font-medium">Fine-tune scout intelligence filters</p>
               </div>
             </div>
 
             {/* Smart Category Intelligence Filter - USER REQUEST MANDATE */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 uppercase font-mono tracking-wider">
-                  <Filter size={13} className="text-teal-600" />
+                <label className="text-xs font-semibold text-outline flex items-center gap-1.5 uppercase font-mono tracking-wider">
+                  <Filter size={13} className="text-primary" />
                   Category Intelligent Filter
                 </label>
-                <span className="text-[10px] font-bold text-slate-400 font-mono">
+                <span className="text-[10px] font-bold text-outline-variant font-mono">
                   {filteredCategories.length} options
                 </span>
               </div>
@@ -430,14 +430,14 @@ export default function ProductFinder() {
                   value={categorySearchQuery}
                   onChange={(e) => setCategorySearchQuery(e.target.value)}
                   placeholder="Smart keyword filter: e.g. sleep, pet, ring..."
-                  className="w-full text-xs font-medium bg-slate-50 hover:bg-slate-100/50 border border-slate-100 focus:border-teal-500 focus:bg-white p-3 pl-9 rounded-xl outline-none transition-all text-slate-700 placeholder-slate-400 font-mono"
+                  className="w-full text-xs font-medium bg-surface-container-low hover:bg-surface-container/50 border border-surface-container-highest focus:border-primary focus:bg-surface-container-lowest p-3 pl-9 rounded-DEFAULT outline-none transition-all text-on-surface-variant placeholder-slate-400 font-mono"
                 />
-                <Search size={14} className="absolute left-3.5 top-3.5 text-slate-400" />
+                <Search size={14} className="absolute left-3.5 top-3.5 text-outline-variant" />
                 {categorySearchQuery && (
                   <button
                     type="button"
                     onClick={() => setCategorySearchQuery("")}
-                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3.5 top-3.5 text-outline-variant hover:text-on-surface-variant"
                   >
                     <X size={12} />
                   </button>
@@ -446,8 +446,8 @@ export default function ProductFinder() {
 
               {/* Affinity Alert Notice */}
               {matchingAffinitySector && (
-                <div className="bg-teal-50/60 text-teal-800 p-2.5 rounded-xl text-[10px] border border-teal-100/50 flex items-center gap-1.5 animate-fade-in font-medium">
-                  <Sparkles size={11} className="text-teal-600 animate-spin" />
+                <div className="bg-primary-fixed/60 text-on-primary-fixed p-2.5 rounded-DEFAULT text-[10px] border border-primary-fixed-dim/50 flex items-center gap-1.5 animate-fade-in font-medium">
+                  <Sparkles size={11} className="text-primary animate-spin" />
                   <span>Identified high matching sector: <strong>{matchingAffinitySector.label}</strong>! Click below to select.</span>
                 </div>
               )}
@@ -461,20 +461,20 @@ export default function ProductFinder() {
                       key={cat.id}
                       type="button"
                       onClick={() => setCategory(cat.id)}
-                      className={`w-full group flex items-start gap-3 p-3 text-left rounded-2xl border transition-all cursor-pointer ${
+                      className={`w-full group flex items-start gap-3 p-3 text-left rounded-DEFAULT border transition-all cursor-pointer ${
                         isSelected
-                          ? "border-teal-500 bg-teal-50/40 text-teal-800 font-semibold shadow-sm"
-                          : "border-slate-100 hover:border-slate-200 hover:bg-slate-50 text-slate-600"
+                          ? "border-primary bg-primary-fixed/40 text-on-primary-fixed font-semibold shadow-none"
+                          : "border-surface-container-highest hover:border-outline-variant hover:bg-surface-container-low text-on-surface-variant"
                       }`}
                     >
-                      <div className="text-lg mt-0.5 shrink-0 bg-white p-1 rounded-md shadow-xs border border-slate-100/80">
+                      <div className="text-lg mt-0.5 shrink-0 bg-surface-container-lowest p-1 rounded-md shadow-none border border-surface-container-highest/80">
                         {cat.icon}
                       </div>
                       <div className="space-y-0.5">
-                        <span className="text-xs font-bold font-sans block group-hover:text-teal-700 transition-colors">
+                        <span className="text-xs font-bold font-sans block group-hover:text-primary-container transition-colors">
                           {cat.label}
                         </span>
-                        <p className="text-[10px] text-slate-400 leading-tight font-medium">
+                        <p className="text-[10px] text-outline-variant leading-tight font-medium">
                           {cat.description}
                         </p>
                       </div>
@@ -486,14 +486,14 @@ export default function ProductFinder() {
 
             {/* Smart tags clicker */}
             <div className="space-y-2 pt-2 border-t border-slate-50">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono block">Recommended Niche Modifiers</span>
+              <span className="text-[10px] font-bold text-outline-variant uppercase tracking-wider font-mono block">Recommended Niche Modifiers</span>
               <div className="flex flex-wrap gap-1.5">
                 {activeCategoryObject.keywords.map((kw, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleTagClick(kw)}
-                    className="text-[10px] bg-slate-50 text-slate-600 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200 border border-slate-100 rounded-lg px-2.5 py-1 font-medium transition-all cursor-pointer"
+                    className="text-[10px] bg-surface-container-low text-on-surface-variant hover:bg-primary-fixed hover:text-primary-container hover:border-teal-200 border border-surface-container-highest rounded-lg px-2.5 py-1 font-medium transition-all cursor-pointer"
                   >
                     + {kw}
                   </button>
@@ -503,7 +503,7 @@ export default function ProductFinder() {
 
             {/* Custom specification search string */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-500 block">
+              <label className="text-xs font-semibold text-outline block">
                 Niche Keyword Focus
               </label>
               <input
@@ -511,23 +511,23 @@ export default function ProductFinder() {
                 value={nicheInput}
                 onChange={(e) => setNicheInput(e.target.value)}
                 placeholder="e.g. TikTok viral gadgets, organic dog food"
-                className="w-full text-xs font-medium bg-slate-50 border border-slate-100 focus:border-teal-500 focus:bg-white p-3 rounded-xl outline-none transition-all text-slate-700 font-mono"
+                className="w-full text-xs font-medium bg-surface-container-low border border-surface-container-highest focus:border-primary focus:bg-surface-container-lowest p-3 rounded-DEFAULT outline-none transition-all text-on-surface-variant font-mono"
               />
-              <span className="text-[10px] text-slate-400 block leading-tight font-medium">
+              <span className="text-[10px] text-outline-variant block leading-tight font-medium">
                 Enter target parameter string or click recommended modifiers above to populate.
               </span>
             </div>
 
             {/* Additional parameters section toggler */}
             <div className="space-y-3 pt-3 border-t border-slate-50">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono block">Scout Parameters</span>
+              <span className="text-[10px] font-bold text-outline-variant uppercase tracking-wider font-mono block">Scout Parameters</span>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-500 font-mono uppercase">API Depth</label>
+                  <label className="text-[9px] font-bold text-outline font-mono uppercase">API Depth</label>
                   <select
                     value={intelligenceDepth}
                     onChange={(e) => setIntelligenceDepth(e.target.value as any)}
-                    className="w-full text-[10px] bg-slate-50 border border-slate-100 p-2 rounded-lg outline-none font-medium"
+                    className="w-full text-[10px] bg-surface-container-low border border-surface-container-highest p-2 rounded-lg outline-none font-medium"
                   >
                     <option value="standard">Standard Scout</option>
                     <option value="deep">Deep Crawl</option>
@@ -536,11 +536,11 @@ export default function ProductFinder() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-500 font-mono uppercase font-bold">Trend Trajectory</label>
+                  <label className="text-[9px] font-bold text-outline font-mono uppercase font-bold">Trend Trajectory</label>
                   <select
                     value={trajectoryBias}
                     onChange={(e) => setTrajectoryBias(e.target.value)}
-                    className="w-full text-[10px] bg-slate-50 border border-slate-100 p-2 rounded-lg outline-none font-medium"
+                    className="w-full text-[10px] bg-surface-container-low border border-surface-container-highest p-2 rounded-lg outline-none font-medium"
                   >
                     <option value="high">High Velocity (90+)</option>
                     <option value="extreme">Vertical Growth (95+)</option>
@@ -553,7 +553,7 @@ export default function ProductFinder() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 text-white text-xs font-semibold py-3.5 px-4 rounded-xl shadow-md cursor-pointer transition-colors active:scale-95"
+              className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-container disabled:bg-slate-300 text-white text-xs font-semibold py-3.5 px-4 rounded-DEFAULT shadow-none cursor-pointer transition-colors active:scale-95"
             >
               {loading ? (
                 <>
@@ -571,10 +571,10 @@ export default function ProductFinder() {
         {/* Workspace Display Area Redesign */}
         <div className="lg:col-span-8 space-y-6">
           {error && (
-            <div className="flex items-start gap-3 bg-red-50 text-red-700 p-4 rounded-2xl border border-red-100 text-xs">
+            <div className="flex items-start gap-3 bg-red-50 text-red-700 p-4 rounded-DEFAULT border border-red-100 text-xs">
               <AlertCircle size={18} className="shrink-0 text-red-500 mt-0.5" />
               <div className="space-y-1 font-medium">
-                <span className="font-bold block text-slate-800">Scouting Pipeline Overload</span>
+                <span className="font-bold block text-on-surface">Scouting Pipeline Overload</span>
                 <span className="text-red-600/90 leading-relaxed font-sans block">{error}</span>
               </div>
             </div>
@@ -582,11 +582,11 @@ export default function ProductFinder() {
 
           {/* Connected research log output terminal */}
           {loading && (
-            <div className="bg-slate-900 border border-slate-800 text-teal-400 p-8 rounded-3xl flex flex-col items-center justify-center text-center space-y-6 shadow-inner min-h-[420px] relative overflow-hidden animate-fade-in">
+            <div className="bg-inverse-surface border border-on-surface text-teal-400 p-8 rounded-lg flex flex-col items-center justify-center text-center space-y-6 shadow-inner min-h-[420px] relative overflow-hidden animate-fade-in">
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent z-0" />
               
               <div className="relative z-10 space-y-6">
-                <div className="w-16 h-16 bg-teal-500/10 border border-teal-500/20 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                <div className="w-16 h-16 bg-primary/10 border border-primary/20 rounded-DEFAULT flex items-center justify-center mx-auto shadow-none">
                   <Loader2 className="w-8 h-8 text-teal-400 animate-spin" />
                 </div>
 
@@ -594,12 +594,12 @@ export default function ProductFinder() {
                   <h4 className="font-mono text-xs tracking-widest text-teal-300 uppercase font-bold">
                     [PIPELINE_INITIOTIALIZED_LOG]
                   </h4>
-                  <p className="text-xs text-slate-400 font-mono max-w-md mx-auto leading-relaxed">
+                  <p className="text-xs text-outline-variant font-mono max-w-md mx-auto leading-relaxed">
                     Connecting to Google OpenAI Search Grounding framework. Isolating demographic indices in 2026. Structuring unit wholesale databases...
                   </p>
                 </div>
 
-                <div className="border border-slate-800 bg-slate-950/80 rounded-xl p-4 text-left max-w-sm mx-auto space-y-1 font-mono text-[9px] text-slate-500 select-none">
+                <div className="border border-on-surface bg-slate-950/80 rounded-DEFAULT p-4 text-left max-w-sm mx-auto space-y-1 font-mono text-[9px] text-outline select-none">
                   <p className="text-teal-400">&gt; GET /api/find-products HTTP/1.1</p>
                   <p>&gt; Host: ais-OpenAI-agent-hub</p>
                   <p>&gt; category: &quot;{category}&quot;</p>
@@ -612,13 +612,13 @@ export default function ProductFinder() {
 
           {/* Market Scanner Standby */}
           {!results && !loading && (
-            <div className="bg-white border border-slate-100 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4 min-h-[420px] shadow-sm relative">
-              <div className="w-14 h-14 bg-slate-50 border border-slate-100 text-slate-300 rounded-2xl flex items-center justify-center shadow-xs">
+            <div className="bg-surface-container-lowest border border-surface-container-highest rounded-lg p-8 flex flex-col items-center justify-center text-center space-y-4 min-h-[420px] shadow-none relative">
+              <div className="w-14 h-14 bg-surface-container-low border border-surface-container-highest text-outline-variant rounded-DEFAULT flex items-center justify-center shadow-none">
                 <TrendingUp size={24} />
               </div>
               <div className="space-y-1.5 max-w-md">
-                <h4 className="font-bold text-slate-800 text-sm">Market Intelligence Hub</h4>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed font-semibold">
+                <h4 className="font-bold text-on-surface text-sm">Market Intelligence Hub</h4>
+                <p className="text-xs text-outline-variant mt-1 leading-relaxed font-semibold">
                   Configure your diagnostic parameter set on the left or search/filter categories to fetch trending retail listings. Real-time search graphs will populate dynamically here.
                 </p>
               </div>
@@ -627,20 +627,20 @@ export default function ProductFinder() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg w-full pt-6">
                 <div 
                   onClick={() => { setCategory("tech"); setNicheInput("biometric rings"); }}
-                  className="p-3 border border-slate-50 hover:border-teal-100 hover:bg-teal-50/20 rounded-2xl text-left cursor-pointer transition-colors"
+                  className="p-3 border border-slate-50 hover:border-primary-fixed-dim hover:bg-primary-fixed/20 rounded-DEFAULT text-left cursor-pointer transition-colors"
                 >
-                  <span className="text-[10px] font-bold text-teal-600 font-mono block">⚡ EMERGING TECH</span>
-                  <span className="text-xs font-bold text-slate-700 block mt-0.5">Biometric Smart Coach Rings</span>
-                  <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">Scouts ring sensors metrics.</p>
+                  <span className="text-[10px] font-bold text-primary font-mono block">⚡ EMERGING TECH</span>
+                  <span className="text-xs font-bold text-on-surface-variant block mt-0.5">Biometric Smart Coach Rings</span>
+                  <p className="text-[10px] text-outline-variant line-clamp-1 mt-0.5">Scouts ring sensors metrics.</p>
                 </div>
 
                 <div 
                   onClick={() => { setCategory("home"); setNicheInput("circadian lightning Sunset"); }}
-                  className="p-3 border border-slate-50 hover:border-amber-100 hover:bg-amber-50/20 rounded-2xl text-left cursor-pointer transition-colors"
+                  className="p-3 border border-slate-50 hover:border-amber-100 hover:bg-amber-50/20 rounded-DEFAULT text-left cursor-pointer transition-colors"
                 >
                   <span className="text-[10px] font-bold text-amber-600 font-mono block">🌿 SUSTAINABLE HOME</span>
-                  <span className="text-xs font-bold text-slate-700 block mt-0.5">SunsetCircadian Bed Lamp</span>
-                  <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">Warm orange-spectrum circadian bulbs.</p>
+                  <span className="text-xs font-bold text-on-surface-variant block mt-0.5">SunsetCircadian Bed Lamp</span>
+                  <p className="text-[10px] text-outline-variant line-clamp-1 mt-0.5">Warm orange-spectrum circadian bulbs.</p>
                 </div>
               </div>
             </div>
@@ -652,10 +652,10 @@ export default function ProductFinder() {
               
               {/* Fallback quota triggers notification */}
               {results.isFallback && (
-                <div className="bg-amber-50 rounded-2xl p-4.5 border border-amber-200/60 flex gap-3 text-amber-900 items-start shadow-xs">
+                <div className="bg-amber-50 rounded-DEFAULT p-4.5 border border-amber-200/60 flex gap-3 text-amber-900 items-start shadow-none">
                   <AlertCircle size={18} className="shrink-0 text-amber-600 mt-0.5" />
                   <div className="space-y-1.5 text-xs text-amber-900 leading-relaxed flex-1">
-                    <h4 className="font-bold tracking-tight text-slate-900">
+                    <h4 className="font-bold tracking-tight text-on-surface">
                       High-Growth Secondary Database Catalog Enforced (API Resource Warning)
                     </h4>
                     <p className="text-[11px] leading-relaxed text-amber-800">
@@ -664,7 +664,7 @@ export default function ProductFinder() {
                     {results.apiError && (
                       <div className="mt-2 text-left">
                         <p className="text-[10px] font-bold text-amber-800 uppercase tracking-tight">Exact API Error Response:</p>
-                        <p className="font-mono text-[9px] bg-white/70 p-2.5 rounded-xl border border-amber-200/50 leading-relaxed text-amber-950 break-words select-all mt-1">
+                        <p className="font-mono text-[9px] bg-surface-container-lowest/70 p-2.5 rounded-DEFAULT border border-amber-200/50 leading-relaxed text-amber-950 break-words select-all mt-1">
                           {(() => {
                             const rawError = results.apiError || "";
                             if (!rawError) return "";
@@ -696,22 +696,22 @@ export default function ProductFinder() {
               )}
 
               {/* Synthesized overview sector */}
-              <div className="bg-gradient-to-br from-teal-50/50 to-indigo-50/20 rounded-3xl p-6 border border-teal-100/30 flex gap-4 shadow-xs relative">
-                <div className="w-10 h-10 bg-white border border-teal-100/80 text-teal-600 rounded-xl flex items-center justify-center shrink-0 shadow-xs">
-                  <Lightbulb size={20} className="text-teal-600" />
+              <div className="bg-gradient-to-br from-teal-50/50 to-indigo-50/20 rounded-lg p-6 border border-primary-fixed-dim/30 flex gap-4 shadow-none relative">
+                <div className="w-10 h-10 bg-surface-container-lowest border border-primary-fixed-dim/80 text-primary rounded-DEFAULT flex items-center justify-center shrink-0 shadow-none">
+                  <Lightbulb size={20} className="text-primary" />
                 </div>
                 <div className="space-y-1.5 flex-1">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-teal-800 font-mono leading-none">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-on-primary-fixed font-mono leading-none">
                     SCOUT COGNITIVE SYNTHESIS (REAL-TIME ADVICE)
                   </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed font-semibold">
+                  <p className="text-xs text-on-surface-variant leading-relaxed font-semibold">
                     {results.trendReasonDescription}
                   </p>
                 </div>
               </div>
 
               {/* Core Dynamic Interactive Tabs bar */}
-              <div className="bg-white border border-slate-100 rounded-2xl p-1.5 flex gap-1.5 shadow-xs">
+              <div className="bg-surface-container-lowest border border-surface-container-highest rounded-DEFAULT p-1.5 flex gap-1.5 shadow-none">
                 {[
                   { id: "opportunities", label: "Opportunities List", icon: <Layers size={14} /> },
                   { id: "insights", label: "Scientific Intelligence", icon: <Info size={14} /> },
@@ -720,10 +720,10 @@ export default function ProductFinder() {
                   <button
                     key={tb.id}
                     onClick={() => setActiveTab(tb.id as any)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold font-sans transition-all cursor-pointer ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-DEFAULT text-xs font-bold font-sans transition-all cursor-pointer ${
                       activeTab === tb.id
-                        ? "bg-teal-600 text-white shadow-xs"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+                        ? "bg-primary text-white shadow-none"
+                        : "text-outline hover:text-on-surface hover:bg-surface-container-low"
                     }`}
                   >
                     {tb.icon}
@@ -737,15 +737,15 @@ export default function ProductFinder() {
                 <div className="space-y-6 animate-fade-in">
 
                   {/* Results list dynamic keyword filter - Mandate of modern intelligence search/filtering */}
-                  <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-xs space-y-4">
+                  <div className="bg-surface-container-lowest border border-surface-container-highest rounded-DEFAULT p-4 shadow-none space-y-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
-                        <Filter size={14} className="text-teal-600" />
-                        <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide font-mono">
+                        <Filter size={14} className="text-primary" />
+                        <h4 className="text-xs font-bold text-on-surface uppercase tracking-wide font-mono">
                           Live Results Analyzer & Filter
                         </h4>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-400 font-mono">
+                      <span className="text-[10px] font-bold text-outline-variant font-mono">
                         Filtered matches: {filteredProducts.length} of {results.products?.length || 0}
                       </span>
                     </div>
@@ -758,13 +758,13 @@ export default function ProductFinder() {
                           value={resultsKeywordFilter}
                           onChange={(e) => setResultsKeywordFilter(e.target.value)}
                           placeholder="Filter cards: e.g. Ring, sensor, user..."
-                          className="w-full text-[11px] font-medium bg-slate-50 border border-slate-100 focus:bg-white focus:border-teal-500 p-2.5 pl-8 rounded-xl outline-none transition-all font-mono"
+                          className="w-full text-[11px] font-medium bg-surface-container-low border border-surface-container-highest focus:bg-surface-container-lowest focus:border-primary p-2.5 pl-8 rounded-DEFAULT outline-none transition-all font-mono"
                         />
-                        <Search size={12} className="absolute left-2.5 top-3.5 text-slate-400" />
+                        <Search size={12} className="absolute left-2.5 top-3.5 text-outline-variant" />
                         {resultsKeywordFilter && (
                           <button
                             onClick={() => setResultsKeywordFilter("")}
-                            className="absolute right-2.5 top-3 text-slate-400 hover:text-slate-600"
+                            className="absolute right-2.5 top-3 text-outline-variant hover:text-on-surface-variant"
                           >
                             <X size={10} />
                           </button>
@@ -773,9 +773,9 @@ export default function ProductFinder() {
 
                       {/* Growth Threshold Range Selector */}
                       <div className="md:col-span-3 flex flex-col justify-center space-y-1">
-                        <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 font-mono uppercase">
+                        <div className="flex justify-between items-center text-[9px] font-bold text-outline-variant font-mono uppercase">
                           <span>Min Trajectory</span>
-                          <span className="text-teal-600 font-bold">{minGrowthFilter}+</span>
+                          <span className="text-primary font-bold">{minGrowthFilter}+</span>
                         </div>
                         <input
                           type="range"
@@ -783,7 +783,7 @@ export default function ProductFinder() {
                           max="98"
                           value={minGrowthFilter}
                           onChange={(e) => setMinGrowthFilter(parseInt(e.target.value))}
-                          className="w-full accent-teal-600 cursor-pointer h-1 bg-slate-100 rounded-lg text-xs"
+                          className="w-full accent-teal-600 cursor-pointer h-1 bg-surface-container rounded-lg text-xs"
                         />
                       </div>
 
@@ -792,7 +792,7 @@ export default function ProductFinder() {
                         <select
                           value={priceTierFilter}
                           onChange={(e) => setPriceTierFilter(e.target.value)}
-                          className="w-full text-[10px] bg-slate-50 border border-slate-100 p-2.5 rounded-xl outline-none font-medium text-slate-600"
+                          className="w-full text-[10px] bg-surface-container-low border border-surface-container-highest p-2.5 rounded-DEFAULT outline-none font-medium text-on-surface-variant"
                         >
                           <option value="all">Any Price Class</option>
                           <option value="budget">Under $50 (Impulse)</option>
@@ -811,24 +811,24 @@ export default function ProductFinder() {
                         <div
                           key={i}
                           onClick={() => handleOpenProductDetail(prod)}
-                          className={`bg-white rounded-2xl border ${
-                            isHighGrowth ? "border-teal-500/20 shadow-teal-500/[0.02]" : "border-slate-100"
-                          } p-5 hover:border-teal-500/80 hover:shadow-md hover:scale-[1.01] duration-300 transition-all flex flex-col justify-between h-full cursor-pointer relative group overflow-hidden`}
+                          className={`bg-surface-container-lowest rounded-DEFAULT border ${
+                            isHighGrowth ? "border-primary/20 shadow-primary/[0.02]" : "border-surface-container-highest"
+                          } p-5 hover:border-primary/80 hover:shadow-none hover:scale-[1.01] duration-300 transition-all flex flex-col justify-between h-full cursor-pointer relative group overflow-hidden`}
                         >
                           {/* Top-right visual glow element */}
                           {isHighGrowth && (
-                            <div className="absolute right-0 top-0 w-16 h-16 bg-teal-500/5 rounded-bl-full pointer-events-none group-hover:bg-teal-500/10 transition-colors" />
+                            <div className="absolute right-0 top-0 w-16 h-16 bg-primary/5 rounded-bl-full pointer-events-none group-hover:bg-primary/10 transition-colors" />
                           )}
 
                           <div className="space-y-4">
                             {/* Headline block */}
                             <div className="flex items-start justify-between gap-3 border-b border-slate-50 pb-3">
                               <div className="space-y-1">
-                                <h4 className="font-bold text-slate-800 text-xs md:text-sm leading-snug group-hover:text-teal-600 transition-colors">
+                                <h4 className="font-bold text-on-surface text-xs md:text-sm leading-snug group-hover:text-primary transition-colors">
                                   {prod.title}
                                 </h4>
                                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                                  <span className="text-[9px] font-bold uppercase tracking-wider text-teal-600 bg-teal-50/80 border border-teal-100/50 px-1.5 py-0.5 rounded">
+                                  <span className="text-[9px] font-bold uppercase tracking-wider text-primary bg-primary-fixed/80 border border-primary-fixed-dim/50 px-1.5 py-0.5 rounded">
                                     USP: {prod.usp}
                                   </span>
                                 </div>
@@ -841,25 +841,25 @@ export default function ProductFinder() {
                               </div>
                             </div>
 
-                            <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-3">
+                            <p className="text-[11px] text-outline leading-relaxed line-clamp-3">
                               {prod.description}
                             </p>
                           </div>
 
-                          <div className="space-y-3 pt-4 mt-4 border-t border-slate-100/60">
+                          <div className="space-y-3 pt-4 mt-4 border-t border-surface-container-highest/60">
                             <div className="grid grid-cols-2 gap-2 text-xs">
                               <div className="flex items-center gap-2">
-                                <DollarSign size={13} className="text-slate-400" />
+                                <DollarSign size={13} className="text-outline-variant" />
                                 <div>
-                                  <p className="text-[8px] text-slate-400 uppercase font-mono font-bold leading-none">Price Range</p>
-                                  <p className="font-bold text-slate-700 text-[10px] mt-0.5">{prod.priceRange}</p>
+                                  <p className="text-[8px] text-outline-variant uppercase font-mono font-bold leading-none">Price Range</p>
+                                  <p className="font-bold text-on-surface-variant text-[10px] mt-0.5">{prod.priceRange}</p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Target size={13} className="text-slate-400" />
+                                <Target size={13} className="text-outline-variant" />
                                 <div>
-                                  <p className="text-[8px] text-slate-400 uppercase font-mono font-bold leading-none">Demographic</p>
-                                  <p className="font-bold text-slate-700 text-[10px] truncate max-w-[100px] mt-0.5" title={prod.targetAudience}>
+                                  <p className="text-[8px] text-outline-variant uppercase font-mono font-bold leading-none">Demographic</p>
+                                  <p className="font-bold text-on-surface-variant text-[10px] truncate max-w-[100px] mt-0.5" title={prod.targetAudience}>
                                     {prod.targetAudience}
                                   </p>
                                 </div>
@@ -867,7 +867,7 @@ export default function ProductFinder() {
                             </div>
 
                             {/* View detail action pill */}
-                            <div className="pt-2 flex items-center justify-between text-[10px] font-bold text-teal-600 group-hover:text-teal-700 transition-colors">
+                            <div className="pt-2 flex items-center justify-between text-[10px] font-bold text-primary group-hover:text-primary-container transition-colors">
                               <span className="flex items-center gap-1.5">
                                 <Store size={12} className="text-teal-500" />
                                 View Suppliers & Costs
@@ -880,7 +880,7 @@ export default function ProductFinder() {
                     })}
 
                     {filteredProducts.length === 0 && (
-                      <div className="col-span-2 bg-slate-50 border border-slate-100 rounded-2xl p-8 text-center text-slate-400 text-xs py-12">
+                      <div className="col-span-2 bg-surface-container-low border border-surface-container-highest rounded-DEFAULT p-8 text-center text-outline-variant text-xs py-12">
                         No product opportunity matches current live filter settings. Try modifying keywords or adjusting the trajectory bar.
                       </div>
                     )}
@@ -890,16 +890,16 @@ export default function ProductFinder() {
 
               {/* TAB 2: Scientific Insights Overview */}
               {activeTab === "insights" && (
-                <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs space-y-6 animate-fade-in text-xs font-sans">
+                <div className="bg-surface-container-lowest border border-surface-container-highest rounded-lg p-6 shadow-none space-y-6 animate-fade-in text-xs font-sans">
                   
                   <div className="flex items-center gap-2 border-b border-slate-50 pb-3">
-                    <BookOpen size={16} className="text-teal-600" />
-                    <h4 className="font-bold text-slate-800 uppercase tracking-widest text-xs font-mono">
+                    <BookOpen size={16} className="text-primary" />
+                    <h4 className="font-bold text-on-surface uppercase tracking-widest text-xs font-mono">
                       Research Grounding Citations
                     </h4>
                   </div>
 
-                  <p className="text-slate-500 leading-relaxed font-medium">
+                  <p className="text-outline leading-relaxed font-medium">
                     Emerging target markets require strong validation. Below are the verified search references isolated during crawling, providing scientific context and retail proof trajectories:
                   </p>
 
@@ -911,26 +911,26 @@ export default function ProductFinder() {
                           href={src.uri}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 hover:border-teal-500 hover:bg-slate-50 transition-all text-slate-600 group cursor-pointer shadow-2xs"
+                          className="flex items-center justify-between p-3.5 rounded-DEFAULT border border-surface-container-highest hover:border-primary hover:bg-surface-container-low transition-all text-on-surface-variant group cursor-pointer shadow-2xs"
                         >
-                          <span className="truncate pr-4 font-bold text-slate-700 group-hover:text-teal-600">
+                          <span className="truncate pr-4 font-bold text-on-surface-variant group-hover:text-primary">
                             {src.title}
                           </span>
-                          <ExternalLink size={13} className="text-slate-400 group-hover:text-teal-600 shrink-0" />
+                          <ExternalLink size={13} className="text-outline-variant group-hover:text-primary shrink-0" />
                         </a>
                       ))
                     ) : (
-                      <div className="col-span-2 text-center py-6 bg-slate-50 rounded-xl text-slate-400">
+                      <div className="col-span-2 text-center py-6 bg-surface-container-low rounded-DEFAULT text-outline-variant">
                         No external citations required for pre-validated sandbox catalog.
                       </div>
                     )}
                   </div>
 
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-150 flex items-start gap-3">
-                    <Info size={16} className="text-teal-600 shrink-0 mt-0.5" />
+                  <div className="bg-surface-container-low p-4 rounded-DEFAULT border border-slate-150 flex items-start gap-3">
+                    <Info size={16} className="text-primary shrink-0 mt-0.5" />
                     <div className="space-y-1">
-                      <span className="font-bold text-slate-700 leading-none">Google Grounding Methodology</span>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <span className="font-bold text-on-surface-variant leading-none">Google Grounding Methodology</span>
+                      <p className="text-[11px] text-outline leading-relaxed">
                         Citations are mapped by analyzing public consumer interest peaks. High trajectory score vectors (90+) represent sectors experiencing positive compounding feedback across social algorithms and B2B orders.
                       </p>
                     </div>
@@ -940,16 +940,16 @@ export default function ProductFinder() {
 
               {/* TAB 3: Interactive Margin Calculator */}
               {activeTab === "calculator" && (
-                <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs space-y-6 animate-fade-in text-xs font-sans">
+                <div className="bg-surface-container-lowest border border-surface-container-highest rounded-lg p-6 shadow-none space-y-6 animate-fade-in text-xs font-sans">
                   
                   <div className="flex items-center gap-2 border-b border-slate-50 pb-3">
-                    <SlidersHorizontal size={16} className="text-teal-600" />
-                    <h4 className="font-bold text-slate-800 uppercase tracking-widest text-xs font-mono">
+                    <SlidersHorizontal size={16} className="text-primary" />
+                    <h4 className="font-bold text-on-surface uppercase tracking-widest text-xs font-mono">
                       Integrated Global Margin Estimator
                     </h4>
                   </div>
 
-                  <p className="text-slate-500 leading-relaxed font-medium">
+                  <p className="text-outline leading-relaxed font-medium">
                     Estimate e-commerce profitability across your active scouting portfolio. Click any calculated commodity cards to inspect wholesale ranges.
                   </p>
 
@@ -963,31 +963,31 @@ export default function ProductFinder() {
                       return (
                         <div 
                           key={pIdx}
-                          className="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl flex flex-col justify-between space-y-4 shadow-3xs"
+                          className="bg-surface-container-low/50 border border-surface-container-highest p-4 rounded-DEFAULT flex flex-col justify-between space-y-4 shadow-3xs"
                         >
                           <div className="space-y-1">
-                            <span className="text-[9px] font-bold text-teal-600 font-mono tracking-widest">PRODUCT #{pIdx + 1}</span>
-                            <h5 className="font-extrabold text-slate-800 line-clamp-1">{p.title}</h5>
+                            <span className="text-[9px] font-bold text-primary font-mono tracking-widest">PRODUCT #{pIdx + 1}</span>
+                            <h5 className="font-extrabold text-on-surface line-clamp-1">{p.title}</h5>
                           </div>
 
                           <div className="space-y-1">
-                            <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+                            <div className="flex justify-between text-[10px] text-outline-variant font-medium">
                               <span>Estimated Wholesale:</span>
-                              <span className="font-mono text-slate-700 font-bold">${lowerCost.toFixed(2)}</span>
+                              <span className="font-mono text-on-surface-variant font-bold">${lowerCost.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+                            <div className="flex justify-between text-[10px] text-outline-variant font-medium">
                               <span>Suggested Retail:</span>
-                              <span className="font-mono text-slate-700 font-bold">${suggestedSell.toFixed(2)}</span>
+                              <span className="font-mono text-on-surface-variant font-bold">${suggestedSell.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between text-[10px] font-bold border-t border-slate-200/50 pt-1">
-                              <span className="text-slate-600">Profit margin:</span>
+                            <div className="flex justify-between text-[10px] font-bold border-t border-outline-variant/50 pt-1">
+                              <span className="text-on-surface-variant">Profit margin:</span>
                               <span className="text-emerald-700 font-mono">~{marginRatio}%</span>
                             </div>
                           </div>
 
-                          <div className="w-full bg-slate-200/60 h-1.5 rounded-full overflow-hidden">
+                          <div className="w-full bg-surface-container-high/60 h-1.5 rounded-DEFAULT overflow-hidden">
                             <div 
-                              className="bg-emerald-500 h-full rounded-full" 
+                              className="bg-emerald-500 h-full rounded-DEFAULT" 
                               style={{ width: `${marginRatio}%` }}
                             />
                           </div>
@@ -1013,7 +1013,7 @@ export default function ProductFinder() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" 
+              className="fixed inset-0 bg-inverse-surface/60 backdrop-blur-sm" 
               onClick={() => setSelectedProduct(null)}
             />
 
@@ -1023,32 +1023,32 @@ export default function ProductFinder() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.4 }}
-              className="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-white p-6 md:p-8 text-left shadow-2xl border border-slate-100 z-10"
+              className="relative w-full max-w-2xl transform overflow-hidden rounded-lg bg-surface-container-lowest p-6 md:p-8 text-left shadow-2xl border border-surface-container-highest z-10"
             >
               
               {/* Header Title Bar */}
-              <div className="flex items-start justify-between border-b border-slate-100 pb-5">
+              <div className="flex items-start justify-between border-b border-surface-container-highest pb-5">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[9px] uppercase font-bold tracking-widest text-teal-700 bg-teal-50 border border-teal-100 px-2.5 py-1 rounded-full font-mono">
+                    <span className="text-[9px] uppercase font-bold tracking-widest text-primary-container bg-primary-fixed border border-primary-fixed-dim px-2.5 py-1 rounded-DEFAULT font-mono">
                       Verified Sourcing Node
                     </span>
-                    <span className="text-[9px] uppercase font-bold tracking-widest text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">
+                    <span className="text-[9px] uppercase font-bold tracking-widest text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-DEFAULT font-mono flex items-center gap-1">
                       <Flame size={11} className="text-amber-500 animate-pulse" />
                       Viral Rating: {selectedProduct.growthScore}/100
                     </span>
                   </div>
-                  <h3 className="text-xl font-extrabold text-slate-800 tracking-tight mt-3">
+                  <h3 className="text-xl font-extrabold text-on-surface tracking-tight mt-3">
                     {selectedProduct.title}
                   </h3>
-                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider font-mono">
+                  <p className="text-[11px] text-outline-variant font-bold uppercase tracking-wider font-mono">
                     Unique Selling point (USP): {selectedProduct.usp}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedProduct(null)}
-                  className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+                  className="rounded-DEFAULT p-2 text-outline-variant hover:bg-surface-container hover:text-on-surface-variant transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -1059,11 +1059,11 @@ export default function ProductFinder() {
                 
                 {/* Description Segment */}
                 <div>
-                  <h4 className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 mb-2 font-mono flex items-center gap-1.5">
-                    <Lightbulb size={13} className="text-teal-600" />
+                  <h4 className="text-[10px] uppercase font-extrabold tracking-wider text-outline-variant mb-2 font-mono flex items-center gap-1.5">
+                    <Lightbulb size={13} className="text-primary" />
                     Aesthetic Description
                   </h4>
-                  <p className="text-xs md:text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100/60 font-medium">
+                  <p className="text-xs md:text-sm text-on-surface-variant leading-relaxed bg-surface-container-low p-4 rounded-DEFAULT border border-surface-container-highest/60 font-medium">
                     {selectedProduct.description}
                   </p>
                 </div>
@@ -1071,27 +1071,27 @@ export default function ProductFinder() {
                 {/* Sourcing Cost & Pricing slider calculation */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* wholesale buy cost widget */}
-                  <div className="p-4 rounded-2xl border border-slate-100 bg-gradient-to-br from-teal-50/10 to-teal-50/40 space-y-3 shadow-3xs">
-                    <span className="text-[10px] uppercase font-extrabold tracking-wider text-teal-700 block font-mono">
+                  <div className="p-4 rounded-DEFAULT border border-surface-container-highest bg-gradient-to-br from-teal-50/10 to-teal-50/40 space-y-3 shadow-3xs">
+                    <span className="text-[10px] uppercase font-extrabold tracking-wider text-primary-container block font-mono">
                       Estimated Sourcing Cost
                     </span>
                     <div className="space-y-1">
-                      <span className="text-lg font-bold text-slate-800 font-mono">
+                      <span className="text-lg font-bold text-on-surface font-mono">
                         {selectedProduct.approxTotalCost || "$1,150 (For 100 units / MOQ)"}
                       </span>
-                      <p className="text-[10px] text-slate-500 leading-normal">
+                      <p className="text-[10px] text-outline leading-normal">
                         Estimated initial bulk wholesale batch rate inclusive of duty tariffs and direct air cargo carriers.
                       </p>
                     </div>
                   </div>
 
                   {/* interactive price target and real-time margin Calculator slide rule */}
-                  <div className="p-4 rounded-2xl border border-slate-100 bg-gradient-to-br from-violet-50/10 to-violet-50/40 space-y-3 shadow-3xs">
+                  <div className="p-4 rounded-DEFAULT border border-surface-container-highest bg-gradient-to-br from-violet-50/10 to-violet-50/40 space-y-3 shadow-3xs">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] uppercase font-extrabold tracking-wider text-violet-700 block font-mono">
                         Adjust Target Market Price
                       </span>
-                      <span className="text-xs font-bold text-violet-800 font-mono bg-white px-2 py-0.5 rounded-md border border-violet-100">${simulatedRetailPrice}</span>
+                      <span className="text-xs font-bold text-violet-800 font-mono bg-surface-container-lowest px-2 py-0.5 rounded-md border border-violet-100">${simulatedRetailPrice}</span>
                     </div>
 
                     <div className="space-y-3">
@@ -1101,10 +1101,10 @@ export default function ProductFinder() {
                         max="350"
                         value={simulatedRetailPrice}
                         onChange={(e) => setSimulatedRetailPrice(parseInt(e.target.value))}
-                        className="w-full accent-violet-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg text-xs"
+                        className="w-full accent-violet-600 cursor-pointer h-1.5 bg-surface-container-high rounded-lg text-xs"
                       />
 
-                      <div className="flex justify-between items-center text-[10px] text-slate-500 leading-normal gap-1 font-medium">
+                      <div className="flex justify-between items-center text-[10px] text-outline leading-normal gap-1 font-medium">
                         <span>Min Sourcing: $20</span>
                         <span>High TicketCap: $350</span>
                       </div>
@@ -1127,34 +1127,34 @@ export default function ProductFinder() {
                     const barColor = grossPercent >= 70 ? "bg-emerald-500" : grossPercent >= 50 ? "bg-amber-500" : "bg-red-500";
 
                     return (
-                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-150 space-y-3">
+                      <div className="bg-surface-container-low p-4 rounded-DEFAULT border border-slate-150 space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold gap-2">
-                          <span className="text-slate-500 font-sans">Active Simulated Financial Matrix:</span>
+                          <span className="text-outline font-sans">Active Simulated Financial Matrix:</span>
                           <span className="text-emerald-700 font-mono tracking-wide">
                             {performanceRating} (~{grossPercent}% Markup Profit)
                           </span>
                         </div>
 
                         {/* Visual feedback tracker metric */}
-                        <div className="w-full bg-slate-200/80 h-2 rounded-full overflow-hidden">
+                        <div className="w-full bg-surface-container-high/80 h-2 rounded-DEFAULT overflow-hidden">
                           <div 
-                            className={`${barColor} h-full rounded-full transition-all duration-300`}
+                            className={`${barColor} h-full rounded-DEFAULT transition-all duration-300`}
                             style={{ width: `${grossPercent}%` }}
                           />
                         </div>
 
-                        <div className="grid grid-cols-3 gap-2 pt-1.5 text-center text-[9px] font-bold text-slate-400 font-mono uppercase">
-                          <div className="bg-white border border-slate-100 p-2 rounded-lg">
+                        <div className="grid grid-cols-3 gap-2 pt-1.5 text-center text-[9px] font-bold text-outline-variant font-mono uppercase">
+                          <div className="bg-surface-container-lowest border border-surface-container-highest p-2 rounded-lg">
                             <p>Wholesale unit cost</p>
-                            <p className="text-xs font-bold text-slate-700 mt-1">${unitCostVal.toFixed(2)}</p>
+                            <p className="text-xs font-bold text-on-surface-variant mt-1">${unitCostVal.toFixed(2)}</p>
                           </div>
-                          <div className="bg-white border border-slate-100 p-2 rounded-lg">
+                          <div className="bg-surface-container-lowest border border-surface-container-highest p-2 rounded-lg">
                             <p>Gross unit profit</p>
                             <p className="text-xs font-bold text-emerald-700 mt-1">${activeProfit.toFixed(2)}</p>
                           </div>
-                          <div className="bg-white border border-slate-100 p-2 rounded-lg">
+                          <div className="bg-surface-container-lowest border border-surface-container-highest p-2 rounded-lg">
                             <p>Break-even units</p>
-                            <p className="text-xs font-bold text-slate-700 mt-1">
+                            <p className="text-xs font-bold text-on-surface-variant mt-1">
                               {Math.round(1150 / activeProfit)} pcs
                             </p>
                           </div>
@@ -1169,11 +1169,11 @@ export default function ProductFinder() {
                 {/* Sourcing Channel Directories exactly 3 options */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[10px] uppercase font-extrabold tracking-wider text-slate-500 flex items-center gap-1.5 font-mono">
-                      <Store size={14} className="text-slate-400" />
+                    <h4 className="text-[10px] uppercase font-extrabold tracking-wider text-outline flex items-center gap-1.5 font-mono">
+                      <Store size={14} className="text-outline-variant" />
                       Global B2B Wholesale Channels
                     </h4>
-                    <span className="text-[10px] font-bold text-slate-400 font-mono">Real-time Sourcing options</span>
+                    <span className="text-[10px] font-bold text-outline-variant font-mono">Real-time Sourcing options</span>
                   </div>
 
                   <div className="grid grid-cols-1 gap-3">
@@ -1192,17 +1192,17 @@ export default function ProductFinder() {
                         return (
                           <div
                             key={sIndex}
-                            className="bg-white border border-slate-150 p-4 rounded-2xl shadow-3xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-sans hover:border-teal-400 transition-colors duration-200"
+                            className="bg-surface-container-lowest border border-slate-150 p-4 rounded-DEFAULT shadow-3xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-sans hover:border-teal-400 transition-colors duration-200"
                           >
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${badgeColor}`}>
+                                <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-DEFAULT border ${badgeColor}`}>
                                   {isAlibaba ? "Alibaba" : isAliExpress ? "AliExpress" : "GlobalSources"}
                                 </span>
-                                <span className="font-bold text-slate-700 text-sm">{sup.name}</span>
+                                <span className="font-bold text-on-surface-variant text-sm">{sup.name}</span>
                               </div>
-                              <p className="text-xs text-slate-400 font-medium">
-                                Target Piece Sourcing rate: <span className="font-bold text-slate-700 font-mono">{sup.unitCost}</span>
+                              <p className="text-xs text-outline-variant font-medium">
+                                Target Piece Sourcing rate: <span className="font-bold text-on-surface-variant font-mono">{sup.unitCost}</span>
                               </p>
                             </div>
 
@@ -1210,7 +1210,7 @@ export default function ProductFinder() {
                               href={sup.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="bg-slate-900 border border-slate-800 text-white hover:bg-teal-600 font-bold text-xs px-4 py-2.5 rounded-xl text-center active:scale-95 duration-150 shrink-0 transition-all cursor-pointer shadow-3xs"
+                              className="bg-inverse-surface border border-on-surface text-white hover:bg-primary font-bold text-xs px-4 py-2.5 rounded-DEFAULT text-center active:scale-95 duration-150 shrink-0 transition-all cursor-pointer shadow-3xs"
                             >
                               Verify Supply Link ↗
                             </a>
@@ -1218,7 +1218,7 @@ export default function ProductFinder() {
                         );
                       })
                     ) : (
-                      <p className="col-span-1 py-4 text-center text-slate-400 bg-slate-50 rounded-xl">No suppliers index available for this sandbox item.</p>
+                      <p className="col-span-1 py-4 text-center text-outline-variant bg-surface-container-low rounded-DEFAULT">No suppliers index available for this sandbox item.</p>
                     )}
                   </div>
                 </div>
@@ -1226,11 +1226,11 @@ export default function ProductFinder() {
               </div>
 
               {/* Footer Closer bar */}
-              <div className="mt-8 pt-5 border-t border-slate-100 flex justify-end">
+              <div className="mt-8 pt-5 border-t border-surface-container-highest flex justify-end">
                 <button
                   type="button"
                   onClick={() => setSelectedProduct(null)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer transition-all"
+                  className="px-5 py-2.5 bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-xs font-bold rounded-DEFAULT cursor-pointer transition-all"
                 >
                   Return to Dashboard
                 </button>

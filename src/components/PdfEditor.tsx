@@ -897,20 +897,20 @@ export default function PdfEditor() {
   const fontSizeOptions = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 48];
 
   return (
-    <div className="flex flex-col bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden min-h-[780px] text-slate-800 shadow-sm animate-fade-in">
+    <div className="flex flex-col bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden min-h-[780px] text-on-surface shadow-none animate-fade-in">
       
       {/* 1. TOP HEADER NAVIGATION BLOCK */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 bg-white select-none shrink-0 min-h-[52px]">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-outline-variant bg-surface-container-lowest select-none shrink-0 min-h-[52px]">
         {/* Left Toggle and auxiliary tools */}
         <div className="flex items-center gap-3.5">
           {/* Segmented Button group: Annotate & Edit */}
-          <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+          <div className="flex bg-surface-container p-0.5 rounded-lg border border-outline-variant">
             <button
               onClick={() => setActiveTab("annotate")}
               className={`px-3 py-1 text-xs font-bold rounded-md flex items-center gap-1 cursor-pointer transition ${
                 activeTab === "annotate"
-                  ? "bg-white text-slate-800 shadow-xs"
-                  : "text-slate-500 hover:text-slate-900"
+                  ? "bg-surface-container-lowest text-on-surface shadow-none"
+                  : "text-outline hover:text-on-surface"
               }`}
             >
               <PenTool size={11} className="text-slate-650" />
@@ -920,8 +920,8 @@ export default function PdfEditor() {
               onClick={() => setActiveTab("edit")}
               className={`px-3 py-1 text-xs font-bold rounded-md flex items-center gap-1 cursor-pointer transition ${
                 activeTab === "edit"
-                  ? "bg-white text-slate-800 shadow-xs border-none"
-                  : "text-slate-500 hover:text-slate-900"
+                  ? "bg-surface-container-lowest text-on-surface shadow-none border-none"
+                  : "text-outline hover:text-on-surface"
               }`}
             >
               <span>Edit</span>
@@ -929,12 +929,12 @@ export default function PdfEditor() {
             </button>
           </div>
 
-          <span className="w-px h-5 bg-slate-200"></span>
+          <span className="w-px h-5 bg-surface-container-high"></span>
 
           {/* Book icon & hand icon tools */}
           <button 
             onClick={() => setLeftSidebarTab(leftSidebarTab === "pages" ? "more" : "pages")}
-            className={`p-1.5 rounded-md cursor-pointer transition ${leftSidebarTab === "pages" ? "bg-red-50 text-red-600 border border-red-100" : "hover:bg-slate-100 text-slate-500"}`}
+            className={`p-1.5 rounded-md cursor-pointer transition ${leftSidebarTab === "pages" ? "bg-red-50 text-red-600 border border-red-100" : "hover:bg-surface-container text-outline"}`}
             title="Toggle Split Layout Drawer"
           >
             <BookOpen size={14} className={leftSidebarTab === "pages" ? "text-red-500" : ""} />
@@ -945,7 +945,7 @@ export default function PdfEditor() {
               setActiveTool("select");
               setSelectedElement(null);
             }}
-            className={`p-1.5 rounded-md cursor-pointer transition ${activeTool === "select" ? "bg-slate-100 text-slate-800 border" : "hover:bg-slate-100 text-slate-500"}`}
+            className={`p-1.5 rounded-md cursor-pointer transition ${activeTool === "select" ? "bg-surface-container text-on-surface border" : "hover:bg-surface-container text-outline"}`}
             title="Pan / Pointer Select"
           >
             <Sliders size={14} />
@@ -959,10 +959,10 @@ export default function PdfEditor() {
               setActiveTool("add-text");
               setActiveTab("edit");
             }}
-            className={`px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-DEFAULT flex items-center gap-1 cursor-pointer transition ${
               activeTool === "add-text"
-                ? "bg-red-50 text-red-650 border border-red-200 shadow-xs"
-                : "hover:bg-slate-50 text-slate-650"
+                ? "bg-red-50 text-red-650 border border-red-200 shadow-none"
+                : "hover:bg-surface-container-low text-slate-650"
             }`}
           >
             <Type size={13} className="text-red-600" />
@@ -974,10 +974,10 @@ export default function PdfEditor() {
               setActiveTool("add-highlight");
               setActiveTab("annotate");
             }}
-            className={`px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-DEFAULT flex items-center gap-1 cursor-pointer transition ${
               activeTool === "add-highlight"
-                ? "bg-amber-50 text-amber-850 border border-amber-200 shadow-xs"
-                : "hover:bg-slate-50 text-slate-650"
+                ? "bg-amber-50 text-amber-850 border border-amber-200 shadow-none"
+                : "hover:bg-surface-container-low text-slate-650"
             }`}
           >
             <Square size={13} className="text-amber-500 fill-amber-200/50" />
@@ -989,13 +989,13 @@ export default function PdfEditor() {
               setActiveTool("add-censor");
               setActiveTab("annotate");
             }}
-            className={`px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-DEFAULT flex items-center gap-1 cursor-pointer transition ${
               activeTool === "add-censor"
-                ? "bg-slate-900 text-white shadow-xs"
-                : "hover:bg-slate-50 text-slate-650"
+                ? "bg-inverse-surface text-white shadow-none"
+                : "hover:bg-surface-container-low text-slate-650"
             }`}
           >
-            <Square size={12} className="fill-slate-800 text-slate-500" />
+            <Square size={12} className="fill-slate-800 text-outline" />
             <span className="hidden sm:inline">Insert Block</span>
           </button>
 
@@ -1005,10 +1005,10 @@ export default function PdfEditor() {
               setActiveTab("edit");
               // default cursor dropped
             }}
-            className={`px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-DEFAULT flex items-center gap-1 cursor-pointer transition ${
               activeTool === "add-text" && activeTab === "edit"
-                ? "bg-red-500 text-white shadow-xs"
-                : "hover:bg-slate-50 text-slate-650"
+                ? "bg-red-500 text-white shadow-none"
+                : "hover:bg-surface-container-low text-slate-650"
             }`}
           >
             <span className="text-xs font-extrabold text-red-600 block bg-red-100 rounded px-1 group-hover:bg-red-200">TI</span>
@@ -1020,13 +1020,13 @@ export default function PdfEditor() {
               setActiveTool("add-stamp");
               setActiveTab("edit");
             }}
-            className={`px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer transition ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-DEFAULT flex items-center gap-1.5 cursor-pointer transition ${
               activeTool === "add-stamp"
-                ? "bg-teal-50 text-teal-850 border border-teal-200 shadow-xs"
-                : "hover:bg-slate-50 text-slate-650"
+                ? "bg-primary-fixed text-teal-850 border border-teal-200 shadow-none"
+                : "hover:bg-surface-container-low text-slate-650"
             }`}
           >
-            <ClipboardCheck size={13} className="text-teal-600" />
+            <ClipboardCheck size={13} className="text-primary" />
             <span className="hidden sm:inline">Forms / Stamps</span>
           </button>
         </div>
@@ -1036,28 +1036,28 @@ export default function PdfEditor() {
           <button 
             type="button"
             onClick={loadInvoiceTemplatePractice}
-            className="hidden lg:flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200/60 rounded-lg cursor-pointer transition"
+            className="hidden lg:flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-primary-container bg-primary-fixed hover:bg-primary-fixed-dim border border-teal-200/60 rounded-lg cursor-pointer transition"
           >
-            <Sparkles size={11} className="text-teal-600" />
+            <Sparkles size={11} className="text-primary" />
             <span>Load Practice Doc</span>
           </button>
           
-          <button className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 cursor-pointer transition">
+          <button className="p-1.5 hover:bg-surface-container rounded-md text-outline-variant cursor-pointer transition">
             <MessageSquare size={14} />
           </button>
         </div>
       </div>
 
       {/* 2. SUB-ROW OPTIONAL DECORATIVE LINE FOR PILCROW, ALIGNMENTS AND IMAGES */}
-      <div className="flex items-center justify-center gap-7 py-1 px-4 border-b border-slate-150 bg-slate-50 text-slate-400 text-xs shadow-inner shrink-0 min-h-[30px]">
-        <span className="flex items-center gap-1 select-none font-mono text-[10px] text-slate-400">
+      <div className="flex items-center justify-center gap-7 py-1 px-4 border-b border-slate-150 bg-surface-container-low text-outline-variant text-xs shadow-inner shrink-0 min-h-[30px]">
+        <span className="flex items-center gap-1 select-none font-mono text-[10px] text-outline-variant">
           <span className="font-sans">¶</span> Paragraph Tools
         </span>
-        <span className="w-px h-3.5 bg-slate-200"></span>
-        <span className="flex items-center gap-1 font-mono text-[10px] text-slate-400">
+        <span className="w-px h-3.5 bg-surface-container-high"></span>
+        <span className="flex items-center gap-1 font-mono text-[10px] text-outline-variant">
           <FolderOpen size={10} /> Graphics
         </span>
-        <span className="w-px h-3.5 bg-slate-200"></span>
+        <span className="w-px h-3.5 bg-surface-container-high"></span>
         <span className="flex items-center gap-1 text-[10px] font-bold text-red-650 bg-red-50 px-2 py-0.5 rounded-md">
           <Type size={10} /> Text formatting active
         </span>
@@ -1073,10 +1073,10 @@ export default function PdfEditor() {
             onDragOver={handleDrag}
             onDragLeave={handleDrag}
             onDrop={handleDrop}
-            className={`w-full max-w-xl min-h-[300px] border-2 border-dashed rounded-3xl transition-all flex flex-col justify-center items-center p-8 bg-white ${
+            className={`w-full max-w-xl min-h-[300px] border-2 border-dashed rounded-lg transition-all flex flex-col justify-center items-center p-8 bg-surface-container-lowest ${
               dragActive
                 ? "border-red-500 bg-red-50/10 scale-[0.99]"
-                : "border-slate-200 hover:border-red-400 hover:shadow-md"
+                : "border-outline-variant hover:border-red-400 hover:shadow-none"
             }`}
           >
             <input
@@ -1092,21 +1092,21 @@ export default function PdfEditor() {
               <div className="text-center space-y-4">
                 <Loader2 className="w-10 h-10 text-red-600 animate-spin mx-auto" />
                 <div>
-                  <h4 className="font-bold text-slate-700">Decompressing PDF Core Vectors...</h4>
-                  <p className="text-xs text-slate-400 mt-1">Stitching document frames page-by-page</p>
+                  <h4 className="font-bold text-on-surface-variant">Decompressing PDF Core Vectors...</h4>
+                  <p className="text-xs text-outline-variant mt-1">Stitching document frames page-by-page</p>
                 </div>
               </div>
             ) : (
               <div className="text-center space-y-6">
-                <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto text-red-500 shadow-inner">
+                <div className="w-14 h-14 bg-red-50 rounded-DEFAULT flex items-center justify-center mx-auto text-red-500 shadow-inner">
                   <FileText size={24} />
                 </div>
                 
                 <div className="space-y-1">
-                  <h3 className="font-extrabold text-slate-800 text-base">
+                  <h3 className="font-extrabold text-on-surface text-base">
                     Drag & Drop PDF document here
                   </h3>
-                  <p className="text-xs text-slate-400 font-sans max-w-sm">
+                  <p className="text-xs text-outline-variant font-sans max-w-sm">
                     Open invoices, corporate records, or certificate templates to insert seals, markup text blocks, or blackout details immediately.
                   </p>
                 </div>
@@ -1115,7 +1115,7 @@ export default function PdfEditor() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
+                    className="px-5 py-2.5 bg-inverse-surface hover:bg-slate-800 text-white text-xs font-bold rounded-DEFAULT transition shadow-none cursor-pointer"
                   >
                     Browse Local Files
                   </button>
@@ -1123,14 +1123,14 @@ export default function PdfEditor() {
                   <button
                     type="button"
                     onClick={loadInvoiceTemplatePractice}
-                    className="px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-650 text-xs font-bold rounded-xl border border-red-200 transition cursor-pointer flex items-center justify-center gap-1"
+                    className="px-5 py-2.5 bg-red-50 hover:bg-red-100 text-red-650 text-xs font-bold rounded-DEFAULT border border-red-200 transition cursor-pointer flex items-center justify-center gap-1"
                   >
                     <Sparkles size={13} className="text-red-500" />
                     <span>Practice with Demo Invoice</span>
                   </button>
                 </div>
 
-                <div className="text-[10px] text-slate-400 pt-4 flex gap-4 justify-center">
+                <div className="text-[10px] text-outline-variant pt-4 flex gap-4 justify-center">
                   <span>🔒 Safe client render processing</span>
                   <span>⚡ Merges text seamlessly</span>
                 </div>
@@ -1141,44 +1141,44 @@ export default function PdfEditor() {
         </div>
       ) : (
         /* Workspace loaded sandbox dashboard matrix */
-        <div className="flex-1 flex flex-col lg:flex-row min-h-[640px] bg-slate-100 relative">
+        <div className="flex-1 flex flex-col lg:flex-row min-h-[640px] bg-surface-container relative">
           
           {/* COLUMN 1: LEFT SLIDING THUMBNAILS PANEL */}
-          <div className="w-full lg:w-[230px] border-b lg:border-b-0 lg:border-r border-slate-200 bg-white flex flex-col shrink-0">
+          <div className="w-full lg:w-[230px] border-b lg:border-b-0 lg:border-r border-outline-variant bg-surface-container-lowest flex flex-col shrink-0">
             {/* Headers Tab (4 icons as reference) */}
-            <div className="grid grid-cols-4 border-b border-slate-200">
+            <div className="grid grid-cols-4 border-b border-outline-variant">
               <button
                 onClick={() => setLeftSidebarTab("pages")}
-                className={`py-3 flex justify-center text-slate-500 transition cursor-pointer ${leftSidebarTab === "pages" ? "border-b-2 border-red-500 bg-red-50/10 text-slate-800" : "hover:bg-slate-50"}`}
+                className={`py-3 flex justify-center text-outline transition cursor-pointer ${leftSidebarTab === "pages" ? "border-b-2 border-red-500 bg-red-50/10 text-on-surface" : "hover:bg-surface-container-low"}`}
                 title="Page Thumbnails"
               >
                 <FolderOpen size={14} className={leftSidebarTab === "pages" ? "text-red-500" : ""} />
               </button>
               <button
                 onClick={() => setLeftSidebarTab("list")}
-                className={`py-3 flex justify-center text-slate-500 transition cursor-pointer ${leftSidebarTab === "list" ? "border-b-2 border-red-500 bg-red-50/10 text-slate-800" : "hover:bg-slate-50"}`}
+                className={`py-3 flex justify-center text-outline transition cursor-pointer ${leftSidebarTab === "list" ? "border-b-2 border-red-500 bg-red-50/10 text-on-surface" : "hover:bg-surface-container-low"}`}
                 title="Document Elements List"
               >
-                <List size={14} className={leftSidebarTab === "list" ? "text-slate-800" : ""} />
+                <List size={14} className={leftSidebarTab === "list" ? "text-on-surface" : ""} />
               </button>
               <button
                 onClick={() => setLeftSidebarTab("bookmarks")}
-                className={`py-3 flex justify-center text-slate-500 transition cursor-pointer ${leftSidebarTab === "bookmarks" ? "border-b-2 border-red-500 bg-red-50/10 text-slate-800" : "hover:bg-slate-50"}`}
+                className={`py-3 flex justify-center text-outline transition cursor-pointer ${leftSidebarTab === "bookmarks" ? "border-b-2 border-red-500 bg-red-50/10 text-on-surface" : "hover:bg-surface-container-low"}`}
                 title="Bookmarks"
               >
-                <Bookmark size={14} className={leftSidebarTab === "bookmarks" ? "text-slate-800" : ""} />
+                <Bookmark size={14} className={leftSidebarTab === "bookmarks" ? "text-on-surface" : ""} />
               </button>
               <button
                 onClick={() => setLeftSidebarTab("more")}
-                className={`py-3 flex justify-center text-slate-500 transition cursor-pointer ${leftSidebarTab === "more" ? "border-b-2 border-red-500 bg-red-50/10 text-slate-800" : "hover:bg-slate-50"}`}
+                className={`py-3 flex justify-center text-outline transition cursor-pointer ${leftSidebarTab === "more" ? "border-b-2 border-red-500 bg-red-50/10 text-on-surface" : "hover:bg-surface-container-low"}`}
                 title="More Options"
               >
-                <MoreHorizontal size={14} className={leftSidebarTab === "more" ? "text-slate-800" : ""} />
+                <MoreHorizontal size={14} className={leftSidebarTab === "more" ? "text-on-surface" : ""} />
               </button>
             </div>
 
             {/* Thumbnail sizing horizontal range bar under tabs */}
-            <div className="p-2 border-b border-slate-100 flex items-center justify-between gap-1 bg-slate-50 text-slate-400 shrink-0 select-none">
+            <div className="p-2 border-b border-surface-container-highest flex items-center justify-between gap-1 bg-surface-container-low text-outline-variant shrink-0 select-none">
               <Minus size={11} />
               <input
                 type="range"
@@ -1186,7 +1186,7 @@ export default function PdfEditor() {
                 max="75"
                 value={thumbnailSize}
                 onChange={(e) => setThumbnailSize(parseInt(e.target.value))}
-                className="w-full h-1 accent-red-500 cursor-pointer bg-slate-200 rounded"
+                className="w-full h-1 accent-red-500 cursor-pointer bg-surface-container-high rounded"
               />
               <Plus size={11} />
             </div>
@@ -1205,15 +1205,15 @@ export default function PdfEditor() {
                           setActivePageIdx(idx);
                           setSelectedElement(null);
                         }}
-                        className={`group p-2 border rounded-xl transition cursor-pointer bg-white ${
+                        className={`group p-2 border rounded-DEFAULT transition cursor-pointer bg-surface-container-lowest ${
                           isActive
                             ? "ring-2 ring-red-500 border-transparent shadow shadow-red-200"
-                            : "border-slate-200 hover:border-slate-400"
+                            : "border-outline-variant hover:border-slate-400"
                         }`}
                       >
                         {/* Miniature layout viewbox resizing according to slider */}
                         <div 
-                          className="mx-auto border border-slate-100 bg-slate-50 rounded-md overflow-hidden relative shadow-sm"
+                          className="mx-auto border border-surface-container-highest bg-surface-container-low rounded-md overflow-hidden relative shadow-none"
                           style={{ width: `${thumbnailSize * 2}px`, aspectRatio: "3/4" }}
                         >
                           <img 
@@ -1232,7 +1232,7 @@ export default function PdfEditor() {
                         </div>
 
                         {/* Caption Page index */}
-                        <span className="block text-center text-xs font-bold text-slate-500 mt-2 font-mono group-hover:text-red-500 transition">
+                        <span className="block text-center text-xs font-bold text-outline mt-2 font-mono group-hover:text-red-500 transition">
                           {idx + 1}
                         </span>
 
@@ -1242,7 +1242,7 @@ export default function PdfEditor() {
                             <button
                               onClick={(e) => { e.stopPropagation(); movePageUp(idx); }}
                               disabled={idx === 0}
-                              className="p-1 disabled:opacity-25 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded cursor-pointer"
+                              className="p-1 disabled:opacity-25 hover:bg-surface-container text-outline hover:text-on-surface rounded cursor-pointer"
                               title="Shift Up"
                             >
                               <MoveUp size={10} />
@@ -1250,7 +1250,7 @@ export default function PdfEditor() {
                             <button
                               onClick={(e) => { e.stopPropagation(); movePageDown(idx); }}
                               disabled={idx === pages.length - 1}
-                              className="p-1 disabled:opacity-25 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded cursor-pointer"
+                              className="p-1 disabled:opacity-25 hover:bg-surface-container text-outline hover:text-on-surface rounded cursor-pointer"
                               title="Shift Down"
                             >
                               <MoveDown size={10} />
@@ -1259,7 +1259,7 @@ export default function PdfEditor() {
                           
                           <button
                             onClick={(e) => { e.stopPropagation(); deletePage(idx); }}
-                            className="p-1 text-slate-400 hover:text-red-650 hover:bg-red-50 rounded cursor-pointer"
+                            className="p-1 text-outline-variant hover:text-red-650 hover:bg-red-50 rounded cursor-pointer"
                             title="Delete this page"
                           >
                             <Trash2 size={10} />
@@ -1273,16 +1273,16 @@ export default function PdfEditor() {
 
               {leftSidebarTab === "list" && (
                 <div className="space-y-3 font-sans text-xs">
-                  <span className="font-bold text-[10px] text-slate-400 uppercase tracking-widest block">Active Elements</span>
+                  <span className="font-bold text-[10px] text-outline-variant uppercase tracking-widest block">Active Elements</span>
                   {pages[activePageIdx].texts.length === 0 && pages[activePageIdx].shapes.length === 0 && pages[activePageIdx].stamps.length === 0 ? (
-                    <p className="text-slate-400 italic text-center py-4">No overlay elements added on active page.</p>
+                    <p className="text-outline-variant italic text-center py-4">No overlay elements added on active page.</p>
                   ) : (
                     <div className="space-y-1.5">
                       {pages[activePageIdx].texts.map(t => (
                         <div 
                           key={t.id} 
                           onClick={() => setSelectedElement({ type: "text", id: t.id, pageIndex: activePageIdx })}
-                          className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer transition ${selectedElement?.id === t.id ? "bg-red-50 border-red-200 text-red-950 font-bold" : "bg-slate-50 hover:bg-slate-100 border-slate-200"}`}
+                          className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer transition ${selectedElement?.id === t.id ? "bg-red-50 border-red-200 text-red-950 font-bold" : "bg-surface-container-low hover:bg-surface-container border-outline-variant"}`}
                         >
                           <span className="truncate max-w-[120px] font-mono leading-none">"{t.text}"</span>
                           <span className="text-[9px] text-red-500 uppercase tracking-wider">text</span>
@@ -1292,7 +1292,7 @@ export default function PdfEditor() {
                         <div 
                           key={s.id} 
                           onClick={() => setSelectedElement({ type: "shape", id: s.id, pageIndex: activePageIdx })}
-                          className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer transition ${selectedElement?.id === s.id ? "bg-red-50 border-red-200 text-slate-800 font-bold" : "bg-slate-50 hover:bg-slate-100 border-slate-200"}`}
+                          className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer transition ${selectedElement?.id === s.id ? "bg-red-50 border-red-200 text-on-surface font-bold" : "bg-surface-container-low hover:bg-surface-container border-outline-variant"}`}
                         >
                           <span className="truncate capitalize font-mono text-[10px]">{s.type} frame</span>
                           <span className="text-[9px] text-amber-500 uppercase tracking-wider">shape</span>
@@ -1302,10 +1302,10 @@ export default function PdfEditor() {
                         <div 
                           key={st.id} 
                           onClick={() => setSelectedElement({ type: "stamp", id: st.id, pageIndex: activePageIdx })}
-                          className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer transition ${selectedElement?.id === st.id ? "bg-red-50 border-red-200 text-slate-800 font-bold" : "bg-slate-50 hover:bg-slate-100 border-slate-200"}`}
+                          className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer transition ${selectedElement?.id === st.id ? "bg-red-50 border-red-200 text-on-surface font-bold" : "bg-surface-container-low hover:bg-surface-container border-outline-variant"}`}
                         >
                           <span className="font-extrabold text-[10px] font-mono text-emerald-800">{st.type}</span>
-                          <span className="text-[9px] text-teal-600 uppercase tracking-wider">stamp</span>
+                          <span className="text-[9px] text-primary uppercase tracking-wider">stamp</span>
                         </div>
                       ))}
                     </div>
@@ -1314,10 +1314,10 @@ export default function PdfEditor() {
               )}
 
               {leftSidebarTab === "bookmarks" && (
-                <div className="text-center py-6 text-slate-400 space-y-1">
-                  <Bookmark className="w-5 h-5 mx-auto text-slate-300" />
+                <div className="text-center py-6 text-outline-variant space-y-1">
+                  <Bookmark className="w-5 h-5 mx-auto text-outline-variant" />
                   <p className="text-[11px] font-bold">No bookmarks found</p>
-                  <p className="text-[10px] leading-tight text-slate-400 font-sans">Double click coordinates to save outlines.</p>
+                  <p className="text-[10px] leading-tight text-outline-variant font-sans">Double click coordinates to save outlines.</p>
                 </div>
               )}
 
@@ -1336,7 +1336,7 @@ export default function PdfEditor() {
                         setSelectedElement(null);
                       }
                     }}
-                    className="w-full text-left p-2.5 rounded-lg border border-slate-200 hover:bg-rose-50 hover:text-rose-700 transition font-bold"
+                    className="w-full text-left p-2.5 rounded-lg border border-outline-variant hover:bg-rose-50 hover:text-rose-700 transition font-bold"
                   >
                     Clear Page Elements
                   </button>
@@ -1348,7 +1348,7 @@ export default function PdfEditor() {
                         setSelectedElement(null);
                       }
                     }}
-                    className="w-full text-left p-2.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-red-600 transition font-bold"
+                    className="w-full text-left p-2.5 rounded-lg border border-outline-variant hover:bg-surface-container text-red-600 transition font-bold"
                   >
                     Close PDF Document
                   </button>
@@ -1358,20 +1358,20 @@ export default function PdfEditor() {
             </div>
 
             {/* Bottom auxiliary metadata block */}
-            <div className="p-3.5 border-t border-slate-200 bg-slate-50 text-[10px] font-mono text-slate-400 select-none shrink-0 mt-auto leading-relaxed">
+            <div className="p-3.5 border-t border-outline-variant bg-surface-container-low text-[10px] font-mono text-outline-variant select-none shrink-0 mt-auto leading-relaxed">
               <span className="block font-bold">WORKSPACE DETAILS:</span>
-              <span className="block truncate text-slate-500 font-sans mt-0.5">{fileName}</span>
-              <span className="block text-slate-500 mt-0.5">Scale: {pages[activePageIdx].width}x{pages[activePageIdx].height} pt</span>
+              <span className="block truncate text-outline font-sans mt-0.5">{fileName}</span>
+              <span className="block text-outline mt-0.5">Scale: {pages[activePageIdx].width}x{pages[activePageIdx].height} pt</span>
             </div>
           </div>
 
           {/* COLUMN 2: CENTER WORKSPACE CANVASED STAGE */}
-          <div className="flex-1 bg-slate-100 flex flex-col items-center justify-between p-4 relative overflow-hidden">
+          <div className="flex-1 bg-surface-container flex flex-col items-center justify-between p-4 relative overflow-hidden">
             
             {/* Quick alert context reminder */}
             {activeTool !== "select" && (
-              <div className="w-full max-w-xl mx-auto mb-2 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl text-amber-900 text-xs font-semibold text-center shadow-xs flex items-center justify-center gap-1.5 animate-fade-in z-20 shrink-0 select-none">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+              <div className="w-full max-w-xl mx-auto mb-2 bg-amber-50 border border-amber-200 px-4 py-2 rounded-DEFAULT text-amber-900 text-xs font-semibold text-center shadow-none flex items-center justify-center gap-1.5 animate-fade-in z-20 shrink-0 select-none">
+                <span className="w-2 h-2 rounded-DEFAULT bg-amber-500 animate-ping"></span>
                 <span>Active Tool: Click on the PDF layout below to place styled element: <strong className="uppercase">{activeTool}</strong></span>
               </div>
             )}
@@ -1389,7 +1389,7 @@ export default function PdfEditor() {
                 onMouseMove={handleMovingOverlay}
                 onMouseUp={handleStopOverlayDrag}
                 onMouseLeave={handleStopOverlayDrag}
-                className="relative bg-white shadow-2xl rounded-sm border border-slate-350 select-none transition-all flex-shrink-0 origin-center"
+                className="relative bg-surface-container-lowest shadow-2xl rounded-sm border border-slate-350 select-none transition-all flex-shrink-0 origin-center"
                 style={{
                   width: `${pages[activePageIdx].width}px`,
                   height: `${pages[activePageIdx].height}px`,
@@ -1419,7 +1419,7 @@ export default function PdfEditor() {
                       onMouseDown={(e) => startDragOverlay(e, "shape", shape.id)}
                       className={`absolute rounded transition group border-2 ${
                         isSelected
-                          ? "border-red-600 shadow-md ring-1 ring-red-300 cursor-move z-30"
+                          ? "border-red-600 shadow-none ring-1 ring-red-300 cursor-move z-30"
                           : "border-transparent hover:border-slate-400 cursor-pointer z-10"
                       }`}
                       style={{
@@ -1436,7 +1436,7 @@ export default function PdfEditor() {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); deleteSelectedElement(); }}
-                          className="absolute -top-3.5 -right-3.5 w-5 h-5 bg-red-600 rounded-full text-white flex items-center justify-center cursor-pointer hover:bg-red-700 z-50 shadow"
+                          className="absolute -top-3.5 -right-3.5 w-5 h-5 bg-red-600 rounded-DEFAULT text-white flex items-center justify-center cursor-pointer hover:bg-red-700 z-50 shadow"
                         >
                           <X size={10} />
                         </button>
@@ -1473,7 +1473,7 @@ export default function PdfEditor() {
                   
                   let colorClass = "border-red-600 text-red-600";
                   if (stamp.type === "APPROVED") colorClass = "border-emerald-600 text-emerald-600 bg-emerald-50/10";
-                  if (stamp.type === "CERTIFIED") colorClass = "border-teal-600 text-teal-600 bg-teal-50/10";
+                  if (stamp.type === "CERTIFIED") colorClass = "border-primary text-primary bg-primary-fixed/10";
                   if (stamp.type === "DRAFT") colorClass = "border-amber-600 text-amber-600 bg-amber-50/10";
 
                   return (
@@ -1484,7 +1484,7 @@ export default function PdfEditor() {
                         setSelectedElement({ type: "stamp", id: stamp.id, pageIndex: activePageIdx });
                       }}
                       onMouseDown={(e) => startDragOverlay(e, "stamp", stamp.id)}
-                      className={`absolute border-2 font-extrabold select-none text-center rounded shadow-sm p-1 uppercase tracking-wider leading-tight ${colorClass} ${
+                      className={`absolute border-2 font-extrabold select-none text-center rounded shadow-none p-1 uppercase tracking-wider leading-tight ${colorClass} ${
                         isSelected
                           ? "ring-2 ring-red-500 scale-[1.01] cursor-move z-30"
                           : "hover:border-dashed hover:scale-[1.01] cursor-pointer z-10"
@@ -1507,7 +1507,7 @@ export default function PdfEditor() {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); deleteSelectedElement(); }}
-                          className="absolute -top-3.5 -right-3.5 w-5 h-5 bg-red-600 rounded-full text-white flex items-center justify-center cursor-pointer hover:bg-red-700 z-50 shadow"
+                          className="absolute -top-3.5 -right-3.5 w-5 h-5 bg-red-600 rounded-DEFAULT text-white flex items-center justify-center cursor-pointer hover:bg-red-700 z-50 shadow"
                         >
                           <X size={10} />
                         </button>
@@ -1551,8 +1551,8 @@ export default function PdfEditor() {
                       onMouseDown={(e) => startDragOverlay(e, "text", text.id)}
                       className={`absolute p-1 py-1.5 rounded-md text-left select-text ${
                         isSelected 
-                          ? "shadow-lg bg-white border-2 border-red-500 cursor-move z-35" 
-                          : "hover:ring-1 hover:ring-slate-400 bg-white/70 backdrop-blur-xs cursor-pointer z-10"
+                          ? "shadow-lg bg-surface-container-lowest border-2 border-red-500 cursor-move z-35" 
+                          : "hover:ring-1 hover:ring-slate-400 bg-surface-container-lowest/70 backdrop-blur-xs cursor-pointer z-10"
                       }`}
                       style={{
                         left: `${text.x}%`,
@@ -1573,7 +1573,7 @@ export default function PdfEditor() {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); deleteSelectedElement(); }}
-                          className="absolute -top-3.5 -right-3.5 w-4.5 h-4.5 bg-red-650 rounded-full text-white flex items-center justify-center cursor-pointer hover:bg-red-750 z-50 shadow"
+                          className="absolute -top-3.5 -right-3.5 w-4.5 h-4.5 bg-red-650 rounded-DEFAULT text-white flex items-center justify-center cursor-pointer hover:bg-red-750 z-50 shadow"
                         >
                           <X size={9} />
                         </button>
@@ -1586,7 +1586,7 @@ export default function PdfEditor() {
                           onChange={(e) => handleTextValueChange(e.target.value)}
                           onBlur={() => setEditingTextId(null)}
                           onKeyDown={(e) => { if (e.key === "Enter") setEditingTextId(null); }}
-                          className="bg-slate-50 border-b border-red-500 outline-none p-0 text-slate-900 font-sans focus:bg-white max-w-[280px]"
+                          className="bg-surface-container-low border-b border-red-500 outline-none p-0 text-on-surface font-sans focus:bg-surface-container-lowest max-w-[280px]"
                           style={{ fontSize: `${text.fontSize}px`, color: text.color, textAlign: text.alignment, fontFamily: text.fontFamily }}
                           autoFocus
                           referrerPolicy="no-referrer"
@@ -1610,7 +1610,7 @@ export default function PdfEditor() {
             </div>
 
             {/* FLOATING STATUS & CONTROL NAV STRIP (Matches bottom of the centered sheet) */}
-            <div className="w-full max-w-xl bg-slate-900 text-slate-300 rounded-2xl p-2 px-4 shadow-xl border border-slate-700/50 flex flex-wrap items-center justify-between gap-4 shrink-0 transition-all select-none z-10 my-1">
+            <div className="w-full max-w-xl bg-inverse-surface text-outline-variant rounded-DEFAULT p-2 px-4 shadow-xl border border-slate-700/50 flex flex-wrap items-center justify-between gap-4 shrink-0 transition-all select-none z-10 my-1">
               {/* Page Selector Block: Up, Down keys, edit current field */}
               <div className="flex items-center gap-2">
                 <button
@@ -1628,8 +1628,8 @@ export default function PdfEditor() {
                   <span className="bg-slate-800 text-white font-bold p-1 px-2.5 rounded border border-slate-700">
                     {activePageIdx + 1}
                   </span>
-                  <span className="text-slate-400">/</span>
-                  <span className="text-slate-400">{pages.length}</span>
+                  <span className="text-outline-variant">/</span>
+                  <span className="text-outline-variant">{pages.length}</span>
                 </div>
 
                 <button
@@ -1670,7 +1670,7 @@ export default function PdfEditor() {
               </div>
 
               {/* Layout Fit settings triggers */}
-              <div className="flex items-center gap-1.5 text-slate-400">
+              <div className="flex items-center gap-1.5 text-outline-variant">
                 <button
                   onClick={() => setZoomLevel(100.0)}
                   className="p-1 text-[10px] font-bold bg-slate-800 hover:bg-slate-705 text-white p-1 px-2 rounded-lg cursor-pointer transition border border-slate-700"
@@ -1691,12 +1691,12 @@ export default function PdfEditor() {
           </div>
 
           {/* COLUMN 3: RIGHT PANEL - ELEMENT STYLE FORMATTER DECK */}
-          <div className="w-full lg:w-[280px] shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200 bg-white p-5 flex flex-col justify-between select-none max-h-full">
+          <div className="w-full lg:w-[280px] shrink-0 border-t lg:border-t-0 lg:border-l border-outline-variant bg-surface-container-lowest p-5 flex flex-col justify-between select-none max-h-full">
             
             <div className="space-y-6">
               {/* Header Label */}
               <div>
-                <h3 className="font-extrabold text-xs text-slate-400 uppercase tracking-widest block border-b border-slate-100 pb-1.5 flex items-center justify-between">
+                <h3 className="font-extrabold text-xs text-outline-variant uppercase tracking-widest block border-b border-surface-container-highest pb-1.5 flex items-center justify-between">
                   <span>Text Styles</span>
                   {selectedElement?.type === "text" && (
                     <span className="text-[9px] bg-red-100 text-red-700 font-bold px-1.5 py-0.5 rounded uppercase">
@@ -1710,11 +1710,11 @@ export default function PdfEditor() {
               <div className="space-y-3.5">
                 {/* Font Selector Combobox */}
                 <div className="space-y-1 text-left">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Font Family</span>
+                  <span className="text-[10px] font-bold text-outline-variant uppercase tracking-wider block">Font Family</span>
                   <select
                     value={textFontFamily}
                     onChange={(e) => handleTextFontFamilyChange(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-bold font-sans text-slate-700 focus:bg-white focus:ring-1 focus:ring-red-500 outline-none cursor-pointer transition"
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-2.5 text-xs font-bold font-sans text-on-surface-variant focus:bg-surface-container-lowest focus:ring-1 focus:ring-red-500 outline-none cursor-pointer transition"
                   >
                     {fontOptions.map(fam => (
                       <option key={fam} value={fam}>{fam}</option>
@@ -1724,11 +1724,11 @@ export default function PdfEditor() {
 
                 {/* Font Size dropdown combobox */}
                 <div className="space-y-1 text-left">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Font Size</span>
+                  <span className="text-[10px] font-bold text-outline-variant uppercase tracking-wider block">Font Size</span>
                   <select
                     value={textSize}
                     onChange={(e) => handleTextSizeChange(parseInt(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-bold font-mono text-slate-700 focus:bg-white focus:ring-1 focus:ring-red-500 outline-none cursor-pointer transition"
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-2.5 text-xs font-bold font-mono text-on-surface-variant focus:bg-surface-container-lowest focus:ring-1 focus:ring-red-500 outline-none cursor-pointer transition"
                   >
                     {fontSizeOptions.map(sz => (
                       <option key={sz} value={sz}>{sz} pt</option>
@@ -1739,7 +1739,7 @@ export default function PdfEditor() {
 
               {/* FIRST ROW BUTTON CHIPS: B I U Strike-through */}
               <div className="space-y-3">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-left">Styles Weight</span>
+                <span className="text-[10px] font-bold text-outline-variant uppercase tracking-wider block text-left">Styles Weight</span>
                 
                 <div className="grid grid-cols-4 gap-1 select-none">
                   <button
@@ -1747,7 +1747,7 @@ export default function PdfEditor() {
                     className={`py-2 px-1 text-xs font-semibold rounded-lg text-center cursor-pointer flex items-center justify-center transition border ${
                       textFontWeight === "bold"
                         ? "bg-red-50 border-red-200 text-red-700"
-                        : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500"
+                        : "bg-surface-container-low hover:bg-surface-container border-outline-variant text-outline"
                     }`}
                     title="Bold"
                   >
@@ -1758,7 +1758,7 @@ export default function PdfEditor() {
                     className={`py-2 px-1 text-xs font-semibold rounded-lg text-center cursor-pointer flex items-center justify-center transition border ${
                       textFontStyle === "italic"
                         ? "bg-red-50 border-red-200 text-red-700"
-                        : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500"
+                        : "bg-surface-container-low hover:bg-surface-container border-outline-variant text-outline"
                     }`}
                     title="Italic"
                   >
@@ -1769,7 +1769,7 @@ export default function PdfEditor() {
                     className={`py-2 px-1 text-xs font-semibold rounded-lg text-center cursor-pointer flex items-center justify-center transition border ${
                       textDecoration === "underline"
                         ? "bg-red-50 border-red-200 text-red-700"
-                        : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500"
+                        : "bg-surface-container-low hover:bg-surface-container border-outline-variant text-outline"
                     }`}
                     title="Underline"
                   >
@@ -1780,7 +1780,7 @@ export default function PdfEditor() {
                     className={`py-2 px-1 text-xs font-semibold rounded-lg text-center cursor-pointer flex items-center justify-center transition border ${
                       textDecoration === "line-through"
                         ? "bg-red-50 border-red-200 text-red-700"
-                        : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500"
+                        : "bg-surface-container-low hover:bg-surface-container border-outline-variant text-outline"
                     }`}
                     title="Strike-through"
                   >
@@ -1791,7 +1791,7 @@ export default function PdfEditor() {
 
               {/* SECOND ROW BUTTON CHIPS: Alignments left, center, right */}
               <div className="space-y-3">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-left">Alignments spacing</span>
+                <span className="text-[10px] font-bold text-outline-variant uppercase tracking-wider block text-left">Alignments spacing</span>
                 
                 <div className="grid grid-cols-3 gap-1 select-none">
                   <button
@@ -1799,7 +1799,7 @@ export default function PdfEditor() {
                     className={`py-1.5 rounded-lg text-center cursor-pointer flex items-center justify-center transition border ${
                       textAlignment === "left"
                         ? "bg-red-50 border-red-200 text-red-700"
-                        : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500"
+                        : "bg-surface-container-low hover:bg-surface-container border-outline-variant text-outline"
                     }`}
                   >
                     <AlignLeft size={13} />
@@ -1809,7 +1809,7 @@ export default function PdfEditor() {
                     className={`py-1.5 rounded-lg text-center cursor-pointer flex items-center justify-center transition border ${
                       textAlignment === "center"
                         ? "bg-red-50 border-red-200 text-red-700"
-                        : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500"
+                        : "bg-surface-container-low hover:bg-surface-container border-outline-variant text-outline"
                     }`}
                   >
                     <AlignCenter size={13} />
@@ -1819,7 +1819,7 @@ export default function PdfEditor() {
                     className={`py-1.5 rounded-lg text-center cursor-pointer flex items-center justify-center transition border ${
                       textAlignment === "right"
                         ? "bg-red-50 border-red-200 text-red-700"
-                        : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-500"
+                        : "bg-surface-container-low hover:bg-surface-container border-outline-variant text-outline"
                     }`}
                   >
                     <AlignRight size={13} />
@@ -1829,32 +1829,32 @@ export default function PdfEditor() {
 
               {/* LINK ICON ROW */}
               <div className="flex justify-start text-left">
-                <button className="flex items-center gap-1.5 text-xs text-slate-450 hover:text-slate-800 transition py-1 cursor-pointer">
+                <button className="flex items-center gap-1.5 text-xs text-slate-450 hover:text-on-surface transition py-1 cursor-pointer">
                   <Link size={13} />
                   <span className="underline font-sans font-medium text-[11px]">Attach hyperlink target</span>
                 </button>
               </div>
 
-              <span className="block border-t border-slate-100 pt-1"></span>
+              <span className="block border-t border-surface-container-highest pt-1"></span>
 
               {/* CURRENT COLOR ROW */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-left">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Color</span>
-                  <span className="text-[9px] font-mono font-bold text-slate-400">{textColor}</span>
+                  <span className="text-[10px] font-bold text-outline-variant uppercase tracking-wider">Current Color</span>
+                  <span className="text-[9px] font-mono font-bold text-outline-variant">{textColor}</span>
                 </div>
                 
                 <div className="flex items-center gap-3 select-none">
                   {/* Big indicator circle */}
                   <div 
-                    className="w-10 h-10 rounded-xl border border-slate-300 shadow-inner flex items-center justify-center relative shrink-0"
+                    className="w-10 h-10 rounded-DEFAULT border border-outline shadow-inner flex items-center justify-center relative shrink-0"
                     style={{ backgroundColor: textColor }}
                   >
-                    <span className="w-2.5 h-2.5 rounded-full bg-white shadow-xs"></span>
+                    <span className="w-2.5 h-2.5 rounded-DEFAULT bg-surface-container-lowest shadow-none"></span>
                   </div>
 
                   {/* Fill toggle or double palette symbol mock */}
-                  <div className="border border-slate-200 rounded-lg p-1 px-2.5 bg-slate-50 text-[10px] max-w-full text-slate-500 leading-tight text-left">
+                  <div className="border border-outline-variant rounded-lg p-1 px-2.5 bg-surface-container-low text-[10px] max-w-full text-outline leading-tight text-left">
                     🎨 Font & Stroke merged color
                   </div>
                 </div>
@@ -1862,7 +1862,7 @@ export default function PdfEditor() {
 
               {/* CUSTOM SWATCHES VIEWBOARD */}
               <div className="space-y-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-left font-sans">Custom Swatches</span>
+                <span className="text-[10px] font-bold text-outline-variant uppercase tracking-wider block text-left font-sans">Custom Swatches</span>
                 
                 <div className="flex flex-wrap gap-2 items-center">
                   {customColorsList.map((col) => {
@@ -1871,13 +1871,13 @@ export default function PdfEditor() {
                       <button
                         key={col}
                         onClick={() => handleTextColorChange(col)}
-                        className={`w-7 h-7 rounded-full border cursor-pointer hover:scale-110 transition shadow-inner relative flex items-center justify-center ${
-                          isPicked ? "ring-2 ring-red-500 scale-105" : "border-slate-300"
+                        className={`w-7 h-7 rounded-DEFAULT border cursor-pointer hover:scale-110 transition shadow-inner relative flex items-center justify-center ${
+                          isPicked ? "ring-2 ring-red-500 scale-105" : "border-outline"
                         }`}
                         style={{ backgroundColor: col }}
                         title={col}
                       >
-                        {isPicked && <span className="w-1.5 h-1.5 rounded-full bg-white shadow"></span>}
+                        {isPicked && <span className="w-1.5 h-1.5 rounded-DEFAULT bg-surface-container-lowest shadow"></span>}
                       </button>
                     );
                   })}
@@ -1885,7 +1885,7 @@ export default function PdfEditor() {
                   {/* Circle plus button */}
                   <button
                     onClick={() => setIsAddingCustomColor(!isAddingCustomColor)}
-                    className="w-7 h-7 rounded-full border border-slate-300 bg-white text-slate-600 hover:text-slate-900 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition shadow-xs font-bold"
+                    className="w-7 h-7 rounded-DEFAULT border border-outline bg-surface-container-lowest text-on-surface-variant hover:text-on-surface flex items-center justify-center cursor-pointer hover:bg-surface-container-low transition shadow-none font-bold"
                     title="Add Custom Hex Code Shader"
                   >
                     <Plus size={12} />
@@ -1893,20 +1893,20 @@ export default function PdfEditor() {
                 </div>
 
                 {isAddingCustomColor && (
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-2 animate-fade-in text-left">
-                    <span className="text-[9px] font-bold text-slate-500 block leading-none">ENTER HEX CODE</span>
+                  <div className="bg-surface-container-low p-2.5 rounded-DEFAULT border border-outline-variant space-y-2 animate-fade-in text-left">
+                    <span className="text-[9px] font-bold text-outline block leading-none">ENTER HEX CODE</span>
                     <div className="flex gap-1.5">
                       <input
                         type="color"
                         value={newColorInput}
                         onChange={(e) => setNewColorInput(e.target.value)}
-                        className="w-7 h-7 rounded border border-slate-300 cursor-pointer p-0"
+                        className="w-7 h-7 rounded border border-outline cursor-pointer p-0"
                       />
                       <input
                         type="text"
                         value={newColorInput}
                         onChange={(e) => setNewColorInput(e.target.value)}
-                        className="flex-1 bg-white border border-slate-200 rounded px-2 py-0 text-xs font-mono"
+                        className="flex-1 bg-surface-container-lowest border border-outline-variant rounded px-2 py-0 text-xs font-mono"
                         placeholder="#ffffff"
                       />
                       <button
@@ -1922,9 +1922,9 @@ export default function PdfEditor() {
 
               {/* Form Stamp setup choices when Stamp tool is selected */}
               {activeTool === "add-stamp" && (
-                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150 text-left space-y-2 pt-2 animate-fade-in">
-                  <span className="text-[10px] font-bold text-teal-800 uppercase tracking-widest block leading-none">Stamp Preset Config</span>
-                  <p className="text-[9px] text-slate-400 font-sans leading-relaxed">Choose rubber stamp to affix on layout:</p>
+                <div className="bg-surface-container-low p-3 rounded-DEFAULT border border-slate-150 text-left space-y-2 pt-2 animate-fade-in">
+                  <span className="text-[10px] font-bold text-on-primary-fixed uppercase tracking-widest block leading-none">Stamp Preset Config</span>
+                  <p className="text-[9px] text-outline-variant font-sans leading-relaxed">Choose rubber stamp to affix on layout:</p>
                   <div className="grid grid-cols-2 gap-1.5 pt-0.5">
                     {(["APPROVED", "CONFIDENTIAL", "DRAFT", "CERTIFIED"] as const).map(style => (
                       <button
@@ -1932,8 +1932,8 @@ export default function PdfEditor() {
                         onClick={() => setStampSelectedType(style)}
                         className={`p-1.5 rounded text-[10px] uppercase font-mono font-bold border transition cursor-pointer text-center ${
                           stampSelectedType === style
-                            ? "bg-teal-600 border-teal-600 text-white shadow-xs"
-                            : "bg-white hover:bg-slate-100 border-slate-200 text-slate-650"
+                            ? "bg-primary border-primary text-white shadow-none"
+                            : "bg-surface-container-lowest hover:bg-surface-container border-outline-variant text-slate-650"
                         }`}
                       >
                         {style}
@@ -1950,7 +1950,7 @@ export default function PdfEditor() {
               <button
                 type="button"
                 onClick={saveFinalizedPdf}
-                className={`w-full py-4 px-6 rounded-3xl font-bold font-sans text-white text-base shadow-xl flex items-center justify-between transition-all duration-300 active:scale-95 border-none cursor-pointer ${
+                className={`w-full py-4 px-6 rounded-lg font-bold font-sans text-white text-base shadow-xl flex items-center justify-between transition-all duration-300 active:scale-95 border-none cursor-pointer ${
                   downloadSuccess 
                     ? "bg-emerald-600 shadow-emerald-500/20" 
                     : "bg-red-500 hover:bg-red-600 shadow-red-500/20"
@@ -1960,7 +1960,7 @@ export default function PdfEditor() {
                   {downloadSuccess ? "Compiling finished!" : "Save changes"}
                 </span>
 
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-DEFAULT bg-surface-container-lowest/20 flex items-center justify-center">
                   {downloadSuccess ? (
                     <Check size={16} className="text-white" />
                   ) : (

@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { apiFetch } from "../utils/api";
-import { 
-  FileText, 
-  Upload, 
-  Download, 
-  Loader2, 
+import {
+  FileText,
+  Upload,
+  Download,
+  Loader2,
   Sparkles,
   Clipboard,
   Check,
@@ -26,7 +26,14 @@ import {
   Settings,
   Scale,
   RefreshCcw,
-  Heading
+  Heading,
+  ArrowRight,
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 
@@ -59,6 +66,12 @@ export default function PdfToWord() {
   const [documentTheme, setDocumentTheme] = useState<"standard" | "professional" | "minimal" | "editorial">("standard");
   const [lineSpacing, setLineSpacing] = useState<"1.0" | "1.15" | "1.5" | "2.0">("1.15");
   const [addPageBreaks, setAddPageBreaks] = useState<boolean>(true);
+
+  // UI state for 3-state flow
+  const [showEditor, setShowEditor] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  // thumbnail for preview
+  const [pdfThumbnail, setPdfThumbnail] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLTextAreaElement>(null);
@@ -97,7 +110,7 @@ export default function PdfToWord() {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-        processPdf(file);
+        handleFileSelected(file);
       } else {
         setError("Only valid PDF documents are supported for Word conversion.");
       }
@@ -106,12 +119,46 @@ export default function PdfToWord() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      processPdf(e.target.files[0]);
+      handleFileSelected(e.target.files[0]);
+    }
+  };
+
+  // Step 1 → Step 2: File selected, generate thumbnail
+  const handleFileSelected = async (file: File) => {
+    setPdfFile(file);
+    setError(null);
+    setExtractedPages([]);
+    setEditedText("");
+    setDownloadSuccess(false);
+
+    // Generate thumbnail from first page
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 0.5 });
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      if (context) {
+        await page.render({ canvasContext: context, viewport, canvas }).promise;
+        setPdfThumbnail(canvas.toDataURL("image/png"));
+      }
+    } catch {
+      setPdfThumbnail("");
+    }
+  };
+
+  // Step 2 → Step 3: Convert
+  const startConversion = () => {
+    if (pdfFile) {
+      processPdf(pdfFile);
     }
   };
 
   const processPdf = async (file: File) => {
-    setPdfFile(file);
     setLoading(true);
     setError(null);
     setExtractedPages([]);
@@ -129,8 +176,8 @@ export default function PdfToWord() {
         if (conversionMode === "ocr") {
           setCurrentProgress(`Rendering page ${i} of ${totalPages} for high-res scanning...`);
           const page = await pdf.getPage(i);
-          const viewport = page.getViewport({ scale: 1.5 }); // 1.5x scaling provides great text clarity for optical OCR
-          
+          const viewport = page.getViewport({ scale: 1.5 });
+
           const canvas = document.createElement("canvas");
           const context = canvas.getContext("2d");
           canvas.height = viewport.height;
@@ -146,7 +193,7 @@ export default function PdfToWord() {
             canvas: canvas,
           };
           await page.render(renderContext).promise;
-          
+
           setCurrentProgress(`Performing AI OCR layout scan on page ${i} of ${totalPages}...`);
           const dataUrl = canvas.toDataURL("image/png");
           const base64Data = dataUrl.split(",")[1];
@@ -186,9 +233,7 @@ export default function PdfToWord() {
           setCurrentProgress(`Analyzing page ${i} of ${totalPages}...`);
           const page = await pdf.getPage(i);
           const textContent = await page.getTextContent();
-          
-          let lastY = -1;
-          let pText = "";
+
           const lines: { y: number; text: string }[] = [];
 
           // Build logical lines based on element coordinate spacing
@@ -196,10 +241,8 @@ export default function PdfToWord() {
             const str = item.str || "";
             if (!str.trim()) return;
 
-            // Find Y coordinate of this text box
             const currentY = item.transform ? item.transform[5] : -1;
 
-            // If close enough to previous coordinate, append to current line; else push a new line
             const lastLine = lines[lines.length - 1];
             if (lastLine && Math.abs(lastLine.y - currentY) < 4) {
               lastLine.text += (lastLine.text.endsWith(" ") || str.startsWith(" ") ? "" : " ") + str;
@@ -214,22 +257,18 @@ export default function PdfToWord() {
 
           lines.forEach((line, index) => {
             const text = line.text.trim();
-            
-            // Heuristic to detect headings: short line, capitalized, or structural breaks
-            const isHeading = text.length < 60 && 
+
+            const isHeading = text.length < 60 &&
               (text === text.toUpperCase() || /^[0-9]\.?\s+[A-Z]/.test(text) || text.length < 25);
 
             if (isHeading) {
-              // Commit buffer as standard paragraph
               if (lineBuffer.length > 0) {
                 pageTextContent += lineBuffer.join(" ") + "\r\n\r\n";
                 lineBuffer = [];
               }
-              // Add heading with clean newlines
               pageTextContent += `[HEADING] ${text}\r\n\r\n`;
             } else {
               lineBuffer.push(text);
-              // If line ends with period, or it's the last line of the page, commit as a complete paragraph block
               if (text.endsWith(".") || text.endsWith("?") || text.endsWith("!") || index === lines.length - 1) {
                 pageTextContent += lineBuffer.join(" ") + "\r\n\r\n";
                 lineBuffer = [];
@@ -237,7 +276,6 @@ export default function PdfToWord() {
             }
           });
 
-          // Add any remaining line buffers
           if (lineBuffer.length > 0) {
             pageTextContent += lineBuffer.join(" ") + "\r\n\r\n";
           }
@@ -257,7 +295,6 @@ export default function PdfToWord() {
 
       setExtractedPages(parsedPages);
 
-      // Merge all text blocks to display inside the WYSIWYG editor
       let fullMergedText = "";
       parsedPages.forEach((item, index) => {
         if (index > 0 && addPageBreaks) {
@@ -284,7 +321,7 @@ export default function PdfToWord() {
     const cleanWordText = editedText.replace(/--- PAGE BREAK: PAGE \d+ ---/g, "");
     const words = cleanWordText.split(/\s+/).filter(Boolean).length;
     const characters = cleanWordText.length;
-    const readingTime = Math.max(1, Math.round(words / 200)); // 200 words per minute average
+    const readingTime = Math.max(1, Math.round(words / 200));
     return { words, characters, paragraphs, readingTime };
   };
 
@@ -296,44 +333,45 @@ export default function PdfToWord() {
     setCopied(true);
   };
 
-  const clearAll = () => {
-    if (confirm("Are you sure you want to discard your current converted file?")) {
-      setPdfFile(null);
-      setExtractedPages([]);
-      setEditedText("");
-      setError(null);
-    }
+  const resetAll = () => {
+    setPdfFile(null);
+    setExtractedPages([]);
+    setEditedText("");
+    setError(null);
+    setPdfThumbnail("");
+    setDownloadSuccess(false);
+    setShowEditor(false);
+    setShowSettings(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Advanced MS Word download builder (generates compliant HTML/MSWord standard)
+  // Advanced MS Word download builder
   const downloadAsWord = () => {
     if (!editedText) return;
-    
-    // Select styling parameters based on user configurations
-    let primaryColor = "#1e293b"; // Slate-800
-    let titleColor = "#0f172a"; // Slate-900
-    let headingColor = "#0d9488"; // Teal-600
+
+    let primaryColor = "#1e293b";
+    let titleColor = "#0f172a";
+    let headingColor = "#0d9488";
     let fontStack = "Calibri, Helvetica, sans-serif";
-    
+
     if (documentFont === "Times New Roman") fontStack = "'Times New Roman', Georgia, serif";
     else if (documentFont === "Georgia") fontStack = "Georgia, serif";
     else if (documentFont === "Arial") fontStack = "Arial, sans-serif";
     else if (documentFont === "Courier New") fontStack = "'Courier New', monospace";
 
     if (documentTheme === "professional") {
-      headingColor = "#2563eb"; // Royal Blue
+      headingColor = "#2563eb";
     } else if (documentTheme === "minimal") {
-      headingColor = "#111827"; // Carbon dark
+      headingColor = "#111827";
       titleColor = "#111827";
     } else if (documentTheme === "editorial") {
-      headingColor = "#b91c1c"; // Bordeaux red
+      headingColor = "#b91c1c";
       titleColor = "#450a0a";
     }
 
     const marginValue = "1.0in";
     const lineSpacingValue = lineSpacing;
 
-    // Convert raw editor markup to beautiful HTML layout inside word processor document container
     const rawParagraphs = editedText.split(/\r?\n\s*\r?\n/);
     let htmlParagraphsOutput = "";
 
@@ -349,7 +387,6 @@ export default function PdfToWord() {
         const headingText = trimmed.replace("[HEADING]", "").trim();
         htmlParagraphsOutput += `<h2 style="font-family: ${fontStack}; font-size: 16pt; color: ${headingColor}; font-weight: bold; margin-top: 18pt; margin-bottom: 6pt; border-bottom: 1px solid #f1f5f9; padding-bottom: 3px;">${headingText}</h2>`;
       } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-        // Render simple clean list style
         const itemText = trimmed.slice(2).trim();
         htmlParagraphsOutput += `<p style="font-family: ${fontStack}; font-size: 11pt; color: ${primaryColor}; margin-left: 20pt; text-indent: -10pt; line-height: ${lineSpacingValue}; margin-bottom: 4pt;">&bull; &nbsp; ${itemText}</p>`;
       } else {
@@ -361,7 +398,7 @@ export default function PdfToWord() {
 <head>
   <style>
     @page {
-      size: 8.5in 11.0in; /* Letter */
+      size: 8.5in 11.0in;
       margin: ${marginValue} ${marginValue} ${marginValue} ${marginValue};
       mso-header-margin: .5in;
       mso-footer-margin: .5in;
@@ -406,11 +443,11 @@ export default function PdfToWord() {
   // Simple editor formatting helper actions
   const applyTextTransformer = (action: "uppercase" | "lowercase" | "capitalize" | "heading" | "bullet") => {
     if (!editedText || !editorRef.current) return;
-    
+
     const textarea = editorRef.current;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    
+
     if (start === end) {
       alert("Please highlight/select a segment of text inside the editor viewport to format it.");
       return;
@@ -439,8 +476,7 @@ export default function PdfToWord() {
 
     const newText = editedText.substring(0, start) + transformed + editedText.substring(end);
     setEditedText(newText);
-    
-    // Refocus with delay to preserve cursor
+
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start, start + transformed.length);
@@ -452,451 +488,351 @@ export default function PdfToWord() {
     setEditedText(updated.trim());
   };
 
-  return (
-    <div className="space-y-8 animate-fade-in text-left">
-      {/* Tool Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 px-3 py-1 bg-rose-50 rounded-full">
-            PDF Word Processor
-          </span>
-          <h2 className="text-2xl font-semibold text-slate-800 tracking-tight mt-1.5">
-            PDF to Word Converter
-          </h2>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">
-            Extract document streams page-by-page. Analyze document layout formatting to preserve headings, sentences, lists, and output beautifully formatted editable Microsoft Word .DOC layouts instantly.
-          </p>
-        </div>
-      </div>
+  // Determine current flow state
+  const isState1 = !pdfFile && !loading;
+  const isState2 = pdfFile && !editedText && !loading;
+  const isState3 = editedText.length > 0;
+  const isLoading = loading;
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Side: Drag Setup & Configuration Controls */}
-        <div className="lg:col-span-4 space-y-6">
-          
-          {/* Main upload arena box */}
+  return (
+    <div className="animate-fade-in">
+
+      {/* ═══════════════ STATE 1: UPLOAD HERO ═══════════════ */}
+      {isState1 && (
+        <div className="flex flex-col items-center py-12 sm:py-20 text-center animate-fade-in max-w-5xl mx-auto px-4">
+          <h1 className="text-4xl sm:text-[44px] font-extrabold text-on-surface tracking-tight mb-4">
+            PDF to Word Converter
+          </h1>
+          <p className="text-base sm:text-lg text-outline-variant max-w-2xl mx-auto leading-relaxed mb-12">
+            Transform your non-editable PDFs into fully formatted Microsoft Word
+            documents. High accuracy OCR included.
+          </p>
+
+          {/* Large Dropzone */}
           <div
             onDragEnter={handleDrag}
             onDragOver={handleDrag}
             onDragLeave={handleDrag}
             onDrop={handleDrop}
-            className={`min-h-[200px] rounded-2xl border-2 border-dashed transition-all flex flex-col justify-center items-center p-6 bg-white relative ${
+            className={`relative w-full max-w-3xl h-64 sm:h-72 border-2 border-dashed rounded-xl flex flex-col items-center justify-center transition-all bg-surface-container-lowest ${
               dragActive
-                ? "border-rose-500 bg-rose-50/50 scale-[0.99]"
-                : "border-slate-200 hover:border-rose-450"
+                ? "border-primary bg-primary-fixed/30 scale-[1.01]"
+                : "border-outline-variant/60 hover:border-primary/50 hover:bg-surface-container-low/50"
             }`}
           >
             <input
               type="file"
               ref={fileInputRef}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               onChange={handleFileChange}
               accept=".pdf,application/pdf"
-              disabled={loading}
             />
-
-            {loading ? (
-              <div className="text-center space-y-4">
-                <Loader2 className="w-12 h-12 text-rose-500 animate-spin mx-auto" />
-                <div>
-                  <h4 className="font-semibold text-slate-700">Deconstructing PDF Layers...</h4>
-                  <p className="text-xs text-rose-600 font-mono mt-1 animate-pulse">{currentProgress}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center space-y-3">
-                <div className="w-14 h-14 bg-rose-50 rounded-full flex items-center justify-center mx-auto text-rose-600 shadow-sm">
-                  <FileType size={24} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-800 text-sm">
-                    {pdfFile ? pdfFile.name : "Drag your PDF report here"}
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-1 font-sans">
-                    Or <span className="text-rose-600 underline font-semibold">browse computer system directory</span>
-                  </p>
-                  <p className="text-[10px] text-slate-400 mt-2">Supports digital document text extraction.</p>
-                </div>
-              </div>
-            )}
+            <div className="w-14 h-14 bg-primary text-white rounded-DEFAULT flex items-center justify-center mb-5 shadow-sm">
+              <FileType size={28} />
+            </div>
+            <h3 className="text-xl font-bold text-on-surface mb-2">Drag & Drop your PDF here</h3>
+            <p className="text-sm text-outline-variant">
+              or click to browse from your device
+            </p>
           </div>
 
+          {/* Security Pill */}
+          <div className="mt-8 mb-16 inline-flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full border border-surface-container-highest">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-outline">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span className="text-xs font-bold text-on-surface-variant">Secure conversion. Files are automatically deleted after 1 hour.</span>
+          </div>
+
+          {/* Error Message */}
           {error && (
-            <div className="bg-amber-50 text-amber-800 p-4 border border-amber-100 rounded-2xl flex items-start gap-3">
-              <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={17} />
-              <div className="space-y-1 text-xs">
-                <p className="font-semibold leading-tight">Image-Only Scanning Notice</p>
-                <p className="text-slate-600 leading-relaxed font-sans">{error}</p>
-              </div>
+            <div className="mb-12 bg-red-50 text-red-700 p-4 border border-red-100 rounded-DEFAULT flex items-center justify-center gap-3 w-full max-w-3xl">
+              <AlertTriangle className="text-red-500 shrink-0" size={18} />
+              <p className="text-sm font-medium">{error}</p>
             </div>
           )}
 
-          {/* Conversion Mode Controls */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-4">
-            <div>
-              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <Sparkles size={16} className="text-rose-500" />
-                Intelligence & OCR Settings
-              </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                Choose the layer analysis model for scanning and converting content.
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+            <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-8 text-left shadow-sm">
+              <div className="w-10 h-10 flex items-center justify-center text-primary mb-5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                  <line x1="9" y1="20" x2="15" y2="20"></line>
+                  <line x1="12" y1="4" x2="12" y2="20"></line>
+                </svg>
+              </div>
+              <h4 className="text-lg font-bold text-on-surface mb-3">Retain Formatting</h4>
+              <p className="text-sm text-outline leading-relaxed">
+                Paragraphs, tables, and lists remain intact just like the original document.
               </p>
             </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setConversionMode("standard")}
-                className={`py-2.5 px-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
-                  conversionMode === "standard"
-                    ? "border-rose-500 bg-rose-50/60 text-rose-700 font-bold"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50 font-medium"
-                }`}
-              >
-                <FileType size={16} className={conversionMode === "standard" ? "text-rose-600" : "text-slate-400"} />
-                <div className="text-xs">Standard (Fast)</div>
-                <div className="text-[9px] opacity-75 leading-none">Digital text layers</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setConversionMode("ocr")}
-                className={`py-2.5 px-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
-                  conversionMode === "ocr"
-                    ? "border-rose-500 bg-rose-50/60 text-rose-700 font-bold"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50 font-medium"
-                }`}
-              >
-                <Sparkles size={16} className={conversionMode === "ocr" ? "text-rose-600 animate-pulse" : "text-slate-400"} />
-                <div className="text-xs">AI OCR Scanner</div>
-                <div className="text-[9px] opacity-75 leading-none">Images & Scanned Pages</div>
-              </button>
-            </div>
-            
-            {conversionMode === "ocr" && (
-              <div className="bg-amber-50 text-amber-800 p-3 rounded-xl border border-amber-100 text-[10px] leading-relaxed font-medium">
-                🛡️ AI OCR mode transcribes layouts pixel-by-pixel. Recommended for unselectable text, non-searchable scans, complex tables, and high-fidelity Arabic content.
+            <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-8 text-left shadow-sm">
+              <div className="w-10 h-10 flex items-center justify-center text-primary mb-5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <circle cx="10" cy="13" r="2"></circle>
+                  <line x1="11.41" y1="14.41" x2="14" y2="17"></line>
+                </svg>
               </div>
-            )}
-          </div>
-
-          {/* Configuration Parameters Panel */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-5">
-            <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2 border-b border-slate-50 pb-2">
-              <Settings size={15} className="text-rose-600" />
-              Word Processor Template Settings
-            </h3>
-
-            {/* Font Style Selection */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-500 block">Output Primary Font Style</label>
-              <select
-                value={documentFont}
-                onChange={(e: any) => setDocumentFont(e.target.value)}
-                disabled={!editedText}
-                className="w-full text-xs font-medium bg-slate-50 disabled:opacity-50 border border-slate-200 p-3 rounded-xl focus:bg-white outline-none text-slate-700 cursor-pointer"
-              >
-                <option value="Calibri">Calibri Corporate (Standard Office Template)</option>
-                <option value="Arial">Arial Clean (Geometric Modern Layout)</option>
-                <option value="Times New Roman">Times New Roman Editorial (Traditional Academic)</option>
-                <option value="Georgia">Georgia Storybook (Premium Literary Serif Style)</option>
-                <option value="Courier New">Courier New Codework (Fixed Pitch Monospace)</option>
-              </select>
+              <h4 className="text-lg font-bold text-on-surface mb-3">Advanced OCR</h4>
+              <p className="text-sm text-outline leading-relaxed">
+                Extract text from scanned documents accurately with our built-in OCR technology.
+              </p>
             </div>
+            <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-8 text-left shadow-sm">
+              <div className="w-10 h-10 flex items-center justify-center text-primary mb-5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <h4 className="text-lg font-bold text-on-surface mb-3">Lightning Fast</h4>
+              <p className="text-sm text-outline leading-relaxed">
+                Experience near-instant conversions, saving you valuable time on complex files.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
-            {/* Layout Color Palette Theme */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-500 block">Heading Color Palette</label>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { value: "standard", label: "Corporate Teal" },
-                  { value: "professional", label: "Executive Blue" },
-                  { value: "minimal", label: "Ink Charcoal" },
-                  { value: "editorial", label: "Bordeaux Crimson" }
-                ].map((themeOpt) => (
+      {/* ═══════════════ STATE 2: PREVIEW + OPTIONS ═══════════════ */}
+      {isState2 && !isLoading && (
+        <div className="flex flex-col items-center py-8 sm:py-14 animate-fade-in">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight text-center">
+            PDF to WORD Converter
+          </h2>
+          <p className="text-sm text-outline mt-2 text-center">Ready to convert your document</p>
+
+          <div className="mt-8 w-full max-w-2xl">
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 sm:p-8 shadow-none">
+              {/* File Preview Row */}
+              <div className="flex items-center gap-5">
+                {/* Thumbnail */}
+                <div className="w-20 h-28 sm:w-24 sm:h-32 shrink-0 rounded-DEFAULT border border-outline-variant bg-surface-container-low overflow-hidden flex items-center justify-center shadow-inner">
+                  {pdfThumbnail ? (
+                    <img src={pdfThumbnail} alt="PDF preview" className="w-full h-full object-contain" />
+                  ) : (
+                    <FileText size={32} className="text-outline-variant" />
+                  )}
+                </div>
+
+                {/* File Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-on-surface truncate">{pdfFile?.name}</p>
+                  <p className="text-xs text-outline-variant mt-1 font-mono">
+                    {pdfFile ? `${(pdfFile.size / 1024).toFixed(0)} KB` : ""}
+                  </p>
                   <button
-                    key={themeOpt.value}
                     type="button"
-                    onClick={() => setDocumentTheme(themeOpt.value as any)}
-                    disabled={!editedText}
-                    className={`py-2 px-2 disabled:opacity-50 text-[10px] sm:text-xs font-bold rounded-xl border text-center transition-all cursor-pointer truncate ${
-                      documentTheme === themeOpt.value
-                        ? "border-rose-500 bg-rose-50/50 text-rose-700"
-                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    onClick={resetAll}
+                    className="mt-3 text-xs text-outline-variant hover:text-red-500 flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <Trash2 size={12} /> Remove
+                  </button>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-surface-container-highest my-6"></div>
+
+              {/* Conversion Mode Selection */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-outline uppercase tracking-wider">Conversion Mode</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setConversionMode("standard")}
+                    className={`p-4 rounded-DEFAULT border-2 text-left transition-all cursor-pointer ${
+                      conversionMode === "standard"
+                        ? "border-primary bg-primary-fixed/50"
+                        : "border-outline-variant hover:border-outline"
                     }`}
                   >
-                    {themeOpt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Line Spacing Settings */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-500 block">Line Spacing Height</label>
-              <select
-                value={lineSpacing}
-                onChange={(e: any) => setLineSpacing(e.target.value)}
-                disabled={!editedText}
-                className="w-full text-xs font-medium bg-slate-50 disabled:opacity-50 border border-slate-200 p-3 rounded-xl focus:bg-white outline-none text-slate-700 cursor-pointer"
-              >
-                <option value="1.0">Single Space (1.0)</option>
-                <option value="1.15">Standard Executive Space (1.15)</option>
-                <option value="1.5">Comfortable Wide (1.5)</option>
-                <option value="2.0">Double Space (2.0)</option>
-              </select>
-            </div>
-
-            {/* Preservation Options */}
-            <div className="space-y-2 pt-1 border-t border-slate-50">
-              <label className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-slate-600">
-                <input
-                  type="checkbox"
-                  checked={addPageBreaks}
-                  disabled={!editedText}
-                  onChange={(e) => setAddPageBreaks(e.target.checked)}
-                  className="w-4 h-4 text-rose-600 border-slate-300 rounded focus:ring-rose-500 cursor-pointer"
-                />
-                <span>Preserve Page Breaks as Section Dividers</span>
-              </label>
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Right Side: Interactive Smart Editor & Action Output Deck */}
-        <div className="lg:col-span-8 space-y-6">
-          
-          {!editedText ? (
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-10 text-center space-y-4 flex flex-col items-center justify-center min-h-[350px]">
-              <div className="w-16 h-16 bg-slate-50 border border-slate-100 text-slate-400 rounded-2xl flex items-center justify-center shadow-inner">
-                <BookOpen size={28} />
-              </div>
-              <div className="space-y-1 max-w-md">
-                <h3 className="font-bold text-slate-800 text-base">Workspace Content View Empty</h3>
-                <p className="text-xs text-slate-500 font-sans leading-relaxed">
-                  Upload a standard PDF text report. Upon analyzing files, a draft document will compile here where you can write, edit, and optimize styling before generating MS Word outputs.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4 animate-slide-up">
-              
-              {/* Fallback Warning Box */}
-              {extractedPages.some((p) => p.isFallback) && (
-                <div className="bg-amber-50 rounded-2xl p-4.5 border border-amber-200/60 flex gap-3 text-amber-905 items-start shadow-xs font-sans text-xs">
-                  <AlertTriangle className="shrink-0 text-amber-600 mt-0.5" size={18} />
-                  <div className="space-y-1.5 text-xs text-amber-900 leading-relaxed">
-                    <h4 className="font-bold tracking-tight text-slate-900">
-                      AI Project Quota Reached or Prepayment Depleted (RESOURCE_EXHAUSTED)
-                    </h4>
-                    <p className="text-[11px] leading-relaxed text-amber-800">
-                      Your OpenAI API quota is completed or has run out of prepay key credits. To ensure continuous testing of the PDF-to-Word layouts, the system has automatically rendered a high-fidelity formatted document fallback.
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-bold ${conversionMode === "standard" ? "text-primary-container" : "text-on-surface-variant"}`}>
+                        NO OCR
+                      </span>
+                      {conversionMode === "standard" && (
+                        <div className="w-5 h-5 rounded-DEFAULT bg-primary flex items-center justify-center">
+                          <Check size={12} className="text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-outline mt-1.5 leading-relaxed">
+                      Convert PDFs with selectable text into editable Word files.
                     </p>
-                    {extractedPages.find((p) => p.apiError)?.apiError && (
-                      <div className="mt-2 text-left">
-                        <p className="text-[10px] font-bold text-amber-800 uppercase tracking-tight">Exact API Error Response:</p>
-                        <p className="font-mono text-[9px] bg-white/70 p-2.5 rounded-xl border border-amber-200/50 leading-relaxed text-amber-950 break-words select-all mt-1">
-                          {(() => {
-                            const rawError = extractedPages.find((p) => p.apiError)?.apiError || "";
-                            if (!rawError) return "";
-                            const trimmed = rawError.trim();
-                            try {
-                              if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
-                                const parsed = JSON.parse(trimmed);
-                                if (parsed.error && parsed.error.message) {
-                                  return parsed.error.message;
-                                }
-                                if (parsed.message) {
-                                  return parsed.message;
-                                }
-                              }
-                            } catch (e) {}
-                            try {
-                              const matchMessage = trimmed.match(/"message"\s*:\s*"([^"]+)"/);
-                              if (matchMessage && matchMessage[1]) {
-                                return matchMessage[1].replace(/\\"/g, '"');
-                              }
-                            } catch (_) {}
-                            return rawError;
-                          })()}
-                        </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setConversionMode("ocr")}
+                    className={`p-4 rounded-DEFAULT border-2 text-left transition-all cursor-pointer ${
+                      conversionMode === "ocr"
+                        ? "border-primary bg-primary-fixed/50"
+                        : "border-outline-variant hover:border-outline"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold ${conversionMode === "ocr" ? "text-primary-container" : "text-on-surface-variant"}`}>
+                          OCR
+                        </span>
+                        <span className="text-[9px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-DEFAULT font-bold">AI</span>
                       </div>
-                    )}
-                  </div>
+                      {conversionMode === "ocr" && (
+                        <div className="w-5 h-5 rounded-DEFAULT bg-primary flex items-center justify-center">
+                          <Check size={12} className="text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-outline mt-1.5 leading-relaxed">
+                      Convert scanned PDFs with non-selectable text into editable Word files.
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {conversionMode === "ocr" && (
+                <div className="mt-3 bg-amber-50 text-amber-800 p-3 rounded-DEFAULT border border-amber-100 text-[11px] leading-relaxed font-medium">
+                  🛡️ AI OCR mode transcribes layouts pixel-by-pixel. Recommended for scanned documents, complex tables, and Arabic content.
                 </div>
               )}
 
-              {/* Active Document Stats Ribbon */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-xs">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Word Index</span>
-                  <span className="text-base font-bold text-slate-800 font-mono mt-0.5 block">{stats.words} words</span>
+              {error && (
+                <div className="mt-4 bg-amber-50 text-amber-800 p-4 border border-amber-100 rounded-DEFAULT flex items-start gap-3">
+                  <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={17} />
+                  <p className="text-xs leading-relaxed">{error}</p>
                 </div>
-                <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-xs">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Density</span>
-                  <span className="text-base font-bold text-slate-800 font-mono mt-0.5 block">{stats.characters} chars</span>
-                </div>
-                <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-xs">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Paragraph Map</span>
-                  <span className="text-base font-bold text-slate-800 font-mono mt-0.5 block">{stats.paragraphs} blocks</span>
-                </div>
-                <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-xs">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Reading Duration</span>
-                  <span className="text-base font-bold text-slate-800 font-mono mt-0.5 block">~{stats.readingTime} min read</span>
-                </div>
-              </div>
+              )}
 
-              {/* Advanced Editor Deck container */}
-              <div className="bg-white border border-slate-200/85 rounded-3xl overflow-hidden shadow-sm flex flex-col">
-                
-                {/* Visual Editor Action Toolbar */}
-                <div className="bg-slate-50/85 border-b border-slate-100 px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    
-                    <button
-                      type="button"
-                      onClick={() => applyTextTransformer("heading")}
-                      title="Wrap select text into H2 Heading"
-                      className="p-1 px-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-[10px] sm:text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
-                    >
-                      <Type size={12} className="text-rose-600" /> Heading Accent
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => applyTextTransformer("bullet")}
-                      title="Prefix dashed bullet layout"
-                      className="p-1 px-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-[10px] sm:text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
-                    >
-                      <List size={12} className="text-rose-600" /> List Bullet
-                    </button>
-
-                    <div className="w-[1px] h-5 bg-slate-200 mx-1"></div>
-
-                    <button
-                      type="button"
-                      onClick={() => applyTextTransformer("uppercase")}
-                      title="Transform block to UPPERCASE"
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-[10px] font-bold text-slate-650 cursor-pointer"
-                    >
-                      AA
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => applyTextTransformer("lowercase")}
-                      title="Transform block to lowercase"
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-[10px] font-bold text-slate-650 cursor-pointer"
-                    >
-                      aa
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => applyTextTransformer("capitalize")}
-                      title="Transform block to Capitalized Word Cases"
-                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-[10px] font-bold text-slate-650 cursor-pointer"
-                    >
-                      Aa
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={removePageBreaks}
-                      title="Remove all structural Page breaks section tags"
-                      className="p-1 px-2.5 rounded-lg border border-rose-100 bg-rose-50/50 hover:bg-rose-100 text-[10px] font-bold text-rose-700 cursor-pointer transition-colors"
-                    >
-                      Strip Page Breaks
-                    </button>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={clearAll}
-                      title="Discard file"
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Main Text Contentarea Viewport */}
-                <div className="relative">
-                  <textarea
-                    ref={editorRef}
-                    value={editedText}
-                    onChange={(e) => setEditedText(e.target.value)}
-                    className="w-full min-h-[380px] max-h-[500px] p-6 text-xs sm:text-sm font-sans text-slate-700 leading-relaxed outline-none border-none resize-y bg-white/50 block focus:bg-white transition-all select-text"
-                    placeholder="Extracted file textual layouts appear here..."
-                    spellCheck="false"
-                  />
-                  <div className="bg-slate-50 border-t border-slate-100 px-5 py-2.5 flex justify-between items-center text-[10px] text-slate-400 font-mono">
-                    <span>💡 Tip: Highlight specific text and click "Heading Accent" or "List Bullet" to inject custom Word formatting tags</span>
-                    <span>Scroll to edit text manually</span>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Action Buttons Desk (Word, Text, Clipboard options) */}
-              <div className="bg-slate-100 border border-slate-200/60 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 justify-between items-center">
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={handleCopyText}
-                    className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 bg-white px-4 py-2.5 rounded-xl transition-all font-semibold cursor-pointer active:scale-[0.98] shadow-xs"
-                  >
-                    {copied ? (
-                      <>
-                        <Check size={14} className="text-emerald-500" /> Copied Text!
-                      </>
-                    ) : (
-                      <>
-                        <Clipboard size={14} className="text-slate-500" /> Copy Raw Text
-                      </>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={downloadAsTxt}
-                    className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 bg-white px-4 py-2.5 rounded-xl transition-all font-semibold cursor-pointer active:scale-[0.98] shadow-xs"
-                  >
-                    <span>Raw TXT Plain</span>
-                  </button>
-                </div>
-
-                <div className="w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={downloadAsWord}
-                    className={`w-full sm:w-auto flex items-center justify-center gap-2 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition-all cursor-pointer shadow-md shadow-rose-500/10 active:scale-95 ${
-                      downloadSuccess 
-                        ? "bg-emerald-600 hover:bg-emerald-700"
-                        : "bg-rose-600 hover:bg-rose-700"
-                    }`}
-                  >
-                    {downloadSuccess ? (
-                      <>
-                        <Check size={15} /> Finalized File Downloaded!
-                      </>
-                    ) : (
-                      <>
-                        <Download size={15} /> Generate Docx Word File
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
+              {/* Convert Button */}
+              <button
+                type="button"
+                onClick={startConversion}
+                className="mt-6 w-full py-4 bg-primary hover:bg-primary-container text-white font-bold text-sm sm:text-base rounded-DEFAULT shadow-lg shadow-primary/20 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+              >
+                Convert to WORD
+                <ArrowRight size={18} />
+              </button>
             </div>
-          )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════ LOADING STATE ═══════════════ */}
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
+          <div className="w-20 h-20 rounded-DEFAULT bg-primary-fixed flex items-center justify-center mb-6">
+            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          </div>
+          <h3 className="text-xl font-bold text-on-surface">Converting your document...</h3>
+          <p className="text-sm text-primary font-mono mt-3 animate-pulse max-w-md">{currentProgress}</p>
+          <div className="mt-6 w-64 h-1.5 bg-surface-container rounded-DEFAULT overflow-hidden">
+            <div className="h-full bg-primary rounded-DEFAULT animate-pulse" style={{ width: "60%" }}></div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════ STATE 3: SUCCESS + DOWNLOAD + EDITOR ═══════════════ */}
+      {isState3 && !isLoading && (
+        <div className="animate-fade-in">
+          {/* Success Header */}
+          <div className="text-center py-8 sm:py-12">
+            <div className="w-16 h-16 bg-primary-fixed rounded-DEFAULT flex items-center justify-center mx-auto mb-5">
+              <FileCheck size={28} className="text-primary" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight">
+              Your PDF has been converted to an editable WORD document
+            </h2>
+            <p className="text-sm text-outline mt-3 max-w-lg mx-auto">
+              {pdfFile?.name} — {stats.words} words, {extractedPages.length} pages extracted
+            </p>
+
+            {/* Fallback Warning */}
+            {extractedPages.some((p) => p.isFallback) && (
+              <div className="mt-5 max-w-xl mx-auto bg-amber-50 rounded-DEFAULT p-4 border border-amber-200/60 flex gap-3 text-left items-start shadow-none">
+                <AlertTriangle className="shrink-0 text-amber-600 mt-0.5" size={18} />
+                <div className="space-y-1 text-xs text-amber-900 leading-relaxed">
+                  <h4 className="font-bold tracking-tight text-on-surface">
+                    AI Quota Reached — Fallback Data Used
+                  </h4>
+                  <p className="text-[11px] text-amber-800">
+                    Your OpenAI API quota has been exhausted. The system rendered a formatted document fallback. Set a valid API key to get real OCR results.
+                  </p>
+                  {extractedPages.find((p) => p.apiError)?.apiError && (
+                    <p className="font-mono text-[9px] bg-surface-container-lowest/70 p-2 rounded-lg border border-amber-200/50 text-amber-950 break-words mt-1">
+                      {(() => {
+                        const rawError = extractedPages.find((p) => p.apiError)?.apiError || "";
+                        if (!rawError) return "";
+                        try {
+                          const parsed = JSON.parse(rawError.trim());
+                          return parsed.error?.message || parsed.message || rawError;
+                        } catch { return rawError; }
+                      })()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+              <button
+                type="button"
+                onClick={resetAll}
+                className="flex items-center gap-2 px-5 py-3 rounded-DEFAULT border border-outline-variant text-on-surface-variant hover:bg-surface-container-low font-semibold text-sm transition-all cursor-pointer active:scale-95"
+              >
+                <ArrowLeft size={16} />
+                Convert another
+              </button>
+
+              <button
+                type="button"
+                onClick={downloadAsWord}
+                className={`flex items-center gap-2 px-10 py-4 rounded-lg font-bold text-base shadow-lg transition-all cursor-pointer active:scale-95 ${
+                  downloadSuccess
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20"
+                    : "bg-primary hover:bg-primary-container text-white shadow-primary/25"
+                }`}
+              >
+                {downloadSuccess ? (
+                  <>
+                    <Check size={18} /> Downloaded!
+                  </>
+                ) : (
+                  <>
+                    <Download size={18} /> Download WORD
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Secondary Actions */}
+            <div className="flex items-center justify-center gap-4 mt-4">
+              <button
+                type="button"
+                onClick={handleCopyText}
+                className="text-xs text-outline hover:text-primary flex items-center gap-1 transition-colors cursor-pointer font-medium"
+              >
+                {copied ? <><Check size={13} className="text-emerald-500" /> Copied!</> : <><Clipboard size={13} /> Copy Text</>}
+              </button>
+              <span className="text-slate-200">|</span>
+              <button
+                type="button"
+                onClick={downloadAsTxt}
+                className="text-xs text-outline hover:text-primary flex items-center gap-1 transition-colors cursor-pointer font-medium"
+              >
+                <FileText size={13} /> Download TXT
+              </button>
+            </div>
+          </div>
+
 
         </div>
-
-      </div>
-
+      )}
     </div>
   );
 }

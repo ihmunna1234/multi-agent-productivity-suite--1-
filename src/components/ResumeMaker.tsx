@@ -649,43 +649,43 @@ export default function ResumeMaker() {
   };
 
   return (
-    <div className="space-y-6 text-slate-800">
+    <div className="space-y-6 text-on-surface">
       
       {/* Title block */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-surface-container-lowest rounded-lg p-6 border border-surface-container-highest shadow-none flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
-          <span className="text-[10px] bg-teal-50 text-teal-700 font-bold px-2 py-1 rounded uppercase tracking-wider">
+          <span className="text-[10px] bg-primary-fixed text-primary-container font-bold px-2 py-1 rounded uppercase tracking-wider">
             AI Multi-Agent Suite
           </span>
-          <h2 className="text-xl font-bold font-sans text-slate-800 flex items-center gap-2">
-            <Plus className="text-teal-600" size={20} />
+          <h2 className="text-xl font-bold font-sans text-on-surface flex items-center gap-2">
+            <Plus className="text-primary" size={20} />
             Creative Resume Studio
           </h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-outline-variant">
             Construct high-fidelity, ATS-optimized print-ready blueprints with side-by-side OpenAI AI support.
           </p>
         </div>
 
         {/* Toolbar Preset launchpads */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mr-1">
+          <span className="text-[10px] text-outline-variant font-bold uppercase tracking-wider mr-1">
             Presets:
           </span>
           <button 
             onClick={() => loadPreset("software_engineer")}
-            className="text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer"
+            className="text-[11px] font-semibold bg-surface-container-low hover:bg-surface-container text-on-surface-variant px-2.5 py-1.5 rounded-lg border border-outline-variant transition-all cursor-pointer"
           >
             Software
           </button>
           <button 
             onClick={() => loadPreset("marketing_manager")}
-            className="text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer"
+            className="text-[11px] font-semibold bg-surface-container-low hover:bg-surface-container text-on-surface-variant px-2.5 py-1.5 rounded-lg border border-outline-variant transition-all cursor-pointer"
           >
             Growth Growth
           </button>
           <button 
             onClick={() => loadPreset("creative_director")}
-            className="text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer"
+            className="text-[11px] font-semibold bg-surface-container-low hover:bg-surface-container text-on-surface-variant px-2.5 py-1.5 rounded-lg border border-outline-variant transition-all cursor-pointer"
           >
             UI / UX
           </button>
@@ -699,7 +699,7 @@ export default function ResumeMaker() {
         <div className={`col-span-1 lg:col-span-6 space-y-6 ${viewMode === "preview" ? "hidden lg:block" : ""}`}>
           
           {/* Section Navigation Tabs */}
-          <div className="bg-white rounded-2xl p-2 border border-slate-100 shadow-sm flex flex-wrap gap-1">
+          <div className="bg-surface-container-lowest rounded-DEFAULT p-2 border border-surface-container-highest shadow-none flex flex-wrap gap-1">
             {[
               { id: "personal", label: "Contact", icon: <User size={14} /> },
               { id: "summary", label: "Summary", icon: <Sparkles size={14} /> },
@@ -711,10 +711,10 @@ export default function ResumeMaker() {
               <button
                 key={tab.id}
                 onClick={() => setActiveFormTab(tab.id as ActiveFormSection)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-DEFAULT text-xs font-semibold tracking-wide transition-all cursor-pointer ${
                   activeFormTab === tab.id
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                    ? "bg-inverse-surface text-white shadow-none"
+                    : "text-outline hover:bg-surface-container-low hover:text-on-surface"
                 }`}
               >
                 {tab.icon}
@@ -724,16 +724,16 @@ export default function ResumeMaker() {
           </div>
 
           {/* Tab Content Cards */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-5">
+          <div className="bg-surface-container-lowest rounded-lg p-6 border border-surface-container-highest shadow-none space-y-5">
             
             {/* Tabs View Mode helper on smaller screens */}
-            <div className="flex lg:hidden justify-between items-center pb-4 border-b border-slate-100">
-              <span className="text-xs font-bold uppercase tracking-wider text-teal-600">
+            <div className="flex lg:hidden justify-between items-center pb-4 border-b border-surface-container-highest">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
                 Form Editor ({activeFormTab})
               </span>
               <button 
                 onClick={() => setViewMode("preview")}
-                className="text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded"
+                className="text-xs font-semibold text-outline hover:text-on-surface flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded"
               >
                 <Eye size={14} /> View Layout
               </button>
@@ -742,17 +742,17 @@ export default function ResumeMaker() {
             {/* TAB: Personal Details */}
             {activeFormTab === "personal" && (
               <div className="space-y-4 animate-fade-in">
-                <h3 className="font-bold text-slate-800 text-sm">Personal Details</h3>
+                <h3 className="font-bold text-on-surface text-sm">Personal Details</h3>
                 
                 {/* Profile Image Box section */}
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-4 shadow-sm">
+                <div className="p-4 rounded-DEFAULT bg-surface-container-low border border-surface-container-highest space-y-4 shadow-none">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <Image size={14} className="text-teal-600" />
+                      <span className="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                        <Image size={14} className="text-primary" />
                         Profile Image Box
                       </span>
-                      <p className="text-[10px] text-slate-400">Add a professional headshot to your resume canvas</p>
+                      <p className="text-[10px] text-outline-variant">Add a professional headshot to your resume canvas</p>
                     </div>
                     
                     <label className="relative inline-flex items-center cursor-pointer select-none">
@@ -762,8 +762,8 @@ export default function ResumeMaker() {
                         onChange={(e) => handlePersonalChange("showProfileImage", e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
-                      <span className="ml-2 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                      <div className="w-9 h-5 bg-surface-container-high peer-focus:outline-none rounded-DEFAULT peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:border-outline after:border after:rounded-DEFAULT after:h-4 after:w-4 after:transition-all peer-checked:bg-inverse-surface"></div>
+                      <span className="ml-2 text-[10px] font-mono font-bold uppercase tracking-wider text-outline">
                         {resumeData.showProfileImage ? "Active" : "Hidden"}
                       </span>
                     </label>
@@ -773,7 +773,7 @@ export default function ResumeMaker() {
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-1 animate-fade-in">
                       {/* Image Preview & Upload zone (Col 4) */}
                       <div className="md:col-span-4 flex flex-col items-center justify-center">
-                        <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 bg-white flex flex-col items-center justify-center overflow-hidden relative group shadow-sm transition-all hover:border-teal-500">
+                        <div className="w-24 h-24 rounded-DEFAULT border-2 border-dashed border-outline-variant bg-surface-container-lowest flex flex-col items-center justify-center overflow-hidden relative group shadow-none transition-all hover:border-primary">
                           {resumeData.profileImage ? (
                             <>
                               <img 
@@ -793,8 +793,8 @@ export default function ResumeMaker() {
                               </div>
                             </>
                           ) : (
-                            <div className="flex flex-col items-center justify-center text-slate-400 p-2 text-center">
-                              <Camera size={18} className="mb-1 text-slate-400 animate-pulse" />
+                            <div className="flex flex-col items-center justify-center text-outline-variant p-2 text-center">
+                              <Camera size={18} className="mb-1 text-outline-variant animate-pulse" />
                               <span className="text-[9px] font-bold leading-tight">Click or Drag Image</span>
                             </div>
                           )}
@@ -819,18 +819,18 @@ export default function ResumeMaker() {
                       {/* URL Override & Presets (Col 8) */}
                       <div className="md:col-span-8 flex flex-col justify-between space-y-3">
                         <div className="space-y-1">
-                          <label className="text-[9px] font-mono text-slate-400 uppercase">Or Paste External Image URL</label>
+                          <label className="text-[9px] font-mono text-outline-variant uppercase">Or Paste External Image URL</label>
                           <input 
                             type="text"
                             value={resumeData.profileImage || ""}
                             onChange={(e) => handlePersonalChange("profileImage", e.target.value)}
                             placeholder="https://images.unsplash.com/... or data:image/..."
-                            className="w-full text-xs p-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-800 bg-white font-sans"
+                            className="w-full text-xs p-2 rounded-DEFAULT border border-outline-variant focus:outline-none focus:border-primary bg-surface-container-lowest font-sans"
                           />
                         </div>
 
                         <div className="space-y-1.5">
-                          <span className="text-[9px] font-mono text-slate-400 uppercase block">Quick Presets</span>
+                          <span className="text-[9px] font-mono text-outline-variant uppercase block">Quick Presets</span>
                           <div className="flex flex-wrap gap-2">
                             {[
                               { label: "Male Pro", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" },
@@ -842,8 +842,8 @@ export default function ResumeMaker() {
                                 key={idx}
                                 type="button"
                                 onClick={() => handlePersonalChange("profileImage", preset.url)}
-                                className={`text-[10px] bg-white border px-2 py-1.5 rounded-lg hover:bg-slate-100 transition-all cursor-pointer flex items-center gap-1 ${
-                                  resumeData.profileImage === preset.url ? "border-teal-600 text-teal-800 bg-teal-50/20" : "border-slate-200 text-slate-600"
+                                className={`text-[10px] bg-surface-container-lowest border px-2 py-1.5 rounded-lg hover:bg-surface-container transition-all cursor-pointer flex items-center gap-1 ${
+                                  resumeData.profileImage === preset.url ? "border-primary text-on-primary-fixed bg-primary-fixed/20" : "border-outline-variant text-on-surface-variant"
                                 }`}
                               >
                                 {preset.label}
@@ -858,69 +858,69 @@ export default function ResumeMaker() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-400 uppercase">Full Name</label>
+                    <label className="text-[10px] font-mono text-outline-variant uppercase">Full Name</label>
                     <input 
                       type="text" 
                       value={resumeData.fullName} 
                       onChange={(e) => handlePersonalChange("fullName", e.target.value)}
                       placeholder="e.g. Nasser Al-Otaibi"
-                      className="w-full text-xs p-3 rounded-xl border border-slate-200/80 focus:outline-none focus:border-slate-800 font-sans"
+                      className="w-full text-xs p-3 rounded-DEFAULT border border-outline-variant/80 focus:outline-none focus:border-primary font-sans"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-400 uppercase">Target Professional Title</label>
+                    <label className="text-[10px] font-mono text-outline-variant uppercase">Target Professional Title</label>
                     <input 
                       type="text" 
                       value={resumeData.title} 
                       onChange={(e) => handlePersonalChange("title", e.target.value)}
                       placeholder="e.g. Lead React Architect"
-                      className="w-full text-xs p-3 rounded-xl border border-slate-200/80 focus:outline-none focus:border-slate-800 font-sans"
+                      className="w-full text-xs p-3 rounded-DEFAULT border border-outline-variant/80 focus:outline-none focus:border-primary font-sans"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-400 uppercase">Email Address</label>
+                    <label className="text-[10px] font-mono text-outline-variant uppercase">Email Address</label>
                     <input 
                       type="email" 
                       value={resumeData.email} 
                       onChange={(e) => handlePersonalChange("email", e.target.value)}
                       placeholder="e.g. nasser@domain.com"
-                      className="w-full text-xs p-3 rounded-xl border border-slate-200/80 focus:outline-none focus:border-slate-800 font-sans"
+                      className="w-full text-xs p-3 rounded-DEFAULT border border-outline-variant/80 focus:outline-none focus:border-primary font-sans"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-400 uppercase">Phone Number</label>
+                    <label className="text-[10px] font-mono text-outline-variant uppercase">Phone Number</label>
                     <input 
                       type="text" 
                       value={resumeData.phone} 
                       onChange={(e) => handlePersonalChange("phone", e.target.value)}
                       placeholder="e.g. +966 50 123 4567"
-                      className="w-full text-xs p-3 rounded-xl border border-slate-200/80 focus:outline-none focus:border-slate-800 font-sans"
+                      className="w-full text-xs p-3 rounded-DEFAULT border border-outline-variant/80 focus:outline-none focus:border-primary font-sans"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-400 uppercase">Location / Residence</label>
+                    <label className="text-[10px] font-mono text-outline-variant uppercase">Location / Residence</label>
                     <input 
                       type="text" 
                       value={resumeData.location} 
                       onChange={(e) => handlePersonalChange("location", e.target.value)}
                       placeholder="e.g. Riyadh, Saudi Arabia"
-                      className="w-full text-xs p-3 rounded-xl border border-slate-200/80 focus:outline-none focus:border-slate-800 font-sans"
+                      className="w-full text-xs p-3 rounded-DEFAULT border border-outline-variant/80 focus:outline-none focus:border-primary font-sans"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-slate-400 uppercase">Portfolio / Website URL</label>
+                    <label className="text-[10px] font-mono text-outline-variant uppercase">Portfolio / Website URL</label>
                     <input 
                       type="text" 
                       value={resumeData.website} 
                       onChange={(e) => handlePersonalChange("website", e.target.value)}
                       placeholder="e.g. https://portfolio.com"
-                      className="w-full text-xs p-3 rounded-xl border border-slate-200/80 focus:outline-none focus:border-slate-800 font-sans"
+                      className="w-full text-xs p-3 rounded-DEFAULT border border-outline-variant/80 focus:outline-none focus:border-primary font-sans"
                     />
                   </div>
                 </div>
@@ -931,7 +931,7 @@ export default function ResumeMaker() {
             {activeFormTab === "summary" && (
               <div className="space-y-4 animate-fade-in">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-bold text-slate-800 text-sm">Professional Profile Summary</h3>
+                  <h3 className="font-bold text-on-surface text-sm">Professional Profile Summary</h3>
                   
                   {/* AI trigger */}
                   <button
@@ -940,21 +940,21 @@ export default function ResumeMaker() {
                       requestAiAssistance("write-summary", resumeData.summary);
                     }}
                     disabled={isAiProcessing}
-                    className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1.5 rounded-lg border border-teal-100 disabled:opacity-40 cursor-pointer hover:bg-teal-100"
+                    className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-primary-container bg-primary-fixed px-2.5 py-1.5 rounded-lg border border-primary-fixed-dim disabled:opacity-40 cursor-pointer hover:bg-primary-fixed-dim"
                   >
-                    <Sparkles size={12} className="animate-pulse text-teal-600" />
+                    <Sparkles size={12} className="animate-pulse text-primary" />
                     <span>AI Generate / Improve</span>
                   </button>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono text-slate-400 uppercase">Write a brief overview of your impact (2-4 sentences)</label>
+                  <label className="text-[10px] font-mono text-outline-variant uppercase">Write a brief overview of your impact (2-4 sentences)</label>
                   <textarea 
                     value={resumeData.summary} 
                     onChange={(e) => handlePersonalChange("summary", e.target.value)}
                     rows={6}
                     placeholder="Describe your vision, core tech skillsets, and years of high-caliber accomplishments..."
-                    className="w-full text-xs p-3 rounded-xl border border-slate-200/80 focus:outline-none focus:border-slate-800 font-sans leading-relaxed"
+                    className="w-full text-xs p-3 rounded-DEFAULT border border-outline-variant/80 focus:outline-none focus:border-primary font-sans leading-relaxed"
                   />
                 </div>
               </div>
@@ -964,91 +964,91 @@ export default function ResumeMaker() {
             {activeFormTab === "experience" && (
               <div className="space-y-5 animate-fade-in">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-bold text-slate-800 text-sm">Professional Work History</h3>
+                  <h3 className="font-bold text-on-surface text-sm">Professional Work History</h3>
                   <button
                     onClick={addWorkExperience}
-                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer"
+                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container cursor-pointer"
                   >
                     <Plus size={12} /> Add Job
                   </button>
                 </div>
 
                 {resumeData.workExperience.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-6 text-center">No corporate work experience logged. Click Add Job above to begin.</p>
+                  <p className="text-xs text-outline-variant py-6 text-center">No corporate work experience logged. Click Add Job above to begin.</p>
                 ) : (
                   <div className="space-y-6">
                     {resumeData.workExperience.map((exp, index) => (
-                      <div key={exp.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4 relative">
+                      <div key={exp.id} className="p-4 rounded-DEFAULT border border-surface-container-highest bg-surface-container-low/50 space-y-4 relative">
                         <button
                           onClick={() => removeWorkExperience(exp.id)}
-                          className="absolute right-3 top-3 text-slate-300 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
+                          className="absolute right-3 top-3 text-outline-variant hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
                           title="Remove Job Block"
                         >
                           <Trash2 size={14} />
                         </button>
 
-                        <div className="text-[10px] font-bold text-teal-700 uppercase tracking-widest leading-none">
+                        <div className="text-[10px] font-bold text-primary-container uppercase tracking-widest leading-none">
                           Experience #{index + 1}
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Company Name</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Company Name</label>
                             <input 
                               type="text" 
                               value={exp.company} 
                               onChange={(e) => updateWorkExperience(exp.id, "company", e.target.value)}
                               placeholder="e.g. Apex Tech Solutions"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Job Title / Position</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Job Title / Position</label>
                             <input 
                               type="text" 
                               value={exp.position} 
                               onChange={(e) => updateWorkExperience(exp.id, "position", e.target.value)}
                               placeholder="e.g. Mobile UX Developer"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Location / Territory</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Location / Territory</label>
                             <input 
                               type="text" 
                               value={exp.location} 
                               onChange={(e) => updateWorkExperience(exp.id, "location", e.target.value)}
                               placeholder="e.g. Riyadh, Saudi Arabia"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Start Date</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Start Date</label>
                             <input 
                               type="text" 
                               value={exp.startDate} 
                               onChange={(e) => updateWorkExperience(exp.id, "startDate", e.target.value)}
                               placeholder="YYYY-MM (e.g. 2023-01)"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">End Date</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">End Date</label>
                             <input 
                               type="text" 
                               value={exp.endDate} 
                               disabled={exp.current}
                               onChange={(e) => updateWorkExperience(exp.id, "endDate", e.target.value)}
                               placeholder="YYYY-MM or Present"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none disabled:bg-surface-container disabled:text-outline-variant"
                             />
                           </div>
                         </div>
 
-                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-600 select-none mt-1">
+                        <label className="flex items-center gap-2 text-xs font-semibold text-on-surface-variant select-none mt-1">
                           <input 
                             type="checkbox" 
                             checked={exp.current} 
@@ -1064,9 +1064,9 @@ export default function ResumeMaker() {
                         </label>
 
                         {/* Bullets Sub-section of Experience */}
-                        <div className="border-t border-slate-200/50 pt-3 space-y-2.5">
+                        <div className="border-t border-outline-variant/50 pt-3 space-y-2.5">
                           <div className="flex justify-between items-center">
-                            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wide">Key Achievements & Responsibilities</span>
+                            <span className="text-[10px] font-mono text-outline-variant uppercase tracking-wide">Key Achievements & Responsibilities</span>
                             
                             {/* AI Bullet trigger */}
                             <button
@@ -1076,9 +1076,9 @@ export default function ResumeMaker() {
                                 requestAiAssistance("improve-bullets", currentDraftHighlight || exp.position);
                               }}
                               disabled={isAiProcessing}
-                              className="flex items-center gap-1 text-[9px] font-bold text-teal-700 uppercase bg-teal-50 px-2 py-1 rounded border border-teal-100 cursor-pointer"
+                              className="flex items-center gap-1 text-[9px] font-bold text-primary-container uppercase bg-primary-fixed px-2 py-1 rounded border border-primary-fixed-dim cursor-pointer"
                             >
-                              <Sparkles size={10} className="text-teal-600" />
+                              <Sparkles size={10} className="text-primary" />
                               <span>AI Improve Bullets</span>
                             </button>
                           </div>
@@ -1091,11 +1091,11 @@ export default function ResumeMaker() {
                                   value={highlight}
                                   onChange={(e) => updateHighlight(exp.id, hIndex, e.target.value)}
                                   placeholder="e.g. Led development of automated security checks, saving [12] hours per sprint."
-                                  className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                                  className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                                 />
                                 <button
                                   onClick={() => removeHighlight(exp.id, hIndex)}
-                                  className="p-2 text-slate-300 hover:text-rose-600 rounded-lg hover:bg-slate-100 cursor-pointer shrink-0"
+                                  className="p-2 text-outline-variant hover:text-rose-600 rounded-lg hover:bg-surface-container cursor-pointer shrink-0"
                                   title="Remove Bullet"
                                 >
                                   <X size={14} />
@@ -1106,7 +1106,7 @@ export default function ResumeMaker() {
 
                           <button
                             onClick={() => addHighlight(exp.id)}
-                            className="text-[10px] font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1 mt-1 cursor-pointer"
+                            className="text-[10px] font-semibold text-outline hover:text-on-surface flex items-center gap-1 mt-1 cursor-pointer"
                           >
                             <Plus size={12} /> Add Achievement Bullet
                           </button>
@@ -1122,85 +1122,85 @@ export default function ResumeMaker() {
             {activeFormTab === "education" && (
               <div className="space-y-4 animate-fade-in">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-bold text-slate-800 text-sm">Academic History</h3>
+                  <h3 className="font-bold text-on-surface text-sm">Academic History</h3>
                   <button
                     onClick={addEducation}
-                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer"
+                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container cursor-pointer"
                   >
                     <Plus size={12} /> Add Degree
                   </button>
                 </div>
 
                 {resumeData.education.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-6 text-center">No academic history logged. Click Add Degree to add educational blocks.</p>
+                  <p className="text-xs text-outline-variant py-6 text-center">No academic history logged. Click Add Degree to add educational blocks.</p>
                 ) : (
                   <div className="space-y-5">
                     {resumeData.education.map((edu, index) => (
-                      <div key={edu.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4 relative">
+                      <div key={edu.id} className="p-4 rounded-DEFAULT border border-surface-container-highest bg-surface-container-low/50 space-y-4 relative">
                         <button
                           onClick={() => removeEducation(edu.id)}
-                          className="absolute right-3 top-3 text-slate-300 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
+                          className="absolute right-3 top-3 text-outline-variant hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
                         >
                           <Trash2 size={14} />
                         </button>
 
-                        <div className="text-[10px] font-bold text-teal-700 uppercase tracking-widest leading-none">
+                        <div className="text-[10px] font-bold text-primary-container uppercase tracking-widest leading-none">
                           Academic Institute #{index + 1}
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Institution Name</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Institution Name</label>
                             <input 
                               type="text" 
                               value={edu.institution} 
                               onChange={(e) => updateEducation(edu.id, "institution", e.target.value)}
                               placeholder="e.g. King Saud University"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Degree Earned</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Degree Earned</label>
                             <input 
                               type="text" 
                               value={edu.degree} 
                               onChange={(e) => updateEducation(edu.id, "degree", e.target.value)}
                               placeholder="e.g. Bachelor of Science"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Field of Study / Major</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Field of Study / Major</label>
                             <input 
                               type="text" 
                               value={edu.fieldOfStudy} 
                               onChange={(e) => updateEducation(edu.id, "fieldOfStudy", e.target.value)}
                               placeholder="e.g. Structural Computer Systems"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
-                              <label className="text-[9px] font-mono text-slate-400 uppercase">Location</label>
+                              <label className="text-[9px] font-mono text-outline-variant uppercase">Location</label>
                               <input 
                                 type="text" 
                                 value={edu.location} 
                                 onChange={(e) => updateEducation(edu.id, "location", e.target.value)}
                                 placeholder="e.g. Riyadh, KSA"
-                                className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                                className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-[9px] font-mono text-slate-400 uppercase">GPA / Grade</label>
+                              <label className="text-[9px] font-mono text-outline-variant uppercase">GPA / Grade</label>
                               <input 
                                 type="text" 
                                 value={edu.gpa} 
                                 onChange={(e) => updateEducation(edu.id, "gpa", e.target.value)}
                                 placeholder="e.g. 4.9 / 5.0"
-                                className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                                className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                               />
                             </div>
                           </div>
@@ -1208,23 +1208,23 @@ export default function ResumeMaker() {
 
                         <div className="grid grid-cols-2 gap-3.5">
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Start Date</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Start Date</label>
                             <input 
                               type="text" 
                               value={edu.startDate} 
                               onChange={(e) => updateEducation(edu.id, "startDate", e.target.value)}
                               placeholder="e.g. 2017-09"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Graduation / End Date</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Graduation / End Date</label>
                             <input 
                               type="text" 
                               value={edu.endDate} 
                               onChange={(e) => updateEducation(edu.id, "endDate", e.target.value)}
                               placeholder="e.g. 2021-06"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                         </div>
@@ -1239,7 +1239,7 @@ export default function ResumeMaker() {
             {activeFormTab === "skills" && (
               <div className="space-y-4 animate-fade-in">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-bold text-slate-800 text-sm">Professional Skills Checklist</h3>
+                  <h3 className="font-bold text-on-surface text-sm">Professional Skills Checklist</h3>
                   
                   <div className="flex gap-2">
                     <button
@@ -1248,14 +1248,14 @@ export default function ResumeMaker() {
                         requestAiAssistance("generate-skills");
                       }}
                       disabled={isAiProcessing}
-                      className="flex items-center gap-1 text-[9px] font-bold text-teal-700 uppercase bg-teal-50 px-2 py-1.5 rounded-lg border border-teal-100 cursor-pointer disabled:opacity-50"
+                      className="flex items-center gap-1 text-[9px] font-bold text-primary-container uppercase bg-primary-fixed px-2 py-1.5 rounded-lg border border-primary-fixed-dim cursor-pointer disabled:opacity-50"
                     >
-                      <Sparkles size={11} className="text-teal-600 animate-pulse" />
+                      <Sparkles size={11} className="text-primary animate-pulse" />
                       <span>AI Generate Core Skills</span>
                     </button>
                     <button
                       onClick={addSkill}
-                      className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer"
+                      className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container cursor-pointer"
                     >
                       <Plus size={12} /> Add Skill
                     </button>
@@ -1263,22 +1263,22 @@ export default function ResumeMaker() {
                 </div>
 
                 {resumeData.skills.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-6 text-center">No skills drafted. Click Add Skill or let AI generate a core index matching your title.</p>
+                  <p className="text-xs text-outline-variant py-6 text-center">No skills drafted. Click Add Skill or let AI generate a core index matching your title.</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {resumeData.skills.map((skill) => (
-                      <div key={skill.id} className="flex gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                      <div key={skill.id} className="flex gap-2 items-center bg-surface-container-low p-2.5 rounded-DEFAULT border border-surface-container-highest">
                         <input 
                           type="text" 
                           value={skill.name} 
                           onChange={(e) => updateSkill(skill.id, "name", e.target.value)}
                           placeholder="e.g. TypeScript"
-                          className="w-full text-[11px] p-2 bg-white rounded-lg border border-slate-200 focus:outline-none font-medium text-slate-700"
+                          className="w-full text-[11px] p-2 bg-surface-container-lowest rounded-lg border border-outline-variant focus:outline-none font-medium text-on-surface-variant"
                         />
                         <select
                           value={skill.level || "Intermediate"}
                           onChange={(e) => updateSkill(skill.id, "level", e.target.value)}
-                          className="text-[10px] font-semibold text-slate-600 p-2 bg-white rounded-lg border border-slate-200 focus:outline-none shrink-0"
+                          className="text-[10px] font-semibold text-on-surface-variant p-2 bg-surface-container-lowest rounded-lg border border-outline-variant focus:outline-none shrink-0"
                         >
                           <option value="Beginner">Beginner</option>
                           <option value="Intermediate">Intermediate</option>
@@ -1287,7 +1287,7 @@ export default function ResumeMaker() {
                         </select>
                         <button
                           onClick={() => removeSkill(skill.id)}
-                          className="p-1.5 text-slate-300 hover:text-rose-600 rounded-lg hover:bg-slate-100 cursor-pointer shrink-0"
+                          className="p-1.5 text-outline-variant hover:text-rose-600 rounded-lg hover:bg-surface-container cursor-pointer shrink-0"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -1302,63 +1302,63 @@ export default function ResumeMaker() {
             {activeFormTab === "projects" && (
               <div className="space-y-4 animate-fade-in">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-bold text-slate-800 text-sm">Key Creative Projects</h3>
+                  <h3 className="font-bold text-on-surface text-sm">Key Creative Projects</h3>
                   <button
                     onClick={addProject}
-                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer"
+                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container cursor-pointer"
                   >
                     <Plus size={12} /> Add Project
                   </button>
                 </div>
 
                 {resumeData.projects.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-6 text-center">No specific projects registered yet. Click Add Project to showcase work.</p>
+                  <p className="text-xs text-outline-variant py-6 text-center">No specific projects registered yet. Click Add Project to showcase work.</p>
                 ) : (
                   <div className="space-y-4">
                     {resumeData.projects.map((proj, index) => (
-                      <div key={proj.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4 relative">
+                      <div key={proj.id} className="p-4 rounded-DEFAULT border border-surface-container-highest bg-surface-container-low/50 space-y-4 relative">
                         <button
                           onClick={() => removeProject(proj.id)}
-                          className="absolute right-3 top-3 text-slate-300 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
+                          className="absolute right-3 top-3 text-outline-variant hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
                         >
                           <Trash2 size={14} />
                         </button>
 
-                        <div className="text-[10px] font-bold text-teal-700 uppercase tracking-widest leading-none">
+                        <div className="text-[10px] font-bold text-primary-container uppercase tracking-widest leading-none">
                           Project #{index + 1}
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Project Name / Product</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Project Name / Product</label>
                             <input 
                               type="text" 
                               value={proj.name} 
                               onChange={(e) => updateProject(proj.id, "name", e.target.value)}
                               placeholder="e.g. Injamus's AI Workspace Dashboard"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[9px] font-mono text-slate-400 uppercase">Reference URL / Showcase URL</label>
+                            <label className="text-[9px] font-mono text-outline-variant uppercase">Reference URL / Showcase URL</label>
                             <input 
                               type="text" 
                               value={proj.url || ""} 
                               onChange={(e) => updateProject(proj.id, "url", e.target.value)}
                               placeholder="e.g. https://github.io/repo"
-                              className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+                              className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none"
                             />
                           </div>
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-[9px] font-mono text-slate-400 uppercase">Brief Description / Tech stack utilized</label>
+                          <label className="text-[9px] font-mono text-outline-variant uppercase">Brief Description / Tech stack utilized</label>
                           <textarea 
                             value={proj.description} 
                             onChange={(e) => updateProject(proj.id, "description", e.target.value)}
                             rows={3}
                             placeholder="Detail what challenge you solved and list key technical milestones accomplished..."
-                            className="w-full text-[11px] p-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none font-sans leading-normal resize-none"
+                            className="w-full text-[11px] p-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest focus:outline-none font-sans leading-normal resize-none"
                           />
                         </div>
                       </div>
@@ -1372,7 +1372,7 @@ export default function ResumeMaker() {
 
           {/* AI Interactive Suggestion Box Panel (Appears when suggestions are fetched) */}
           {(isAiProcessing || aiSuggestions.length > 0) && (
-            <div className="bg-gradient-to-br from-teal-900 to-slate-900 rounded-3xl p-6 text-white border border-slate-800 shadow-xl space-y-4 animate-fade-in">
+            <div className="bg-gradient-to-br from-teal-900 to-slate-900 rounded-lg p-6 text-white border border-on-surface shadow-xl space-y-4 animate-fade-in">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Sparkles size={16} className="text-teal-400 animate-spin" />
@@ -1385,7 +1385,7 @@ export default function ResumeMaker() {
                     setAiSuggestions([]);
                     setActiveAiField(null);
                   }}
-                  className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
+                  className="p-1 text-outline-variant hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
                 >
                   <X size={14} />
                 </button>
@@ -1393,13 +1393,13 @@ export default function ResumeMaker() {
 
               {isAiProcessing ? (
                 <div className="py-4 flex flex-col items-center justify-center gap-3">
-                  <div className="w-6 h-6 rounded-full border-2 border-teal-500 border-t-transparent animate-spin"></div>
-                  <p className="text-xs text-slate-300 font-medium">Drafting elite bullet phrases and analyzing ATS structure...</p>
+                  <div className="w-6 h-6 rounded-DEFAULT border-2 border-primary border-t-transparent animate-spin"></div>
+                  <p className="text-xs text-outline-variant font-medium">Drafting elite bullet phrases and analyzing ATS structure...</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {isAiFallback && (
-                    <div className="bg-amber-400/10 rounded-xl p-3 border border-amber-500/20 text-amber-200 text-[10px] sm:text-[11px] leading-relaxed mb-1 space-y-1">
+                    <div className="bg-amber-400/10 rounded-DEFAULT p-3 border border-amber-500/20 text-amber-200 text-[10px] sm:text-[11px] leading-relaxed mb-1 space-y-1">
                       <span className="font-extrabold uppercase block text-amber-400">SIMULATED WRITER ENGINE ACTIVE</span>
                       The OpenAI free API quota is currently sleeping. The system has gracefully mapped offline executive templates to draft ATS-optimized sections perfectly without disruption!
                       {aiApiError && (
@@ -1434,7 +1434,7 @@ export default function ResumeMaker() {
                     </div>
                   )}
 
-                  <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                  <p className="text-[11px] text-outline-variant leading-relaxed font-sans">
                     Click any recommendation below to inject it directly into your active card workspace:
                   </p>
                   
@@ -1458,7 +1458,7 @@ export default function ResumeMaker() {
                             acceptAiSuggestion(suggestion);
                           }
                         }}
-                        className="w-full text-left p-3 rounded-xl bg-slate-800/40 hover:bg-slate-800 border border-slate-800 hover:border-teal-500/50 text-xs font-sans leading-relaxed text-slate-200 transition-all cursor-pointer group flex gap-2.5 items-start"
+                        className="w-full text-left p-3 rounded-DEFAULT bg-slate-800/40 hover:bg-slate-800 border border-on-surface hover:border-primary/50 text-xs font-sans leading-relaxed text-slate-200 transition-all cursor-pointer group flex gap-2.5 items-start"
                       >
                         <ChevronRight className="shrink-0 text-teal-400 group-hover:translate-x-0.5 transition-transform mt-0.5" size={12} />
                         <span>{suggestion}</span>
@@ -1481,7 +1481,7 @@ export default function ResumeMaker() {
                         }));
                         setAiSuggestions([]);
                       }}
-                      className="w-full text-center py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs cursor-pointer transition-all mt-2"
+                      className="w-full text-center py-2 rounded-DEFAULT bg-primary hover:bg-primary text-white font-bold text-xs cursor-pointer transition-all mt-2"
                     >
                       Import All {aiSuggestions.length} Skills
                     </button>
@@ -1497,15 +1497,15 @@ export default function ResumeMaker() {
         <div className={`col-span-1 lg:col-span-6 space-y-6 ${viewMode === "edit" ? "hidden lg:block" : ""}`}>
           
           {/* Controls Bar */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="bg-surface-container-lowest rounded-DEFAULT p-4 border border-surface-container-highest shadow-none flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             
-            <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+            <div className="flex flex-wrap items-center gap-1.5 bg-surface-container p-1 rounded-DEFAULT">
               <button
                 onClick={() => setTemplateTheme("modern")}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
                   activeTemplate === "modern" 
-                    ? "bg-slate-900 text-white font-semibold" 
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "bg-inverse-surface text-white font-semibold" 
+                    : "text-outline hover:text-on-surface"
                 }`}
               >
                 Modern
@@ -1514,8 +1514,8 @@ export default function ResumeMaker() {
                 onClick={() => setTemplateTheme("executive")}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
                   activeTemplate === "executive" 
-                    ? "bg-slate-900 text-white font-semibold" 
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "bg-inverse-surface text-white font-semibold" 
+                    : "text-outline hover:text-on-surface"
                 }`}
               >
                 Executive
@@ -1524,8 +1524,8 @@ export default function ResumeMaker() {
                 onClick={() => setTemplateTheme("mono")}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
                   activeTemplate === "mono" 
-                    ? "bg-slate-900 text-white font-semibold" 
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "bg-inverse-surface text-white font-semibold" 
+                    : "text-outline hover:text-on-surface"
                 }`}
               >
                 Mono
@@ -1535,15 +1535,15 @@ export default function ResumeMaker() {
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleExportHtml}
-                className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-2 rounded-xl transition-all cursor-pointer font-semibold"
+                className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-on-surface bg-surface-container-low hover:bg-surface-container border border-outline-variant px-3 py-2 rounded-DEFAULT transition-all cursor-pointer font-semibold"
                 title="Download direct single-file HTML"
               >
-                <Download size={14} className="text-slate-500" /> HTML
+                <Download size={14} className="text-outline" /> HTML
               </button>
               
               <button
                 onClick={handlePrint}
-                className="flex items-center gap-1.5 text-xs bg-teal-600 hover:bg-teal-500 text-white px-3 py-2 rounded-xl transition-all font-semibold cursor-pointer shadow-sm shadow-teal-600/20"
+                className="flex items-center gap-1.5 text-xs bg-primary hover:bg-primary text-white px-3 py-2 rounded-DEFAULT transition-all font-semibold cursor-pointer shadow-none shadow-primary/20"
                 title="Print or export to PDF easily via the browser"
               >
                 <Printer size={14} /> Print / Save PDF
@@ -1554,7 +1554,7 @@ export default function ResumeMaker() {
             <div className="lg:hidden w-full flex justify-end">
               <button 
                 onClick={() => setViewMode("edit")}
-                className="text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded"
+                className="text-xs font-semibold text-outline hover:text-on-surface flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded"
               >
                 <FileEdit size={14} /> Switch to Form Editor
               </button>
@@ -1563,12 +1563,12 @@ export default function ResumeMaker() {
           </div>
 
           {/* Paper Canvas Mockup Containment */}
-          <div className="bg-slate-200/50 rounded-3xl p-1 sm:p-5 border border-slate-300/30 overflow-x-auto">
+          <div className="bg-surface-container-high/50 rounded-lg p-1 sm:p-5 border border-outline/30 overflow-x-auto">
             
             {/* Aspect ratio bounding box resembling an A4 sheet of paper */}
             <div 
               id="resume-paper-canvas-node"
-              className="w-full min-w-[210mm] max-w-[210mm] min-h-[297mm] bg-white text-slate-800 shadow-md p-8 sm:p-12 mx-auto overflow-hidden relative font-sans text-[11px] leading-relaxed break-words border border-slate-300/50"
+              className="w-full min-w-[210mm] max-w-[210mm] min-h-[297mm] bg-surface-container-lowest text-on-surface shadow-none p-8 sm:p-12 mx-auto overflow-hidden relative font-sans text-[11px] leading-relaxed break-words border border-outline/50"
             >
               
               {/* STYLE PATH 1: Modern Layout Theme (Teal branding sidebar + clean structure) */}
@@ -1576,10 +1576,10 @@ export default function ResumeMaker() {
                 <div className="space-y-6">
                   
                   {/* Modern Header node */}
-                  <div className="flex justify-between items-start border-b-2 border-teal-600 pb-5">
+                  <div className="flex justify-between items-start border-b-2 border-primary pb-5">
                     <div className="flex gap-4 items-center">
                       {resumeData.showProfileImage && resumeData.profileImage && (
-                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-200 shadow-sm">
+                        <div className="w-16 h-16 rounded-DEFAULT overflow-hidden shrink-0 border border-outline-variant shadow-none">
                           <img 
                             src={resumeData.profileImage} 
                             alt={resumeData.fullName} 
@@ -1589,34 +1589,34 @@ export default function ResumeMaker() {
                         </div>
                       )}
                       <div className="space-y-1 max-w-lg">
-                        <h1 className="text-2xl font-extrabold text-slate-900 uppercase tracking-tight">{resumeData.fullName || "Your Full Name"}</h1>
-                        <p className="text-xs font-bold text-teal-700 tracking-wide">{resumeData.title || "Your Professional Title"}</p>
+                        <h1 className="text-2xl font-extrabold text-on-surface uppercase tracking-tight">{resumeData.fullName || "Your Full Name"}</h1>
+                        <p className="text-xs font-bold text-primary-container tracking-wide">{resumeData.title || "Your Professional Title"}</p>
                       </div>
                     </div>
 
-                    <div className="text-right space-y-1 text-slate-400 text-[10px] font-medium font-sans">
+                    <div className="text-right space-y-1 text-outline-variant text-[10px] font-medium font-sans">
                       {resumeData.location && (
                         <div className="flex items-center justify-end gap-1.5">
                           <span>{resumeData.location}</span>
-                          <MapPin size={10} className="text-slate-400" />
+                          <MapPin size={10} className="text-outline-variant" />
                         </div>
                       )}
                       {resumeData.email && (
                         <div className="flex items-center justify-end gap-1.5">
                           <span>{resumeData.email}</span>
-                          <Mail size={10} className="text-slate-400" />
+                          <Mail size={10} className="text-outline-variant" />
                         </div>
                       )}
                       {resumeData.phone && (
                         <div className="flex items-center justify-end gap-1.5">
                           <span>{resumeData.phone}</span>
-                          <Phone size={10} className="text-slate-400" />
+                          <Phone size={10} className="text-outline-variant" />
                         </div>
                       )}
                       {resumeData.website && (
                         <div className="flex items-center justify-end gap-1.5">
                           <a href={resumeData.website} target="_blank" rel="noopener noreferrer" className="hover:underline">{resumeData.website}</a>
-                          <Globe size={10} className="text-slate-400" />
+                          <Globe size={10} className="text-outline-variant" />
                         </div>
                       )}
                     </div>
@@ -1625,10 +1625,10 @@ export default function ResumeMaker() {
                   {/* Summary Segment */}
                   {resumeData.summary && (
                     <div className="space-y-1.5">
-                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-50 px-2 py-0.5 rounded inline-block">
+                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-primary-fixed bg-primary-fixed px-2 py-0.5 rounded inline-block">
                         Professional Profile
                       </h3>
-                      <p className="text-slate-600 text-justify text-[11px] leading-relaxed font-sans mt-1">
+                      <p className="text-on-surface-variant text-justify text-[11px] leading-relaxed font-sans mt-1">
                         {resumeData.summary}
                       </p>
                     </div>
@@ -1637,24 +1637,24 @@ export default function ResumeMaker() {
                   {/* Experience Segment */}
                   {resumeData.workExperience.length > 0 && (
                     <div className="space-y-3 pt-1">
-                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-50 px-2 py-0.5 rounded inline-block">
+                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-primary-fixed bg-primary-fixed px-2 py-0.5 rounded inline-block">
                         Professional Experience
                       </h3>
 
                       <div className="space-y-4 mt-2">
                         {resumeData.workExperience.map((exp) => (
                           <div key={exp.id} className="space-y-1">
-                            <div className="flex justify-between items-baseline font-bold text-slate-800">
+                            <div className="flex justify-between items-baseline font-bold text-on-surface">
                               <span className="text-[12px]">{exp.position || "Target Position"}</span>
-                              <span className="text-[10px] text-slate-400 font-medium">{exp.startDate} – {exp.endDate || "Present"}</span>
+                              <span className="text-[10px] text-outline-variant font-medium">{exp.startDate} – {exp.endDate || "Present"}</span>
                             </div>
                             
-                            <div className="flex justify-between items-baseline text-[10px] font-semibold text-teal-700">
+                            <div className="flex justify-between items-baseline text-[10px] font-semibold text-primary-container">
                               <span>{exp.company}</span>
-                              <span className="text-slate-400 font-normal">{exp.location}</span>
+                              <span className="text-outline-variant font-normal">{exp.location}</span>
                             </div>
 
-                            <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px] leading-relaxed mt-1.5">
+                            <ul className="list-disc pl-4 space-y-1 text-on-surface-variant text-[11px] leading-relaxed mt-1.5">
                               {exp.highlights.filter(h => h.trim() !== "").map((h, idx) => (
                                 <li key={idx} className="pl-0.5 text-justify">{h}</li>
                               ))}
@@ -1668,7 +1668,7 @@ export default function ResumeMaker() {
                   {/* Skills Grid */}
                   {resumeData.skills.length > 0 && (
                     <div className="space-y-1.5 pt-1">
-                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-50 px-2 py-0.5 rounded inline-block">
+                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-primary-fixed bg-primary-fixed px-2 py-0.5 rounded inline-block">
                         Core Competencies & Skills
                       </h3>
                       
@@ -1676,9 +1676,9 @@ export default function ResumeMaker() {
                         {resumeData.skills.filter(s => s.name.trim() !== "").map((skill) => (
                           <span 
                             key={skill.id}
-                            className="bg-slate-100/80 border border-slate-200/50 text-slate-700 px-2.5 py-1 rounded text-[10px] font-semibold tracking-wide"
+                            className="bg-surface-container/80 border border-outline-variant/50 text-on-surface-variant px-2.5 py-1 rounded text-[10px] font-semibold tracking-wide"
                           >
-                            {skill.name} <span className="text-teal-600 text-[9px] font-bold">({skill.level || "Intermediate"})</span>
+                            {skill.name} <span className="text-primary text-[9px] font-bold">({skill.level || "Intermediate"})</span>
                           </span>
                         ))}
                       </div>
@@ -1691,18 +1691,18 @@ export default function ResumeMaker() {
                     {/* Education block */}
                     {resumeData.education.length > 0 && (
                       <div className="space-y-2">
-                        <h3 className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-50 px-2 py-0.5 rounded inline-block">
+                        <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-primary-fixed bg-primary-fixed px-2 py-0.5 rounded inline-block">
                           Education & Academics
                         </h3>
 
                         <div className="space-y-3 mt-1.5">
                           {resumeData.education.map((edu) => (
                             <div key={edu.id} className="space-y-0.5">
-                              <p className="font-bold text-[11px] text-slate-800 leading-tight">
+                              <p className="font-bold text-[11px] text-on-surface leading-tight">
                                 {edu.degree} in {edu.fieldOfStudy}
                               </p>
-                              <p className="text-[10px] font-semibold text-teal-700">{edu.institution}</p>
-                              <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+                              <p className="text-[10px] font-semibold text-primary-container">{edu.institution}</p>
+                              <div className="flex justify-between text-[10px] text-outline-variant font-medium">
                                 <span>{edu.startDate} – {edu.endDate}</span>
                                 {edu.gpa && <span>GPA: {edu.gpa}</span>}
                               </div>
@@ -1715,22 +1715,22 @@ export default function ResumeMaker() {
                     {/* Projects block */}
                     {resumeData.projects.length > 0 && (
                       <div className="space-y-2">
-                        <h3 className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-50 px-2 py-0.5 rounded inline-block">
+                        <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-primary-fixed bg-primary-fixed px-2 py-0.5 rounded inline-block">
                           Creative Works & Projects
                         </h3>
 
                         <div className="space-y-3 mt-1.5">
                           {resumeData.projects.map((proj) => (
                             <div key={proj.id} className="space-y-0.5">
-                              <div className="flex justify-between items-baseline font-bold text-slate-800">
+                              <div className="flex justify-between items-baseline font-bold text-on-surface">
                                 <span className="text-[11px]">{proj.name}</span>
                                 {proj.url && (
-                                  <a href={proj.url} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline font-mono text-[9px] font-normal shrink-0">
+                                  <a href={proj.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono text-[9px] font-normal shrink-0">
                                     [Showcase link]
                                   </a>
                                 )}
                               </div>
-                              <p className="text-[10px] text-slate-500 leading-relaxed text-justify">{proj.description}</p>
+                              <p className="text-[10px] text-outline leading-relaxed text-justify">{proj.description}</p>
                             </div>
                           ))}
                         </div>
@@ -1747,9 +1747,9 @@ export default function ResumeMaker() {
                 <div className="font-serif space-y-6">
                   
                   {/* Centered header */}
-                  <div className="text-center space-y-2 border-b border-double border-slate-300 pb-5">
+                  <div className="text-center space-y-2 border-b border-double border-outline pb-5">
                     {resumeData.showProfileImage && resumeData.profileImage && (
-                      <div className="mx-auto w-20 h-20 rounded-full overflow-hidden border border-slate-300 shadow-sm mb-3">
+                      <div className="mx-auto w-20 h-20 rounded-DEFAULT overflow-hidden border border-outline shadow-none mb-3">
                         <img 
                           src={resumeData.profileImage} 
                           alt={resumeData.fullName} 
@@ -1758,15 +1758,15 @@ export default function ResumeMaker() {
                         />
                       </div>
                     )}
-                    <h1 className="text-3xl font-medium tracking-tight text-slate-900 font-serif">
+                    <h1 className="text-3xl font-medium tracking-tight text-on-surface font-serif">
                       {resumeData.fullName || "Your Full Name"}
                     </h1>
                     
-                    <p className="text-xs italic font-medium text-slate-500 uppercase tracking-widest leading-none">
+                    <p className="text-xs italic font-medium text-outline uppercase tracking-widest leading-none">
                       {resumeData.title || "Your Professional Title"}
                     </p>
 
-                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-slate-500 font-sans text-[10px] font-medium pt-1">
+                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-outline font-sans text-[10px] font-medium pt-1">
                       {resumeData.location && <span>{resumeData.location}</span>}
                       {resumeData.email && <span>• {resumeData.email}</span>}
                       {resumeData.phone && <span>• {resumeData.phone}</span>}
@@ -1779,7 +1779,7 @@ export default function ResumeMaker() {
                   {/* Summary */}
                   {resumeData.summary && (
                     <div className="space-y-1.5 text-center px-4">
-                      <p className="text-slate-700 text-[11px] leading-relaxed italic text-justify">
+                      <p className="text-on-surface-variant text-[11px] leading-relaxed italic text-justify">
                         {resumeData.summary}
                       </p>
                     </div>
@@ -1788,7 +1788,7 @@ export default function ResumeMaker() {
                   {/* Experience */}
                   {resumeData.workExperience.length > 0 && (
                     <div className="space-y-3">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-0.5 text-center font-sans">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-on-surface border-b border-outline pb-0.5 text-center font-sans">
                         Professional Experience
                       </h3>
 
@@ -1796,16 +1796,16 @@ export default function ResumeMaker() {
                         {resumeData.workExperience.map((exp) => (
                           <div key={exp.id} className="space-y-1">
                             <div className="flex justify-between items-baseline">
-                              <span className="font-bold text-[12px] text-slate-900">{exp.company}</span>
-                              <span className="font-sans text-[10px] text-slate-400 font-medium">{exp.startDate} – {exp.endDate}</span>
+                              <span className="font-bold text-[12px] text-on-surface">{exp.company}</span>
+                              <span className="font-sans text-[10px] text-outline-variant font-medium">{exp.startDate} – {exp.endDate}</span>
                             </div>
 
-                            <div className="flex justify-between items-baseline text-[10px] italic text-slate-600">
+                            <div className="flex justify-between items-baseline text-[10px] italic text-on-surface-variant">
                               <span>{exp.position}</span>
-                              <span className="text-slate-400 not-italic font-sans">{exp.location}</span>
+                              <span className="text-outline-variant not-italic font-sans">{exp.location}</span>
                             </div>
 
-                            <ul className="list-disc pl-5 space-y-1 text-slate-700 text-[11px] mt-1.5 font-sans leading-relaxed">
+                            <ul className="list-disc pl-5 space-y-1 text-on-surface-variant text-[11px] mt-1.5 font-sans leading-relaxed">
                               {exp.highlights.filter(h => h.trim() !== "").map((h, idx) => (
                                 <li key={idx} className="text-justify">{h}</li>
                               ))}
@@ -1819,13 +1819,13 @@ export default function ResumeMaker() {
                   {/* Skills Section */}
                   {resumeData.skills.length > 0 && (
                     <div className="space-y-2">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-0.5 text-center font-sans">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-on-surface border-b border-outline pb-0.5 text-center font-sans">
                         Technical Skillsets
                       </h3>
-                      <p className="text-[10px] font-sans text-center text-slate-600 leading-relaxed">
+                      <p className="text-[10px] font-sans text-center text-on-surface-variant leading-relaxed">
                         {resumeData.skills.filter(s => s.name.trim() !== "").map((s, idx, arr) => (
                           <span key={s.id}>
-                            <strong className="text-slate-800">{s.name}</strong> ({s.level || "Expert"})
+                            <strong className="text-on-surface">{s.name}</strong> ({s.level || "Expert"})
                             {idx < arr.length - 1 ? " • " : ""}
                           </span>
                         ))}
@@ -1836,7 +1836,7 @@ export default function ResumeMaker() {
                   {/* Education */}
                   {resumeData.education.length > 0 && (
                     <div className="space-y-3">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-300 pb-0.5 text-center font-sans">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-on-surface border-b border-outline pb-0.5 text-center font-sans">
                         Education & Academic Honors
                       </h3>
 
@@ -1844,12 +1844,12 @@ export default function ResumeMaker() {
                         {resumeData.education.map((edu) => (
                           <div key={edu.id} className="flex justify-between items-start font-sans text-[10px]">
                             <div className="space-y-0.5">
-                              <p className="font-serif font-bold text-[12px] text-slate-900">{edu.institution}</p>
-                              <p className="italic text-slate-500">{edu.degree} in {edu.fieldOfStudy} ({edu.location})</p>
+                              <p className="font-serif font-bold text-[12px] text-on-surface">{edu.institution}</p>
+                              <p className="italic text-outline">{edu.degree} in {edu.fieldOfStudy} ({edu.location})</p>
                             </div>
-                            <div className="text-right font-medium text-slate-400">
+                            <div className="text-right font-medium text-outline-variant">
                               <p>{edu.startDate} – {edu.endDate}</p>
-                              {edu.gpa && <p className="text-slate-600 font-semibold">GPA: {edu.gpa}</p>}
+                              {edu.gpa && <p className="text-on-surface-variant font-semibold">GPA: {edu.gpa}</p>}
                             </div>
                           </div>
                         ))}
@@ -1862,13 +1862,13 @@ export default function ResumeMaker() {
 
               {/* STYLE PATH 3: Minimalist Monospace Theme (Brutalist tech-forward, mono font spacing) */}
               {activeTemplate === "mono" && (
-                <div className="font-mono space-y-6 text-slate-800">
+                <div className="font-mono space-y-6 text-on-surface">
                   
                   {/* Monospace Header bar */}
-                  <div className="border border-slate-800 p-6 space-y-3 bg-slate-50">
+                  <div className="border border-on-surface p-6 space-y-3 bg-surface-container-low">
                     <div className="flex gap-4 items-center">
                       {resumeData.showProfileImage && resumeData.profileImage && (
-                        <div className="w-16 h-16 rounded-none overflow-hidden shrink-0 border-2 border-slate-850 shadow-sm">
+                        <div className="w-16 h-16 rounded-none overflow-hidden shrink-0 border-2 border-slate-850 shadow-none">
                           <img 
                             src={resumeData.profileImage} 
                             alt={resumeData.fullName} 
@@ -1880,11 +1880,11 @@ export default function ResumeMaker() {
                       <div className="flex-1">
                         <div className="flex justify-between items-start flex-wrap gap-2">
                           <div>
-                            <h1 className="text-xl font-bold uppercase text-slate-900">{resumeData.fullName || "NASA_CANDIDATE"}</h1>
-                            <p className="text-xs font-bold text-teal-700 mt-0.5">&gt; {resumeData.title || "SYSTEMS_SPECIALIST"}</p>
+                            <h1 className="text-xl font-bold uppercase text-on-surface">{resumeData.fullName || "NASA_CANDIDATE"}</h1>
+                            <p className="text-xs font-bold text-primary-container mt-0.5">&gt; {resumeData.title || "SYSTEMS_SPECIALIST"}</p>
                           </div>
                           
-                          <div className="text-left md:text-right text-[10px] text-slate-500 font-medium space-y-0.5">
+                          <div className="text-left md:text-right text-[10px] text-outline font-medium space-y-0.5">
                             {resumeData.email && <p>mail:{resumeData.email}</p>}
                             {resumeData.phone && <p>ph:{resumeData.phone}</p>}
                             {resumeData.location && <p>loc:{resumeData.location}</p>}
@@ -1897,8 +1897,8 @@ export default function ResumeMaker() {
                   {/* Profile section */}
                   {resumeData.summary && (
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-teal-700"># PROFILE_SUMMARY</p>
-                      <p className="text-[11px] leading-relaxed text-slate-600 text-justify border-l-2 border-slate-800 pl-3">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container"># PROFILE_SUMMARY</p>
+                      <p className="text-[11px] leading-relaxed text-on-surface-variant text-justify border-l-2 border-on-surface pl-3">
                         {resumeData.summary}
                       </p>
                     </div>
@@ -1907,21 +1907,21 @@ export default function ResumeMaker() {
                   {/* Experience */}
                   {resumeData.workExperience.length > 0 && (
                     <div className="space-y-3">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-teal-700"># WORK_RECORD_INDEX</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container"># WORK_RECORD_INDEX</p>
                       
                       <div className="space-y-4">
                         {resumeData.workExperience.map((exp) => (
-                          <div key={exp.id} className="space-y-1 pl-3 border-l border-slate-200">
-                            <div className="flex justify-between items-baseline font-bold text-slate-900 text-[11px]">
+                          <div key={exp.id} className="space-y-1 pl-3 border-l border-outline-variant">
+                            <div className="flex justify-between items-baseline font-bold text-on-surface text-[11px]">
                               <span>[{exp.company.toUpperCase()}]</span>
-                              <span className="text-[9px] text-slate-400 font-normal">{exp.startDate} / {exp.endDate}</span>
+                              <span className="text-[9px] text-outline-variant font-normal">{exp.startDate} / {exp.endDate}</span>
                             </div>
-                            <p className="text-[10px] text-slate-500 font-semibold">{exp.position} - {exp.location}</p>
+                            <p className="text-[10px] text-outline font-semibold">{exp.position} - {exp.location}</p>
                             
-                            <ul className="space-y-1 text-slate-600 text-[10px] leading-relaxed mt-1.5 list-none">
+                            <ul className="space-y-1 text-on-surface-variant text-[10px] leading-relaxed mt-1.5 list-none">
                               {exp.highlights.filter(h => h.trim() !== "").map((h, idx) => (
                                 <li key={idx} className="flex items-start gap-1">
-                                  <span className="text-teal-600 font-bold shrink-0">*</span>
+                                  <span className="text-primary font-bold shrink-0">*</span>
                                   <span className="text-justify">{h}</span>
                                 </li>
                               ))}
@@ -1935,10 +1935,10 @@ export default function ResumeMaker() {
                   {/* Skills */}
                   {resumeData.skills.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-teal-700"># COMPETENCY_SET</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container"># COMPETENCY_SET</p>
                       <div className="flex flex-wrap gap-2 pl-3">
                         {resumeData.skills.filter(s => s.name.trim() !== "").map((s) => (
-                          <span key={s.id} className="text-[10px] bg-slate-100 px-2 py-0.5 border border-slate-200 rounded text-slate-700">
+                          <span key={s.id} className="text-[10px] bg-surface-container px-2 py-0.5 border border-outline-variant rounded text-on-surface-variant">
                             {s.name}::{s.level?.toUpperCase().substring(0, 3)}
                           </span>
                         ))}
@@ -1951,10 +1951,10 @@ export default function ResumeMaker() {
                     
                     {resumeData.education.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-teal-700"># EDUCATION_CREDENTIALS</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container"># EDUCATION_CREDENTIALS</p>
                         {resumeData.education.map((edu) => (
-                          <div key={edu.id} className="space-y-0.5 pl-3 border-l border-slate-100 text-[10px] text-slate-500">
-                            <p className="font-bold text-slate-800">{edu.institution}</p>
+                          <div key={edu.id} className="space-y-0.5 pl-3 border-l border-surface-container-highest text-[10px] text-outline">
+                            <p className="font-bold text-on-surface">{edu.institution}</p>
                             <p>{edu.degree} / {edu.fieldOfStudy}</p>
                             <p className="text-[9px]">{edu.startDate} - {edu.endDate} {edu.gpa && `| GPA:${edu.gpa}`}</p>
                           </div>
@@ -1964,10 +1964,10 @@ export default function ResumeMaker() {
 
                     {resumeData.projects.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-teal-700"># PROJECTS_INDEX</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-primary-container"># PROJECTS_INDEX</p>
                         {resumeData.projects.map((p) => (
-                          <div key={p.id} className="space-y-0.5 pl-3 border-l border-slate-100 text-[10px] text-slate-500">
-                            <p className="font-bold text-slate-800">{p.name}</p>
+                          <div key={p.id} className="space-y-0.5 pl-3 border-l border-surface-container-highest text-[10px] text-outline">
+                            <p className="font-bold text-on-surface">{p.name}</p>
                             <p className="leading-normal text-justify">{p.description}</p>
                           </div>
                         ))}
@@ -1980,7 +1980,7 @@ export default function ResumeMaker() {
               )}
 
               {/* PDF Sheet watermark overlay */}
-              <div className="absolute right-4 bottom-4 text-[8px] font-mono text-slate-300 tracking-wider font-semibold uppercase pointer-events-none pr-1">
+              <div className="absolute right-4 bottom-4 text-[8px] font-mono text-outline-variant tracking-wider font-semibold uppercase pointer-events-none pr-1">
                 Generated via Injamus's AI Workspace
               </div>
 
@@ -1988,22 +1988,22 @@ export default function ResumeMaker() {
           </div>
 
           {/* Quick PDF Print checklist tips */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-3">
-            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-1.5">
-              <CheckCircle2 size={14} className="text-teal-600" />
+          <div className="bg-surface-container-lowest rounded-DEFAULT p-5 border border-surface-container-highest shadow-none space-y-3">
+            <h4 className="text-xs font-bold text-on-surface uppercase tracking-widest flex items-center gap-1.5">
+              <CheckCircle2 size={14} className="text-primary" />
               Optimal PDF Print Configuration
             </h4>
             
-            <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
+            <p className="text-[11px] text-outline leading-relaxed font-sans">
               To download a flawless single-page or formatted multi-page PDF output directly via browser print:
             </p>
             
-            <ul className="list-decimal pl-4.5 space-y-1 text-[10px] text-slate-400 font-mono">
-              <li>Click <strong className="text-slate-600">Print / Save PDF</strong> in the above control header.</li>
-              <li>Set Destination to <strong className="text-slate-600">Save as PDF</strong>.</li>
-              <li>Configure Paper Size to <strong className="text-slate-600">A4 standard</strong>.</li>
-              <li>Disable <strong className="text-slate-600">Headers and footers</strong> in the More options dropdown to eliminate page URL logs.</li>
-              <li>Set Margins to <strong className="text-slate-600">None</strong> or <strong className="text-slate-600">Default</strong> for premium bleed-to-edge layouts.</li>
+            <ul className="list-decimal pl-4.5 space-y-1 text-[10px] text-outline-variant font-mono">
+              <li>Click <strong className="text-on-surface-variant">Print / Save PDF</strong> in the above control header.</li>
+              <li>Set Destination to <strong className="text-on-surface-variant">Save as PDF</strong>.</li>
+              <li>Configure Paper Size to <strong className="text-on-surface-variant">A4 standard</strong>.</li>
+              <li>Disable <strong className="text-on-surface-variant">Headers and footers</strong> in the More options dropdown to eliminate page URL logs.</li>
+              <li>Set Margins to <strong className="text-on-surface-variant">None</strong> or <strong className="text-on-surface-variant">Default</strong> for premium bleed-to-edge layouts.</li>
             </ul>
           </div>
 

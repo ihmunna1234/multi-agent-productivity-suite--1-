@@ -476,15 +476,15 @@ export default function WatermarkRemover() {
   return (
     <div className="space-y-8 animate-fade-in text-left">
       {/* Tool Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-surface-container-highest pb-5">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-teal-650 px-3 py-1 bg-teal-50 rounded-full">
+          <span className="text-xs font-semibold uppercase tracking-wider text-teal-650 px-3 py-1 bg-primary-fixed rounded-DEFAULT">
             Intelligent Erasor
           </span>
-          <h2 className="text-2xl font-semibold text-slate-800 tracking-tight mt-1.5">
+          <h2 className="text-2xl font-semibold text-on-surface tracking-tight mt-1.5">
             Watermark Remover from Image & PDF
           </h2>
-          <p className="text-sm text-slate-500 mt-1 max-w-2xl">
+          <p className="text-sm text-outline mt-1 max-w-2xl">
             Clean files instantly using smart canvas brushes, specialized color range key extraction filters, and document bleach washes. Supports editing PNG/JPG captures and multipage PDF documents directly in your browser.
           </p>
         </div>
@@ -497,10 +497,10 @@ export default function WatermarkRemover() {
           onDragOver={handleDrag}
           onDragLeave={handleDrag}
           onDrop={handleDrop}
-          className={`min-h-[280px] rounded-3xl border-2 border-dashed transition-all flex flex-col justify-center items-center p-8 bg-white relative ${
+          className={`min-h-[280px] rounded-lg border-2 border-dashed transition-all flex flex-col justify-center items-center p-8 bg-surface-container-lowest relative ${
             dragActive
-              ? "border-teal-500 bg-teal-50/20 scale-[0.99]"
-              : "border-slate-200 hover:border-teal-450 hover:shadow-xs"
+              ? "border-primary bg-primary-fixed/20 scale-[0.99]"
+              : "border-outline-variant hover:border-teal-450 hover:shadow-none"
           }`}
         >
           <input
@@ -516,27 +516,27 @@ export default function WatermarkRemover() {
             <div className="text-center space-y-4">
               <Loader2 className="w-12 h-12 text-teal-650 animate-spin mx-auto" />
               <div>
-                <h4 className="font-semibold text-slate-700">Deconstructing Document Frames...</h4>
-                <p className="text-xs text-slate-400 mt-1">Acquiring page assets in safe vector space</p>
+                <h4 className="font-semibold text-on-surface-variant">Deconstructing Document Frames...</h4>
+                <p className="text-xs text-outline-variant mt-1">Acquiring page assets in safe vector space</p>
               </div>
             </div>
           ) : (
             <div className="text-center space-y-4 max-w-md">
-              <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center mx-auto text-teal-650 shadow-sm border border-teal-100">
+              <div className="w-14 h-14 bg-primary-fixed rounded-DEFAULT flex items-center justify-center mx-auto text-teal-650 shadow-none border border-primary-fixed-dim">
                 <Upload size={22} />
               </div>
               <div>
-                <h4 className="font-bold text-slate-800 text-sm">
+                <h4 className="font-bold text-on-surface text-sm">
                   Drag & Drop Document or Graphic File here
                 </h4>
-                <p className="text-xs text-slate-400 mt-1.5 font-sans leading-relaxed">
+                <p className="text-xs text-outline-variant mt-1.5 font-sans leading-relaxed">
                   Upload a <strong className="text-slate-650">PDF file</strong> to clean page-by-page, or a <strong className="text-slate-650">PNG / JPEG img scan</strong>. 
                 </p>
                 <p className="text-xs text-teal-650 font-semibold underline mt-2.5">
                   Browse local system directories
                 </p>
               </div>
-              <div className="border-t border-slate-50 pt-3.5 mt-2 text-[10px] text-slate-400 flex justify-center gap-6">
+              <div className="border-t border-slate-50 pt-3.5 mt-2 text-[10px] text-outline-variant flex justify-center gap-6">
                 <span>🛡️ Clean Local processing</span>
                 <span>⚡ Multi-Page document binding</span>
               </div>
@@ -550,19 +550,19 @@ export default function WatermarkRemover() {
           {/* LEFT COLUMN: Clean/Erase Parameters Panels */}
           <div className="lg:col-span-4 space-y-6">
             
-            <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-xs space-y-5">
+            <div className="bg-surface-container-lowest border border-surface-container-highest rounded-lg p-5 shadow-none space-y-5">
               <div className="flex items-center justify-between border-b border-slate-50 pb-3">
-                <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <h3 className="font-bold text-on-surface text-sm flex items-center gap-2">
                   <Sliders size={15} className="text-teal-650" />
                   Erase Configuration
                 </h3>
-                <span className="text-[10px] font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-500">
+                <span className="text-[10px] font-mono bg-surface-container px-2 py-0.5 rounded text-outline">
                   {fileType?.toUpperCase()} Mode
                 </span>
               </div>
 
               {/* Utility Tools Selection tabs */}
-              <div className="grid grid-cols-3 gap-1 bg-slate-50 p-1 rounded-xl">
+              <div className="grid grid-cols-3 gap-1 bg-surface-container-low p-1 rounded-DEFAULT">
                 <button
                   onClick={() => {
                     setActiveTab("brush");
@@ -570,8 +570,8 @@ export default function WatermarkRemover() {
                   }}
                   className={`py-2 px-1 text-[11px] font-bold rounded-lg text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                     activeTab === "brush"
-                      ? "bg-white text-slate-800 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800"
+                      ? "bg-surface-container-lowest text-on-surface shadow-none"
+                      : "text-outline hover:text-on-surface"
                   }`}
                 >
                   <Paintbrush size={13} />
@@ -581,8 +581,8 @@ export default function WatermarkRemover() {
                   onClick={() => setActiveTab("color")}
                   className={`py-2 px-1 text-[11px] font-bold rounded-lg text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                     activeTab === "color"
-                      ? "bg-white text-slate-800 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800"
+                      ? "bg-surface-container-lowest text-on-surface shadow-none"
+                      : "text-outline hover:text-on-surface"
                   }`}
                 >
                   <Pipette size={13} />
@@ -595,8 +595,8 @@ export default function WatermarkRemover() {
                   }}
                   className={`py-2 px-1 text-[11px] font-bold rounded-lg text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                     activeTab === "bleach"
-                      ? "bg-white text-slate-800 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800"
+                      ? "bg-surface-container-lowest text-on-surface shadow-none"
+                      : "text-outline hover:text-on-surface"
                   }`}
                 >
                   <Sparkles size={13} />
@@ -608,7 +608,7 @@ export default function WatermarkRemover() {
               {activeTab === "brush" && (
                 <div className="space-y-4 pt-1 animate-fade-in">
                   <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-slate-500">
+                    <div className="flex justify-between text-xs font-bold text-outline">
                       <span>Brush Size (Pixels)</span>
                       <span className="font-mono text-teal-650">{brushSize}px</span>
                     </div>
@@ -618,9 +618,9 @@ export default function WatermarkRemover() {
                       max="100"
                       value={brushSize}
                       onChange={(e) => setBrushSize(parseInt(e.target.value))}
-                      className="w-full accent-teal-600 cursor-pointer h-1 bg-slate-100 rounded-lg"
+                      className="w-full accent-teal-600 cursor-pointer h-1 bg-surface-container rounded-lg"
                     />
-                    <p className="text-[10px] text-slate-400 leading-relaxed font-sans mt-1">
+                    <p className="text-[10px] text-outline-variant leading-relaxed font-sans mt-1">
                       💡 Draw or cross out grey text, solid seals, or handwritten notes with your cursor or finger to instantly whitening the region.
                     </p>
                   </div>
@@ -632,15 +632,15 @@ export default function WatermarkRemover() {
                   
                   {/* Pipette / Preset select row */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 block">Match Color Base</label>
+                    <label className="text-xs font-bold text-outline block">Match Color Base</label>
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => setIsColorPickerActive(!isColorPickerActive)}
-                        className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer text-xs font-bold ${
+                        className={`p-2.5 rounded-DEFAULT border flex items-center justify-center gap-2 transition-all cursor-pointer text-xs font-bold ${
                           isColorPickerActive
                             ? "bg-rose-50 border-rose-300 text-rose-700 animate-pulse"
-                            : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                            : "bg-surface-container-low border-outline-variant text-on-surface-variant hover:bg-surface-container"
                         }`}
                       >
                         <Pipette size={14} />
@@ -649,12 +649,12 @@ export default function WatermarkRemover() {
 
                       {/* Display Box */}
                       {pickedColor && (
-                        <div className="flex items-center gap-2 border border-slate-100 p-1.5 px-3 rounded-xl bg-slate-50">
+                        <div className="flex items-center gap-2 border border-surface-container-highest p-1.5 px-3 rounded-DEFAULT bg-surface-container-low">
                           <span 
-                            className="w-4 h-4 rounded-md border border-slate-200 shadow-inner" 
+                            className="w-4 h-4 rounded-md border border-outline-variant shadow-inner" 
                             style={{ backgroundColor: `rgb(${pickedColor.r}, ${pickedColor.g}, ${pickedColor.b})` }}
                           />
-                          <span className="text-[10px] font-mono text-slate-500">
+                          <span className="text-[10px] font-mono text-outline">
                             RGB({pickedColor.r},{pickedColor.g},{pickedColor.b})
                           </span>
                         </div>
@@ -664,7 +664,7 @@ export default function WatermarkRemover() {
 
                   {/* Preset Buttons */}
                   <div className="space-y-1.5">
-                    <span className="text-[10px] font-bold text-slate-400 block">Common Presets</span>
+                    <span className="text-[10px] font-bold text-outline-variant block">Common Presets</span>
                     <div className="flex flex-wrap gap-1.5">
                       {[
                         { label: "Light Gray (Text stamp)", r: 215, g: 215, b: 215 },
@@ -676,7 +676,7 @@ export default function WatermarkRemover() {
                           key={idx}
                           type="button"
                           onClick={() => setPickedColor({ r: preset.r, g: preset.g, b: preset.b })}
-                          className="px-2 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[10px] text-slate-650 font-semibold cursor-pointer transition-colors"
+                          className="px-2 py-1 bg-surface-container-low hover:bg-surface-container border border-outline-variant rounded-lg text-[10px] text-slate-650 font-semibold cursor-pointer transition-colors"
                         >
                           {preset.label}
                         </button>
@@ -686,7 +686,7 @@ export default function WatermarkRemover() {
 
                   {/* Range Tolerance slider */}
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs font-bold text-slate-500">
+                    <div className="flex justify-between text-xs font-bold text-outline">
                       <span>Color Tolerance Threshold</span>
                       <span className="font-mono text-teal-650">{colorTolerance}</span>
                     </div>
@@ -696,9 +696,9 @@ export default function WatermarkRemover() {
                       max="120"
                       value={colorTolerance}
                       onChange={(e) => setColorTolerance(parseInt(e.target.value))}
-                      className="w-full accent-teal-600 cursor-pointer h-1 bg-slate-100 rounded-lg"
+                      className="w-full accent-teal-600 cursor-pointer h-1 bg-surface-container rounded-lg"
                     />
-                    <p className="text-[9px] text-slate-400 font-sans leading-tight mt-1">
+                    <p className="text-[9px] text-outline-variant font-sans leading-tight mt-1">
                       Higher value captures surrounding hues. Click "Apply Color Eraser" below once color is selected.
                     </p>
                   </div>
@@ -707,7 +707,7 @@ export default function WatermarkRemover() {
                     type="button"
                     onClick={executeColorRemover}
                     disabled={!pickedColor}
-                    className="w-full bg-slate-800 hover:bg-slate-900 disabled:opacity-40 text-white font-bold text-xs py-3 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 group"
+                    className="w-full bg-slate-800 hover:bg-inverse-surface disabled:opacity-40 text-white font-bold text-xs py-3 rounded-DEFAULT transition cursor-pointer flex items-center justify-center gap-1.5 group"
                   >
                     <Check size={13} /> Apply Color Eraser Filter
                   </button>
@@ -717,7 +717,7 @@ export default function WatermarkRemover() {
               {activeTab === "bleach" && (
                 <div className="space-y-4 pt-1 animate-fade-in">
                   <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-slate-500">
+                    <div className="flex justify-between text-xs font-bold text-outline">
                       <span>Bleaching Filter Sensitivity</span>
                       <span className="font-mono text-teal-650">{bleachThreshold}</span>
                     </div>
@@ -727,9 +727,9 @@ export default function WatermarkRemover() {
                       max="250"
                       value={bleachThreshold}
                       onChange={(e) => setBleachThreshold(parseInt(e.target.value))}
-                      className="w-full accent-teal-600 cursor-pointer h-1 bg-slate-100 rounded-lg"
+                      className="w-full accent-teal-600 cursor-pointer h-1 bg-surface-container rounded-lg"
                     />
-                    <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                    <p className="text-[10px] text-outline-variant leading-relaxed font-sans">
                       💡 Wash out background noise. Everything lighter than this threshold is immediately whitened, making faint gray stamp, sheet grids, or shadows disappear completely!
                     </p>
                   </div>
@@ -737,7 +737,7 @@ export default function WatermarkRemover() {
                   <button
                     type="button"
                     onClick={executeBleachWash}
-                    className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-3 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full bg-slate-800 hover:bg-inverse-surface text-white font-bold text-xs py-3 rounded-DEFAULT transition cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Sparkles size={13} className="text-amber-500" /> Apply Bleach Wash
                   </button>
@@ -747,26 +747,26 @@ export default function WatermarkRemover() {
             </div>
 
             {/* Global statistics and metrics logged */}
-            <div className="bg-slate-50 rounded-2xl p-4.5 border border-slate-100 space-y-2.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Clean Audit Log</span>
+            <div className="bg-surface-container-low rounded-DEFAULT p-4.5 border border-surface-container-highest space-y-2.5">
+              <span className="text-[10px] font-bold text-outline-variant uppercase tracking-widest block">Clean Audit Log</span>
               
               <div className="grid grid-cols-2 gap-3 font-sans">
-                <div className="bg-white rounded-xl p-3 border border-slate-150">
-                  <span className="text-[9px] text-slate-400 font-bold block leading-none">PIXELS ERASED</span>
-                  <span className="text-sm font-extrabold text-slate-800 block mt-1.5 font-mono">
+                <div className="bg-surface-container-lowest rounded-DEFAULT p-3 border border-slate-150">
+                  <span className="text-[9px] text-outline-variant font-bold block leading-none">PIXELS ERASED</span>
+                  <span className="text-sm font-extrabold text-on-surface block mt-1.5 font-mono">
                     {pixelsCleaned.toLocaleString()} px
                   </span>
                 </div>
-                <div className="bg-white rounded-xl p-3 border border-slate-150">
-                  <span className="text-[9px] text-slate-400 font-bold block leading-none">UNDO STEPS</span>
-                  <span className="text-sm font-extrabold text-slate-800 block mt-1.5 font-mono">
+                <div className="bg-surface-container-lowest rounded-DEFAULT p-3 border border-slate-150">
+                  <span className="text-[9px] text-outline-variant font-bold block leading-none">UNDO STEPS</span>
+                  <span className="text-sm font-extrabold text-on-surface block mt-1.5 font-mono">
                     {(undoHistory[currentPageIdx] || []).length} recorded
                   </span>
                 </div>
               </div>
 
-              <div className="bg-teal-50 border border-teal-100/50 p-2.5 rounded-xl text-[10px] text-teal-900 font-sans font-medium flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping"></span>
+              <div className="bg-primary-fixed border border-primary-fixed-dim/50 p-2.5 rounded-DEFAULT text-[10px] text-teal-900 font-sans font-medium flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-DEFAULT bg-primary animate-ping"></span>
                 Canvas ready for user pixel edits
               </div>
             </div>
@@ -774,7 +774,7 @@ export default function WatermarkRemover() {
             {/* Discard Workspace Button */}
             <button
               onClick={clearWorkspace}
-              className="w-full text-slate-500 hover:text-red-700 font-bold text-[11px] py-1 text-center cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full text-outline hover:text-red-700 font-bold text-[11px] py-1 text-center cursor-pointer flex items-center justify-center gap-1.5"
             >
               <Trash2 size={13} /> Discard File & Load Another
             </button>
@@ -785,7 +785,7 @@ export default function WatermarkRemover() {
           <div className="lg:col-span-8 space-y-4">
             
             {/* Upper Action bar (Undo, Reset, PDF Index indicators) */}
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-100 p-3.5 rounded-2xl shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-surface-container-lowest border border-surface-container-highest p-3.5 rounded-DEFAULT shadow-none">
               
               {/* PDF navigation controls, if PDF is parsed */}
               {fileType === "pdf" && pages.length > 1 ? (
@@ -794,25 +794,25 @@ export default function WatermarkRemover() {
                     type="button"
                     onClick={() => setCurrentPageIdx(p => Math.max(0, p - 1))}
                     disabled={currentPageIdx === 0}
-                    className="p-1.5 disabled:opacity-30 hover:bg-slate-100 rounded-lg text-slate-700 transition cursor-pointer"
+                    className="p-1.5 disabled:opacity-30 hover:bg-surface-container rounded-lg text-on-surface-variant transition cursor-pointer"
                   >
                     <ChevronLeft size={16} />
                   </button>
-                  <span className="text-xs font-bold text-slate-700 px-1 font-mono">
+                  <span className="text-xs font-bold text-on-surface-variant px-1 font-mono">
                     Page {currentPageIdx + 1} of {pages.length}
                   </span>
                   <button
                     type="button"
                     onClick={() => setCurrentPageIdx(p => Math.min(pages.length - 1, p + 1))}
                     disabled={currentPageIdx === pages.length - 1}
-                    className="p-1.5 disabled:opacity-30 hover:bg-slate-100 rounded-lg text-slate-700 transition cursor-pointer"
+                    className="p-1.5 disabled:opacity-30 hover:bg-surface-container rounded-lg text-on-surface-variant transition cursor-pointer"
                   >
                     <ChevronRight size={16} />
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 text-xs font-bold text-slate-650 font-sans">
-                  <FileImage size={15} className="text-teal-600" />
+                  <FileImage size={15} className="text-primary" />
                   <span className="truncate max-w-[240px]">{fileName}</span>
                 </div>
               )}
@@ -823,7 +823,7 @@ export default function WatermarkRemover() {
                   type="button"
                   onClick={handleUndo}
                   disabled={(undoHistory[currentPageIdx] || []).length === 0}
-                  className="bg-white border hover:bg-slate-50 border-slate-200 disabled:opacity-40 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                  className="bg-surface-container-lowest border hover:bg-surface-container-low border-outline-variant disabled:opacity-40 text-on-surface-variant text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
                   title="Undo last pixel change"
                 >
                   <Undo2 size={13} />
@@ -833,7 +833,7 @@ export default function WatermarkRemover() {
                 <button
                   type="button"
                   onClick={resetCurrentPage}
-                  className="bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-700 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                  className="bg-surface-container-lowest border border-outline-variant hover:bg-rose-50 hover:text-rose-700 text-on-surface-variant text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer"
                   title="Reset to original upload state"
                 >
                   <RefreshCcw size={13} />
@@ -845,7 +845,7 @@ export default function WatermarkRemover() {
 
             {/* Standard comparison instructions banner */}
             {isColorPickerActive && (
-              <div className="bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-xl text-xs font-bold text-center animate-pulse flex items-center justify-center gap-2">
+              <div className="bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-DEFAULT text-xs font-bold text-center animate-pulse flex items-center justify-center gap-2">
                 <Pipette size={14} className="text-amber-700" />
                 <span>Pixel Color Capture Active: Click anywhere on the document preview below to capture its exact shade.</span>
               </div>
@@ -854,7 +854,7 @@ export default function WatermarkRemover() {
             {/* Canvas Main Stage Window wrapper */}
             <div 
               ref={containerRef}
-              className="bg-slate-150 rounded-3xl border border-slate-200/80 p-5 overflow-auto flex justify-center items-center min-h-[420px] max-h-[600px] relative shadow-inner pattern-grid"
+              className="bg-slate-150 rounded-lg border border-outline-variant/80 p-5 overflow-auto flex justify-center items-center min-h-[420px] max-h-[600px] relative shadow-inner pattern-grid"
             >
               <canvas
                 ref={canvasRef}
@@ -865,7 +865,7 @@ export default function WatermarkRemover() {
                 onTouchStart={handleStartDraw}
                 onTouchMove={handleMovingDraw}
                 onTouchEnd={handleStopDraw}
-                className={`max-w-full h-auto bg-white shadow-xl rounded-lg transition-all border border-slate-300 select-none ${
+                className={`max-w-full h-auto bg-surface-container-lowest shadow-xl rounded-lg transition-all border border-outline select-none ${
                   isColorPickerActive 
                     ? "cursor-crosshair border-rose-500" 
                     : activeTab === "brush" 
@@ -877,10 +877,10 @@ export default function WatermarkRemover() {
             </div>
 
             {/* Bottom Panel Actions (Confirm & Download File) */}
-            <div className="bg-white border border-slate-100 p-4 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="bg-surface-container-lowest border border-surface-container-highest p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="space-y-0.5 text-center sm:text-left">
                 <h4 className="font-bold text-slate-850 text-xs sm:text-sm">Ready to Export Document?</h4>
-                <p className="text-[10px] sm:text-xs text-slate-400 font-sans">
+                <p className="text-[10px] sm:text-xs text-outline-variant font-sans">
                   Double check pages if PDF. Original vector quality is compiled natively inside your browser.
                 </p>
               </div>
@@ -888,10 +888,10 @@ export default function WatermarkRemover() {
               <button
                 type="button"
                 onClick={downloadCleanedFile}
-                className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs text-white shadow-md active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wide border-none ${
+                className={`w-full sm:w-auto px-6 py-3 rounded-DEFAULT font-bold text-xs text-white shadow-none active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wide border-none ${
                   downloadSuccess 
                     ? "bg-emerald-600 shadow-emerald-500/10" 
-                    : "bg-teal-600 hover:bg-teal-700 shadow-teal-500/15"
+                    : "bg-primary hover:bg-primary-container shadow-primary/15"
                 }`}
               >
                 {downloadSuccess ? (
