@@ -2386,38 +2386,38 @@ export default function IqamaExtractor() {
             )}
             
             {/* Database controls */}
-            <div className="p-5 border-b border-slate-50 flex items-center justify-between gap-3">
+            <div className="p-4 md:p-5 border-b border-outline-variant/20 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2 shrink-0">
                 <Database className="text-outline-variant" size={18} />
                 <h3 className="font-semibold text-on-surface text-sm">Scanned Database ({filteredRecords.length})</h3>
               </div>
               {filteredRecords.length > 0 && (
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <button
                     onClick={exportToExcel}
-                    className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-lg transition-colors shadow-none cursor-pointer"
+                    className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold p-2 xl:px-3 xl:py-1.5 rounded-lg transition-colors shadow-none cursor-pointer"
                     title="Export Excel"
                   >
                     <Download size={14} />
-                    <span className="hidden sm:inline">Export Excel</span>
+                    <span className="hidden xl:inline">Export Excel</span>
                   </button>
                   <button
                     onClick={exportImagesToZip}
                     disabled={isZipDownloading || filteredRecords.filter(r => r.hasImage).length === 0}
-                    className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 disabled:bg-surface-container disabled:text-outline-variant disabled:border-outline-variant border border-transparent disabled:cursor-not-allowed text-white text-xs font-semibold p-2 sm:px-3 sm:py-1.5 rounded-lg transition-colors shadow-none cursor-pointer relative"
+                    className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 disabled:bg-surface-container disabled:text-outline-variant disabled:border-outline-variant border border-transparent disabled:cursor-not-allowed text-white text-xs font-semibold p-2 xl:px-3 xl:py-1.5 rounded-lg transition-colors shadow-none cursor-pointer relative"
                     title={filteredRecords.filter(r => r.hasImage).length === 0 ? "No scan images available to download" : "Download all original saved images in a ZIP format"}
                   >
                     {isZipDownloading ? (
                       <>
                         <Loader2 size={14} className="animate-spin" />
-                        <span className="hidden sm:inline">Packaging...</span>
+                        <span className="hidden xl:inline">Packaging...</span>
                       </>
                     ) : (
                       <>
                         <FileArchive size={14} />
-                        <span className="hidden sm:inline">Export ZIP ({filteredRecords.filter(r => r.hasImage).length})</span>
+                        <span className="hidden xl:inline">Export ZIP ({filteredRecords.filter(r => r.hasImage).length})</span>
                         {filteredRecords.filter(r => r.hasImage).length > 0 && (
-                          <span className="sm:hidden absolute -top-1.5 -right-1.5 bg-amber-800 text-white text-[9px] w-4 h-4 rounded-DEFAULT flex items-center justify-center font-extrabold shadow-none">
+                          <span className="xl:hidden absolute -top-1.5 -right-1.5 bg-amber-800 text-white text-[9px] w-4 h-4 rounded-DEFAULT flex items-center justify-center font-extrabold shadow-none">
                             {filteredRecords.filter(r => r.hasImage).length}
                           </span>
                         )}

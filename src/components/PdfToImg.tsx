@@ -326,7 +326,7 @@ export default function PdfToImg() {
                 className={`w-full py-3 font-semibold text-sm rounded-DEFAULT shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
                   !pdfFile
                     ? "bg-surface-container-highest text-outline-variant cursor-not-allowed"
-                    : "bg-[#1d27f0] hover:bg-primary-container text-white cursor-pointer"
+                    : "bg-primary hover:bg-primary-container text-white cursor-pointer"
                 }`}
               >
                 <Sparkles size={16} /> Convert Now

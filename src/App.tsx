@@ -28,7 +28,6 @@ import PdfToImg from "./components/PdfToImg";
 import ImgToPdf from "./components/ImgToPdf";
 import PdfToWord from "./components/PdfToWord";
 import WatermarkRemover from "./components/WatermarkRemover";
-import PdfEditor from "./components/PdfEditor";
 import ProductFinder from "./components/ProductFinder";
 import ResumeMaker from "./components/ResumeMaker";
 import GoogleMapsExtractor from "./components/GoogleMapsExtractor";
@@ -70,7 +69,6 @@ export default function App() {
     { id: "split-pdf" as ActiveAgent, name: "Split PDF", icon: <Scissors size={16} />, pill: "Split" },
     { id: "organize-pdf" as ActiveAgent, name: "Organize PDF", icon: <Layers size={16} />, pill: "Organize" },
     { id: "watermark-remover" as ActiveAgent, name: "Watermark Remover", icon: <Eraser size={16} />, pill: "Clean" },
-    { id: "pdf-editor" as ActiveAgent, name: "PDF Editor", icon: <PenTool size={16} />, pill: "Edit" },
     { id: "products" as ActiveAgent, name: "Product Scout", icon: <Search size={16} />, pill: "Market" },
     { id: "resume-maker" as ActiveAgent, name: "Resume Studio", icon: <Sparkles size={16} />, pill: "Career" },
     { id: "maps-extractor" as ActiveAgent, name: "Leads Extractor", icon: <MapPin size={16} />, pill: "G-Maps" },
@@ -203,9 +201,6 @@ export default function App() {
           )}
           {activeAgent === "watermark-remover" && (
             <WatermarkRemover />
-          )}
-          {activeAgent === "pdf-editor" && (
-            <PdfEditor />
           )}
           {activeAgent === "products" && (
             <ProductFinder />

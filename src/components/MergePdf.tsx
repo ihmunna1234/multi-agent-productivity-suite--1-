@@ -100,7 +100,7 @@ export default function MergePdf() {
       }
 
       const mergedPdfBytes = await mergedPdf.save();
-      const blob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+      const blob = new Blob([mergedPdfBytes as any], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       
       setMergedPdfUrl(url);
@@ -231,7 +231,7 @@ export default function MergePdf() {
                 className={`w-full py-3 font-semibold text-sm rounded-DEFAULT shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
                   files.length < 2 || loading
                     ? "bg-surface-container-highest text-outline-variant cursor-not-allowed"
-                    : "bg-[#1d27f0] hover:bg-primary-container text-white cursor-pointer"
+                    : "bg-primary hover:bg-primary-container text-white cursor-pointer"
                 }`}
               >
                 <Sparkles size={16} /> Merge Files
@@ -262,7 +262,7 @@ export default function MergePdf() {
             <a
               href={mergedPdfUrl!}
               download={mergedPdfName}
-              className="px-8 py-4 bg-[#1d27f0] hover:bg-primary-container text-white font-bold rounded-DEFAULT shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
+              className="px-8 py-4 bg-primary hover:bg-primary-container text-white font-bold rounded-DEFAULT shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
             >
               <Download size={20} /> Download PDF
             </a>

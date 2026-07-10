@@ -43,7 +43,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     },
     {
       id: "pdf-to-img" as ActiveAgent,
-      title: "PDF to Image Slicer",
+      title: "PDF to Image",
       category: "PDF Utilities",
       description: "Instantly slice multi-page PDF documents into high-grade JPEG or PNG raster images with custom resolution profiles.",
       icon: <FileText size={24} />,
@@ -52,7 +52,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     },
     {
       id: "img-to-pdf" as ActiveAgent,
-      title: "Image to PDF Binder",
+      title: "Image to PDF",
       category: "PDF Utilities",
       description: "Combine scattered photo files, design renders, or receipts into a single, highly optimized PDF binder document.",
       icon: <FileCheck size={24} />,
@@ -104,15 +104,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       bgClass: "bg-primary-fixed text-primary border border-primary-fixed-dim",
       pill: "Clean"
     },
-    {
-      id: "pdf-editor" as ActiveAgent,
-      title: "Interactive PDF Editor",
-      category: "PDF Utilities",
-      description: "Draw annotations, blackout/redact confidential content, place customized corporate approval seals, and add comments on active page layers.",
-      icon: <PenTool size={24} />,
-      bgClass: "bg-secondary-fixed text-on-secondary-fixed border border-secondary-fixed-dim",
-      pill: "Edit"
-    },
+
     {
       id: "products" as ActiveAgent,
       title: "Product Trend Scout",

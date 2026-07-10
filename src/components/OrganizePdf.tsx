@@ -209,7 +209,7 @@ export default function OrganizePdf() {
       });
 
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const blob = new Blob([pdfBytes as any], { type: "application/pdf" });
       
       setResultUrl(URL.createObjectURL(blob));
       setResultName(`${file.name.replace(".pdf", "")}_organized.pdf`);
@@ -367,7 +367,7 @@ export default function OrganizePdf() {
                 className={`w-full py-3 font-semibold text-sm rounded-DEFAULT shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
                   !isState2 || loading || pages.length === 0
                     ? "bg-surface-container-highest text-outline-variant cursor-not-allowed"
-                    : "bg-[#1d27f0] hover:bg-primary-container text-white cursor-pointer"
+                    : "bg-primary hover:bg-primary-container text-white cursor-pointer"
                 }`}
               >
                 {loading ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />} 
@@ -390,7 +390,7 @@ export default function OrganizePdf() {
             <a
               href={resultUrl!}
               download={resultName}
-              className="px-8 py-4 bg-[#1d27f0] hover:bg-primary-container text-white font-bold rounded-DEFAULT shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
+              className="px-8 py-4 bg-primary hover:bg-primary-container text-white font-bold rounded-DEFAULT shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
             >
               <Download size={20} /> Download PDF
             </a>
