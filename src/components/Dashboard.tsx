@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   FileCheck, 
   FileText, 
@@ -15,13 +16,9 @@ import {
   Combine,
   Scissors
 } from "lucide-react";
-import { ActiveAgent } from "../types";
 
-interface DashboardProps {
-  onNavigate: (agent: ActiveAgent) => void;
-}
-
-export default function Dashboard({ onNavigate }: DashboardProps) {
+export default function Dashboard() {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
   const categories = [
@@ -33,7 +30,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   const tools = [
     {
-      id: "extractor" as ActiveAgent,
+      path: "/iqama-extractor",
       title: "Iqama & ID Extractor",
       category: "Data & Crawlers",
       description: "Surgically extract structured names, dates of birth, and ID card numbers from scanned official images using smart AI OCR.",
@@ -42,7 +39,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       pill: "AI OCR"
     },
     {
-      id: "pdf-to-img" as ActiveAgent,
+      path: "/pdf-to-image",
       title: "PDF to Image",
       category: "PDF Utilities",
       description: "Instantly slice multi-page PDF documents into high-grade JPEG or PNG raster images with custom resolution profiles.",
@@ -51,7 +48,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       pill: "Slicer"
     },
     {
-      id: "img-to-pdf" as ActiveAgent,
+      path: "/image-to-pdf",
       title: "Image to PDF",
       category: "PDF Utilities",
       description: "Combine scattered photo files, design renders, or receipts into a single, highly optimized PDF binder document.",
@@ -60,7 +57,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       pill: "Binder"
     },
     {
-      id: "pdf-to-word" as ActiveAgent,
+      path: "/pdf-to-word",
       title: "PDF to Word Converter",
       category: "PDF Utilities",
       description: "Deconstruct PDF pages to extract document contents, format structural headings, and compile perfectly editable Word documents.",
@@ -69,7 +66,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       pill: "Word"
     },
     {
-      id: "merge-pdf" as ActiveAgent,
+      path: "/merge-pdf",
       title: "Merge PDF Documents",
       category: "PDF Utilities",
       description: "Combine multiple PDF files into one single continuous document in the order you specify.",
@@ -78,7 +75,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       pill: "Merge"
     },
     {
-      id: "split-pdf" as ActiveAgent,
+      path: "/split-pdf",
       title: "Split PDF Files",
       category: "PDF Utilities",
       description: "Extract specific pages or split a large PDF document into multiple smaller files instantly.",
@@ -87,7 +84,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       pill: "Split"
     },
     {
-      id: "organize-pdf" as ActiveAgent,
+      path: "/organize-pdf",
       title: "Organize PDF Pages",
       category: "PDF Utilities",
       description: "Rearrange, delete, or rotate pages within your PDF document using an interactive drag-and-drop workspace.",
@@ -96,7 +93,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       pill: "Organize"
     },
     {
-      id: "watermark-remover" as ActiveAgent,
+      path: "/watermark-remover",
       title: "Watermark Remover from Image/PDF",
       category: "PDF Utilities",
       description: "Erase stamp watermarks, signature overlays, or faint background markings from image scans and PDF pages using smart filters.",
@@ -106,7 +103,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     },
 
     {
-      id: "products" as ActiveAgent,
+      path: "/product-scout",
       title: "Product Trend Scout",
       category: "AI Systems",
       description: "Analyze trending e-commerce product sectors, consumer categories, and active market intelligence with smart filters.",
@@ -115,7 +112,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       pill: "Market AI"
     },
     {
-      id: "resume-maker" as ActiveAgent,
+      path: "/resume-studio",
       title: "AI Resume Studio",
       category: "AI Systems",
       description: "Build high-grade professional resumes customized to your target job role using modern layout structures.",
@@ -124,7 +121,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       pill: "Career AI"
     },
     {
-      id: "maps-extractor" as ActiveAgent,
+      path: "/maps-extractor",
       title: "G-Maps Lead Extractor",
       category: "Data & Crawlers",
       description: "Compile high-quality physical store coordinates, telephone numbers, and email listings straight from active map graphs.",
@@ -179,8 +176,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {filteredTools.map((tool) => (
             <div
-              key={tool.id}
-              onClick={() => onNavigate(tool.id)}
+              key={tool.path}
+              onClick={() => navigate(tool.path)}
               className="group bg-surface-container-lowest rounded-lg p-6 border border-[#e4e4e7] hover:border-outline shadow-none hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[220px]"
             >
               <div className="space-y-4">
@@ -237,7 +234,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             </div>
           </div>
           <button
-            onClick={() => onNavigate("extractor")}
+            onClick={() => navigate("/iqama-extractor")}
             className="w-full md:w-auto text-xs font-bold text-white bg-inverse-surface hover:bg-primary-container px-6 py-3 rounded-DEFAULT shadow-none transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
           >
             <span>Quick Start OCR Extractor</span>

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { 
   LayoutDashboard, 
   Database, 
@@ -17,9 +19,9 @@ import {
   PenTool,
   Combine,
   Scissors,
-  Layers
+  Layers,
+  MapPin
 } from "lucide-react";
-import { ActiveAgent } from "./types";
 
 // Import custom agents
 import Dashboard from "./components/Dashboard";
@@ -34,10 +36,10 @@ import GoogleMapsExtractor from "./components/GoogleMapsExtractor";
 import MergePdf from "./components/MergePdf";
 import SplitPdf from "./components/SplitPdf";
 import OrganizePdf from "./components/OrganizePdf";
-import { MapPin } from "lucide-react";
 
 export default function App() {
-  const [activeAgent, setActiveAgent] = useState<ActiveAgent>("dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark" | "night">(() => {
     try {
@@ -61,21 +63,21 @@ export default function App() {
   };
 
   const navigationItems = [
-    { id: "extractor" as ActiveAgent, name: "Iqama Extractor", icon: <Database size={16} />, pill: "AI OCR" },
-    { id: "pdf-to-img" as ActiveAgent, name: "PDF to Image", icon: <FileText size={16} />, pill: "Slicer" },
-    { id: "img-to-pdf" as ActiveAgent, name: "Image to PDF", icon: <FileCheck size={16} />, pill: "Binder" },
-    { id: "pdf-to-word" as ActiveAgent, name: "PDF to Word", icon: <FileText size={16} />, pill: "Convert" },
-    { id: "merge-pdf" as ActiveAgent, name: "Merge PDF", icon: <Combine size={16} />, pill: "Merge" },
-    { id: "split-pdf" as ActiveAgent, name: "Split PDF", icon: <Scissors size={16} />, pill: "Split" },
-    { id: "organize-pdf" as ActiveAgent, name: "Organize PDF", icon: <Layers size={16} />, pill: "Organize" },
-    { id: "watermark-remover" as ActiveAgent, name: "Watermark Remover", icon: <Eraser size={16} />, pill: "Clean" },
-    { id: "products" as ActiveAgent, name: "Product Scout", icon: <Search size={16} />, pill: "Market" },
-    { id: "resume-maker" as ActiveAgent, name: "Resume Studio", icon: <Sparkles size={16} />, pill: "Career" },
-    { id: "maps-extractor" as ActiveAgent, name: "Leads Extractor", icon: <MapPin size={16} />, pill: "G-Maps" },
+    { path: "/iqama-extractor", name: "Iqama Extractor", icon: <Database size={16} />, pill: "AI OCR" },
+    { path: "/pdf-to-image", name: "PDF to Image", icon: <FileText size={16} />, pill: "Slicer" },
+    { path: "/image-to-pdf", name: "Image to PDF", icon: <FileCheck size={16} />, pill: "Binder" },
+    { path: "/pdf-to-word", name: "PDF to Word", icon: <FileText size={16} />, pill: "Convert" },
+    { path: "/merge-pdf", name: "Merge PDF", icon: <Combine size={16} />, pill: "Merge" },
+    { path: "/split-pdf", name: "Split PDF", icon: <Scissors size={16} />, pill: "Split" },
+    { path: "/organize-pdf", name: "Organize PDF", icon: <Layers size={16} />, pill: "Organize" },
+    { path: "/watermark-remover", name: "Watermark Remover", icon: <Eraser size={16} />, pill: "Clean" },
+    { path: "/product-scout", name: "Product Scout", icon: <Search size={16} />, pill: "Market" },
+    { path: "/resume-studio", name: "Resume Studio", icon: <Sparkles size={16} />, pill: "Career" },
+    { path: "/maps-extractor", name: "Leads Extractor", icon: <MapPin size={16} />, pill: "G-Maps" },
   ];
 
-  const handleNavigate = (id: ActiveAgent) => {
-    setActiveAgent(id);
+  const handleNavigate = (path: string) => {
+    navigate(path);
     setIsMobileMenuOpen(false); // Close mobile popup navigation if open
   };
 
@@ -83,6 +85,9 @@ export default function App() {
 
   return (
     <div className={`flex flex-col h-screen bg-background font-sans text-on-background antialiased overflow-hidden relative ${themeClass}`}>
+      <Helmet>
+        <title>Injamus's AI Workspace</title>
+      </Helmet>
       
       {/* Premium Top Navigation Bar */}
       <header className="bg-surface-container-lowest border-b border-outline-variant flex-shrink-0 z-50 relative shadow-sm">
@@ -90,7 +95,7 @@ export default function App() {
           <div className="flex items-center justify-between h-16 md:h-18">
             
             {/* Logo/Branding Node */}
-            <div className="flex items-center gap-2.5 cursor-pointer select-none" onClick={() => handleNavigate("dashboard")}>
+            <div className="flex items-center gap-2.5 cursor-pointer select-none" onClick={() => handleNavigate("/")}>
               <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-sm shadow-primary/20 active:scale-95 transition-transform">
                 <BrainCircuit size={19} />
               </div>
@@ -146,11 +151,11 @@ export default function App() {
               Select Agent Tool
             </h3>
             {navigationItems.map((item) => {
-              const isActive = activeAgent === item.id;
+              const isActive = location.pathname === item.path;
               return (
                 <button
-                  key={item.id}
-                  onClick={() => handleNavigate(item.id)}
+                  key={item.path}
+                  onClick={() => handleNavigate(item.path)}
                   className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${
                     isActive
                       ? "bg-primary-container text-on-primary-container border border-primary-container"
@@ -173,8 +178,6 @@ export default function App() {
                 </button>
               );
             })}
-            
-
           </div>
         )}
       </header>
@@ -184,42 +187,20 @@ export default function App() {
         
         {/* Dynamic Workspaces */}
         <div id="workspace-content-body" className="p-4 md:p-8 max-w-7xl w-full mx-auto flex-1 pb-16 bg-background">
-          {activeAgent === "dashboard" && (
-            <Dashboard onNavigate={handleNavigate} />
-          )}
-          {activeAgent === "extractor" && (
-            <IqamaExtractor />
-          )}
-          {activeAgent === "pdf-to-img" && (
-            <PdfToImg />
-          )}
-          {activeAgent === "img-to-pdf" && (
-            <ImgToPdf />
-          )}
-          {activeAgent === "pdf-to-word" && (
-            <PdfToWord />
-          )}
-          {activeAgent === "watermark-remover" && (
-            <WatermarkRemover />
-          )}
-          {activeAgent === "products" && (
-            <ProductFinder />
-          )}
-          {activeAgent === "resume-maker" && (
-            <ResumeMaker />
-          )}
-          {activeAgent === "maps-extractor" && (
-            <GoogleMapsExtractor />
-          )}
-          {activeAgent === "merge-pdf" && (
-            <MergePdf />
-          )}
-          {activeAgent === "split-pdf" && (
-            <SplitPdf />
-          )}
-          {activeAgent === "organize-pdf" && (
-            <OrganizePdf />
-          )}
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/iqama-extractor" element={<IqamaExtractor />} />
+            <Route path="/pdf-to-image" element={<PdfToImg />} />
+            <Route path="/image-to-pdf" element={<ImgToPdf />} />
+            <Route path="/pdf-to-word" element={<PdfToWord />} />
+            <Route path="/merge-pdf" element={<MergePdf />} />
+            <Route path="/split-pdf" element={<SplitPdf />} />
+            <Route path="/organize-pdf" element={<OrganizePdf />} />
+            <Route path="/watermark-remover" element={<WatermarkRemover />} />
+            <Route path="/product-scout" element={<ProductFinder />} />
+            <Route path="/resume-studio" element={<ResumeMaker />} />
+            <Route path="/maps-extractor" element={<GoogleMapsExtractor />} />
+          </Routes>
         </div>
       </main>
 

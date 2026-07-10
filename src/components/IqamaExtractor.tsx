@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { apiFetch } from "../utils/api";
 import * as XLSX from "xlsx";
 import { 
@@ -1329,8 +1330,13 @@ export default function IqamaExtractor() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in text-on-surface">
-      {/* Tool Header */}
+    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in relative z-10 text-on-surface pb-12">
+      <Helmet>
+        <title>Iqama & ID Extractor | AI OCR - Injamus's AI Workspace</title>
+        <meta name="description" content="Securely extract names, dates, and ID numbers from Iqama and official ID cards using intelligent AI OCR processing." />
+      </Helmet>
+
+      {/* Hero Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-surface-container-highest pb-5">
         <div>
           <div className="flex flex-wrap items-center gap-2">
