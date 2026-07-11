@@ -1,22 +1,213 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 import OpenAI from "openai";
 const Type = { STRING: "string", NUMBER: "number", INTEGER: "integer", BOOLEAN: "boolean", ARRAY: "array", OBJECT: "object" };
 
 dotenv.config({ override: true });
-// Fallback to loading .env.example if GEMINI_API_KEY is not defined in the process environment
-if (!process.env.OPENAI_API_KEY) {
-  dotenv.config({ path: path.resolve(process.cwd(), ".env.example"), override: true });
+
+// Refuse to start if critical environment variables are missing or set to defaults
+const criticalApiKey = process.env.OPENAI_API_KEY;
+if (!criticalApiKey || criticalApiKey === "YOUR_API_KEY" || criticalApiKey.trim() === "") {
+  console.error("===============================================================");
+  console.error("CRITICAL CONFIGURATION ERROR: OPENAI_API_KEY is not set or is a placeholder.");
+  console.error("Please configure a valid API key in your environment settings.");
+  console.error("===============================================================");
+  process.exit(1);
 }
 
 const app = express();
 const PORT = 3000;
 
-// Increase payload size limit to accept images in base64 format safely
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
+// 1. Security Headers Middleware (VULN-06 fix: removed unsafe-eval, nonce-based CSP in production)
+app.use((req, res, next) => {
+  const nonce = crypto.randomBytes(16).toString("base64");
+  res.locals.cspNonce = nonce;
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  const isDev = process.env.NODE_ENV !== "production";
+  res.setHeader(
+    "Content-Security-Policy",
+    `default-src 'self'; ` +
+    // In dev, Vite HMR needs unsafe-eval. In production, removed entirely.
+    `script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ""}; ` +
+    `img-src 'self' data: https: blob:; ` +
+    `style-src 'self' 'unsafe-inline'; ` +
+    `font-src 'self' data:; ` +
+    `connect-src 'self' https://api.openai.com https://places.googleapis.com;`
+  );
+  next();
+});
+
+// 2. CORS Restrict Origin Middleware
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    "https://tools.iaminjamul.com",
+    "http://localhost:3000",
+    "http://localhost:5173"
+  ];
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    res.sendStatus(200);
+    return;
+  }
+  next();
+});
+
+// 3. In-memory Rate Limiting Middleware for API requests (Max 30 requests per min per IP)
+const rateLimitWindow = 60 * 1000;
+const maxRequestsPerIp = 30;
+const ipRequestCounts = new Map<string, { count: number; resetTime: number }>();
+
+// VULN-02 fix: Secure IP extraction — use x-real-ip (set by trusted proxy/Vercel)
+// or take the LAST entry of x-forwarded-for (also set by the proxy, not the client).
+function getRealIp(req: express.Request): string {
+  // x-real-ip is injected by Vercel/nginx — not user-controllable
+  const realIp = req.headers["x-real-ip"] as string;
+  if (realIp && realIp.trim()) return realIp.trim();
+
+  // Take the LAST IP in the chain (proxy-appended), not the first (user-controlled)
+  const forwarded = req.headers["x-forwarded-for"] as string;
+  if (forwarded) {
+    const ips = forwarded.split(",").map(s => s.trim()).filter(Boolean);
+    if (ips.length > 0) return ips[ips.length - 1];
+  }
+
+  return req.socket.remoteAddress || "unknown";
+}
+
+app.use("/api", (req, res, next) => {
+  const ip = getRealIp(req);
+  const now = Date.now();
+
+  let record = ipRequestCounts.get(ip);
+  if (!record || now > record.resetTime) {
+    record = { count: 0, resetTime: now + rateLimitWindow };
+  }
+
+  record.count++;
+  ipRequestCounts.set(ip, record);
+
+  if (record.count > maxRequestsPerIp) {
+    const correlationId = Math.random().toString(36).substring(2, 10);
+    console.warn(`[Rate Limit Exceeded] IP: ${ip}, Request Count: ${record.count}, Error ID: ${correlationId}`);
+    res.status(429).json({ 
+      error: "Too many requests. Please try again later.", 
+      correlationId 
+    });
+    return;
+  }
+
+  next();
+});
+
+// VULN-05 fix: Reduced from 50mb to 15mb. Server-side validation handles the rest.
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ limit: "15mb", extended: true }));
+
+// ─── VULN-03 fix: JWT Auth middleware ─────────────────────────────────────────
+// Verifies the Bearer token on every protected /api/* route.
+function authMiddleware(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+): void {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    res.status(401).json({ error: "Unauthorized: missing or invalid token." });
+    return;
+  }
+
+  const token = authHeader.slice(7);
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error("[Auth] JWT_SECRET is not configured.");
+    res.status(500).json({ error: "Server misconfiguration." });
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(token, secret, { algorithms: ["HS256"] });
+    (req as any).user = decoded;
+    next();
+  } catch {
+    res.status(401).json({ error: "Unauthorized: token invalid or expired." });
+  }
+}
+
+// ─── VULN-05 fix: Server-side file validation ─────────────────────────────────
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  "image/jpeg", "image/jpg", "image/png",
+  "image/webp", "image/gif", "image/bmp"
+]);
+
+function validateBase64Image(
+  imageBase64: string,
+  clientMimeType: string
+): { valid: boolean; mimeType: string; error?: string } {
+  // ~10MB decoded = ~13.4MB base64. Enforce hard cap.
+  if (imageBase64.length > 14_000_000) {
+    return { valid: false, mimeType: "", error: "Image exceeds the 10MB size limit." };
+  }
+
+  const safeMime = (clientMimeType || "").toLowerCase().trim();
+  if (!ALLOWED_IMAGE_MIME_TYPES.has(safeMime)) {
+    return {
+      valid: false,
+      mimeType: "",
+      error: "Invalid file type. Only JPEG, PNG, WebP, GIF, and BMP are allowed."
+    };
+  }
+
+  // Inspect actual magic bytes to confirm the claimed MIME type
+  try {
+    const decoded = Buffer.from(imageBase64.substring(0, 24), "base64");
+    const isJpeg = decoded[0] === 0xff && decoded[1] === 0xd8;
+    const isPng  = decoded[0] === 0x89 && decoded[1] === 0x50 && decoded[2] === 0x4e && decoded[3] === 0x47;
+    const isGif  = decoded[0] === 0x47 && decoded[1] === 0x49 && decoded[2] === 0x46;
+    // WebP: bytes 0-3 = RIFF, bytes 8-11 = WEBP
+    const isWebp = decoded[0] === 0x52 && decoded[1] === 0x49 && decoded[8] === 0x57 && decoded[9] === 0x45;
+    // BMP magic bytes
+    const isBmp  = decoded[0] === 0x42 && decoded[1] === 0x4d;
+
+    if (!isJpeg && !isPng && !isGif && !isWebp && !isBmp) {
+      return {
+        valid: false,
+        mimeType: "",
+        error: "File content does not match a supported image format."
+      };
+    }
+  } catch {
+    return { valid: false, mimeType: "", error: "Could not read file content." };
+  }
+
+  return { valid: true, mimeType: safeMime };
+}
+
+// ─── VULN-07 fix: Input sanitizer for all user-controlled prompt parameters ───
+function sanitizePromptInput(input: unknown, maxLength = 500): string {
+  if (typeof input !== "string") return "";
+  return input
+    .trim()
+    .slice(0, maxLength)
+    // Strip control characters (could break prompt structure)
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    // Escape double-quotes used as JSON / prompt delimiters
+    .replace(/"/g, "'");
+}
+
 
 // Lazy initializer for the Gemini client to avoid startup crashes if key is omitted
 let aiClient: OpenAI | null = null;
@@ -133,6 +324,33 @@ async function generateContentWithRetry(client: OpenAI, params: any, maxAttempts
   }
 }
 
+
+
+// ─── VULN-03 fix: Login endpoint — issues a signed JWT on valid passcode ──────
+// This is the ONLY unauthenticated API endpoint (besides /api/health).
+app.post("/api/auth/login", (req, res) => {
+  const { passcode } = req.body as { passcode?: string };
+  const expected = process.env.APP_PASSCODE;
+
+  if (!expected || !passcode || passcode.trim() !== expected) {
+    res.status(401).json({ error: "Invalid passcode." });
+    return;
+  }
+
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    res.status(500).json({ error: "Server misconfiguration." });
+    return;
+  }
+
+  const token = jwt.sign(
+    { sub: "workspace-user", iat: Math.floor(Date.now() / 1000) },
+    secret,
+    { algorithm: "HS256", expiresIn: "8h" }
+  );
+
+  res.json({ token });
+});
 
 // Ensure the client-facing APIs are placed BEFORE Vite middleware
 app.get("/api/health", (req, res) => {
@@ -518,7 +736,7 @@ function getFallbackProducts(category: string, niche: string): any {
   };
 }
 
-app.post("/api/extract-iqama", async (req, res) => {
+app.post("/api/extract-iqama", authMiddleware, async (req, res) => {
   try {
     const { imageBase64, mimeType } = req.body;
     if (!imageBase64) {
@@ -526,12 +744,20 @@ app.post("/api/extract-iqama", async (req, res) => {
       return;
     }
 
+    // VULN-05 fix: server-side MIME type & magic-byte validation
+    const validation = validateBase64Image(imageBase64, mimeType || "image/jpeg");
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+    const safeMimeType = validation.mimeType;
+
     try {
       const client = getOpenAIClient();
 
       const imagePart = {
         inlineData: {
-          mimeType: mimeType || "image/jpeg",
+          mimeType: safeMimeType, // VULN-05: use server-validated MIME type
           data: imageBase64,
         },
       };
@@ -581,21 +807,23 @@ Please return the parsed data in clean JSON conforming strictly to the requested
       const parsedData = JSON.parse(response.text || "{}");
       res.json(parsedData);
     } catch (apiErr: any) {
-      console.log("[OpenAI Fallback Activated] Serving resilient Iqama parsed data fallback.");
+      const correlationId = Math.random().toString(36).substring(2, 10);
+      console.log(`[OpenAI Fallback Activated - Error ID: ${correlationId}] Serving resilient Iqama parsed data fallback. Error details:`, apiErr);
       const fallbackResult = {
         ...getFallbackIqamaData(imageBase64),
-        apiError: apiErr.message || String(apiErr)
+        apiError: "AI service transient failure. Utilizing layout cache."
       };
       res.json(fallbackResult);
     }
   } catch (err: any) {
-    console.error("Iqama Extraction server error:", err);
-    res.status(500).json({ error: err.message || "Failed to process card with AI extractor" });
+    const correlationId = Math.random().toString(36).substring(2, 10);
+    console.error(`[Error ID: ${correlationId}] Iqama Extraction server error:`, err);
+    res.status(500).json({ error: "Failed to process card with AI extractor", correlationId });
   }
 });
 
 // Fast raw text OCR endpoint for local text-only LLMs (like Gemma 2 / Gamma 4)
-app.post("/api/ocr-text", async (req, res) => {
+app.post("/api/ocr-text", authMiddleware, async (req, res) => {
   try {
     const { imageBase64, mimeType } = req.body;
     if (!imageBase64) {
@@ -603,12 +831,20 @@ app.post("/api/ocr-text", async (req, res) => {
       return;
     }
 
+    // VULN-05: server-side MIME type & magic-byte validation
+    const validation = validateBase64Image(imageBase64, mimeType || "image/jpeg");
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+    const safeMimeType = validation.mimeType;
+
     try {
       const client = getOpenAIClient();
 
       const imagePart = {
         inlineData: {
-          mimeType: mimeType || "image/jpeg",
+          mimeType: safeMimeType, // VULN-05: use server-validated MIME type
           data: imageBase64,
         },
       };
@@ -639,13 +875,14 @@ Name: MOHAMMAD MUNNA
       });
     }
   } catch (err: any) {
-    console.error("Raw OCR text server error:", err);
-    res.status(500).json({ error: err.message || "Failed to extract text from card image" });
+    const correlationId = Math.random().toString(36).substring(2, 10);
+    console.error(`[Error ID: ${correlationId}] Raw OCR text server error:`, err);
+    res.status(500).json({ error: "Failed to extract text from card image", correlationId });
   }
 });
 
 // Trending Product Finder using Gemini search grounding
-app.post("/api/find-products", async (req, res) => {
+app.post("/api/find-products", authMiddleware, async (req, res) => {
   try {
     const { category, niche } = req.body;
     
@@ -659,8 +896,11 @@ app.post("/api/find-products", async (req, res) => {
         fitness: "modular space-saving workout items and fitness trackers",
       };
 
-      const targetCategory = category || "general";
-      const targetNiche = niche || defaultNiches[targetCategory] || "viral products trending on social media";
+      // VULN-07: Sanitize user-controlled inputs before prompt interpolation
+      const rawCategory = sanitizePromptInput(category, 50);
+      const rawNiche = sanitizePromptInput(niche, 200);
+      const targetCategory = rawCategory || "general";
+      const targetNiche = rawNiche || defaultNiches[targetCategory] || "viral products trending on social media";
 
       const prompt = `Perform research on current hot/trending physical consumer products in 2026.
 Category: "${targetCategory}"
@@ -789,22 +1029,24 @@ Return your research strictly in a structured JSON schema. Include any citations
         sources,
       });
     } catch (apiErr: any) {
-      console.log("[Product Finder Fallback Activated] Serving curated trending product research.");
+      const correlationId = Math.random().toString(36).substring(2, 10);
+      console.log(`[Product Finder Fallback Activated - Error ID: ${correlationId}] Serving curated trending product research. Error details:`, apiErr);
       const fallbackResult = getFallbackProducts(category || "general", niche || "");
       res.json({
         ...fallbackResult,
         isFallback: true,
-        apiError: apiErr.message || String(apiErr)
+        apiError: "AI product search grounding temporary error. Utilizing local trends library."
       });
     }
   } catch (err: any) {
-    console.error("Product Finder top-level server error:", err);
-    res.status(500).json({ error: err.message || "Failed to search trending products with AI" });
+    const correlationId = Math.random().toString(36).substring(2, 10);
+    console.error(`[Error ID: ${correlationId}] Product Finder top-level server error:`, err);
+    res.status(500).json({ error: "Failed to search trending products with AI", correlationId });
   }
 });
 
 // AI Resume Assistant / Resume Section writer & optimizer
-app.post("/api/ai-resume-helper", async (req, res) => {
+app.post("/api/ai-resume-helper", authMiddleware, async (req, res) => {
   try {
     const { action, role, text } = req.body;
     
@@ -816,10 +1058,14 @@ app.post("/api/ai-resume-helper", async (req, res) => {
     try {
       const client = getOpenAIClient();
 
+      // VULN-07: Sanitize user-controlled inputs before prompt interpolation
+      const safeRole = sanitizePromptInput(role, 100);
+      const safeText = sanitizePromptInput(text, 500);
+
       let prompt = "";
       if (action === "improve-bullets") {
-        prompt = `You are an elite executive resume writer. Take the following draft resume bullet point(s) or description for a "${role}" role:
-"${text || "worked on projects, led team, resolved bug issues"}"
+        prompt = `You are an elite executive resume writer. Take the following draft resume bullet point(s) or description for a '${safeRole}' role:
+'${safeText || "worked on projects, led team, resolved bug issues"}'
 
 Optimize and rewrite these bullet points to be highly professional, impactful, and results-oriented.
 Formatting guidelines:
@@ -828,23 +1074,23 @@ Formatting guidelines:
 3. Connect actions directly to business value or engineering outcomes.
 4. Provide 3 optimized variations matching different seniority levels or style vibes.
 
-Return the suggestions as a clean JSON list under the key "suggestions".`;
+Return the suggestions as a clean JSON list under the key 'suggestions'.`;
       } else if (action === "write-summary") {
-        prompt = `You are an elite executive resume writer. Write a compelling, high-converting professional summary for a "${role}" role.
-If some context is provided, here is their focus: "${text || "general experience in the field"}".
+        prompt = `You are an elite executive resume writer. Write a compelling, high-converting professional summary for a '${safeRole}' role.
+If some context is provided, here is their focus: '${safeText || "general experience in the field"}'.
 
 Guidelines:
 1. Keep it to a tight, high-impact paragraph of 3-4 sentences.
 2. Infuse modern industry buzzwords without sounding clunky.
 3. Highlight vision, execution, and technological/methodological mastery.
-4. Give 2 distinct versions: one "Executive & Strategic" and one "Technical & Direct".
+4. Give 2 distinct versions: one 'Executive & Strategic' and one 'Technical & Direct'.
 
-Return the options as a clean JSON list under the key "suggestions".`;
+Return the options as a clean JSON list under the key 'suggestions'.`;
       } else {
-        prompt = `Generate a modern, highly sought-after list of 10 key professional skills or core competencies for a candidate applying as a "${role}".
-Avoid generic single words where possible (prefer e.g., "RESTful API Design" over just "APIs").
+        prompt = `Generate a modern, highly sought-after list of 10 key professional skills or core competencies for a candidate applying as a '${safeRole}'.
+Avoid generic single words where possible (prefer e.g., 'RESTful API Design' over just 'APIs').
 
-Return the skills as a clean JSON list under the key "suggestions".`;
+Return the skills as a clean JSON list under the key 'suggestions'.`;
       }
 
       const response = await generateContentWithRetry(client, {
@@ -869,7 +1115,8 @@ Return the skills as a clean JSON list under the key "suggestions".`;
       const parsed = JSON.parse(response.text || "{}");
       res.json(parsed);
     } catch (apiErr: any) {
-      console.log("[Resume Helper Fallback Activated] Serving clean fallback text items.");
+      const correlationId = Math.random().toString(36).substring(2, 10);
+      console.log(`[Resume Helper Fallback Activated - Error ID: ${correlationId}] Serving clean fallback text items. Error details:`, apiErr);
       
       // Dynamic tailored fallbacks for bullet optimization or executive summary
       let fallbackSuggestions: string[] = [];
@@ -898,27 +1145,33 @@ Return the skills as a clean JSON list under the key "suggestions".`;
       res.json({
         suggestions: fallbackSuggestions,
         isFallback: true,
-        apiError: apiErr.message || String(apiErr)
+        apiError: "AI resume assistant temporary connection issue. Utilizing default template library."
       });
     }
   } catch (err: any) {
-    console.error("Resume helper server error:", err);
-    res.status(500).json({ error: err.message || "Failed to call AI Resume helper service" });
+    const correlationId = Math.random().toString(36).substring(2, 10);
+    console.error(`[Error ID: ${correlationId}] Resume helper server error:`, err);
+    res.status(500).json({ error: "Failed to call AI Resume helper service", correlationId });
   }
 });
 
 // Google Maps Data Extractor API
-app.post("/api/extract-maps-data", async (req, res) => {
+app.post("/api/extract-maps-data", authMiddleware, async (req, res) => {
   try {
-    const { keyword, location, mode, clientApiKey } = req.body;
+    // VULN-04 fix: removed clientApiKey — server exclusively uses its own env var
+    const { keyword, location, mode } = req.body;
     
     if (!keyword || !location) {
       res.status(400).json({ error: "Keyword and location are required inputs." });
       return;
     }
 
+    // VULN-07: Sanitize inputs before any prompt interpolation
+    const safeKeyword = sanitizePromptInput(keyword, 100);
+    const safeLocation = sanitizePromptInput(location, 100);
+
     const modeChoice = mode || "ai"; // "ai" or "places_api"
-    const api_key = clientApiKey || process.env.GOOGLE_MAPS_PLATFORM_KEY || "";
+    const api_key = process.env.GOOGLE_MAPS_PLATFORM_KEY || ""; // VULN-04: never trust client-supplied key
 
     if (modeChoice === "places_api" && api_key) {
       try {
@@ -931,7 +1184,7 @@ app.post("/api/extract-maps-data", async (req, res) => {
             "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.rating,places.userRatingCount,places.location,places.primaryType"
           },
           body: JSON.stringify({
-            textQuery: `${keyword} in ${location}`,
+            textQuery: `${safeKeyword} in ${safeLocation}`,
             maxResultCount: 15
           })
         });
@@ -975,8 +1228,8 @@ app.post("/api/extract-maps-data", async (req, res) => {
       const client = getOpenAIClient();
 
       const prompt = `Research local businesses or service providers matching the search query:
-Keyword / Business Type: "${keyword}"
-Location: "${location}"
+Keyword / Business Type: '${safeKeyword}'
+Location: '${safeLocation}'
 
 Perform Google Search grounding to retrieve real, active businesses with valid details in 2026. Compile a list of up to 10 businesses matching this exact filter.
 For each business, research and compile the following columns precisely:
@@ -1058,20 +1311,20 @@ Output JSON only confirming to the specified schema.`;
       try {
         const client = getOpenAIClient();
         const fallbackPrompt = `Research and generate a highly realistic list of 8 physical businesses or service providers matching this query:
-Keyword / Business Type: "${keyword}"
-Location: "${location}"
+Keyword / Business Type: '${safeKeyword}'
+Location: '${safeLocation}'
 
 Do NOT use any external search grounding tools. Use your broad localized knowledge to generate accurate or highly realistic local business profiles.
 For each business, compile the following fields precisely matching the schema:
 - name (The public business name, e.g. "Riyadh Specialized Dental Clinic")
-- address (Full formatted street address and area in ${location})
+- address (Full formatted street address and area in ${safeLocation})
 - phone (A valid telephone number format for the specified area or country, or "N/A" if not listed)
 - website (Valid-looking domain URL matching the business brand, or "N/A")
 - rating (Estimate average reviews score, number between 3.8 and 5.0)
 - ratingCount (Number of review counts, e.g. 145)
 - category (Specialization specialty matching the search keywords)
-- latitude (Valid geographic latitude coordinate inside or near ${location}, e.g. 24.7136 for Riyadh)
-- longitude (Valid geographic longitude coordinate inside or near ${location}, e.g. 46.6753 for Riyadh)
+- latitude (Valid geographic latitude coordinate inside or near ${safeLocation}, e.g. 24.7136 for Riyadh)
+- longitude (Valid geographic longitude coordinate inside or near ${safeLocation}, e.g. 46.6753 for Riyadh)
 - placeId (Unique simulated ID hash)
 - email (Business contact email or support email, or "N/A" if unavailable)
 - socialProfiles (Instagram or Facebook direct link, or "N/A")
@@ -1223,18 +1476,19 @@ Be precise. Format output only as matching JSON.`;
           results: mockBusinesses,
           count: mockBusinesses.length,
           isFallback: true,
-          apiError: apiErr.message || String(apiErr)
+          apiError: "Google Maps lead crawler connection timeout. Utilizing simulation database fallback."
         });
       }
     }
   } catch (err: any) {
-    console.error("Maps Extractor failure:", err);
-    res.status(500).json({ error: err.message || "Failed to extract directory leads" });
+    const correlationId = Math.random().toString(36).substring(2, 10);
+    console.error(`[Error ID: ${correlationId}] Maps Extractor failure:`, err);
+    res.status(500).json({ error: "Failed to extract directory leads", correlationId });
   }
 });
 
 // High-fidelity Multi-page PDF to Word OCR Endpoint using Multimodal Gemini
-app.post("/api/ocr-pdf-page", async (req, res) => {
+app.post("/api/ocr-pdf-page", authMiddleware, async (req, res) => {
   try {
     const { imageBase64, mimeType, pageNumber, totalPages } = req.body;
     if (!imageBase64) {
@@ -1242,12 +1496,20 @@ app.post("/api/ocr-pdf-page", async (req, res) => {
       return;
     }
 
+    // VULN-05: server-side MIME type & magic-byte validation for PDF-rendered images (always PNG)
+    const validation = validateBase64Image(imageBase64, mimeType || "image/png");
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+    const safeMimeType = validation.mimeType;
+
     try {
       const client = getOpenAIClient();
 
       const imagePart = {
         inlineData: {
-          mimeType: mimeType || "image/png",
+          mimeType: safeMimeType, // VULN-05: use server-validated MIME type
           data: imageBase64,
         },
       };
@@ -1273,7 +1535,8 @@ Analyze the text content, formatting structure, table alignment, and typography 
       const extractedText = (response.text || "").trim();
       res.json({ text: extractedText });
     } catch (apiErr: any) {
-      console.log(`[OCR Page Fallback] Serving standard layout fallback for Page ${pageNumber}.`);
+      const correlationId = Math.random().toString(36).substring(2, 10);
+      console.log(`[OCR Page Fallback - Error ID: ${correlationId}] Serving standard layout fallback for Page ${pageNumber}. Error details:`, apiErr);
       
       // Serve a high-fidelity mock fallback text matching document structure
       const sampleText = `[HEADING] EXECUTIVE BUSINESS OVERVIEW & PERFORMANCE ANALYSIS
@@ -1287,11 +1550,12 @@ This report highlights administrative activities and supplier records processed 
 
 To fully utilize advanced multi-lingual and formatting recognition, ensure GEMINI_API_KEY is properly saved in the workspace settings. Use the toolbar on the right to edit, realign paragraphs, and customize Word typography features prior to downloading.`;
 
-      res.json({ text: sampleText, isFallback: true, apiError: apiErr.message || String(apiErr) });
+      res.json({ text: sampleText, isFallback: true, apiError: "OpenAI OCR service temporary failure. Utilizing document layout cache fallback." });
     }
   } catch (err: any) {
-    console.error("PDF page OCR endpoint server error:", err);
-    res.status(500).json({ error: err.message || "Failed to process document page with AI OCR engine" });
+    const correlationId = Math.random().toString(36).substring(2, 10);
+    console.error(`[Error ID: ${correlationId}] PDF page OCR endpoint server error:`, err);
+    res.status(500).json({ error: "Failed to process document page with AI OCR engine", correlationId });
   }
 });
 

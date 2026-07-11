@@ -57,7 +57,7 @@ export default function GoogleMapsExtractor() {
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
   const [mode, setMode] = useState<"ai" | "places_api">("ai");
-  const [clientApiKey, setClientApiKey] = useState("");
+  // VULN-04 fix: clientApiKey removed — server uses only its env var
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -129,7 +129,7 @@ export default function GoogleMapsExtractor() {
       const res = await apiFetch("/api/extract-maps-data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword, location, mode, clientApiKey }),
+        body: JSON.stringify({ keyword, location, mode }), // VULN-04: clientApiKey removed
       });
 
       if (!res.ok) {
@@ -345,23 +345,11 @@ export default function GoogleMapsExtractor() {
                 </div>
               </div>
 
-              {/* API Key Group inside Places API choice */}
+              {/* API Key input removed (VULN-04 fix): server uses its own GOOGLE_MAPS_PLATFORM_KEY */}
               {mode === "places_api" && (
                 <div className="space-y-1 pt-1 border-t border-slate-50 animate-fade-in">
-                  <div className="flex justify-between items-center mb-0.5">
-                    <label htmlFor="api-key-box" className="text-xs font-bold text-outline">Google Places API Key</label>
-                    <span className="text-[9px] text-outline-variant font-medium">Optional Fallback</span>
-                  </div>
-                  <input
-                    id="api-key-box"
-                    type="password"
-                    value={clientApiKey}
-                    onChange={(e) => setClientApiKey(e.target.value)}
-                    placeholder="AI Studio secret will be used if blank"
-                    className="w-full px-3 py-2.5 bg-surface-container-low/70 border border-outline-variant rounded-DEFAULT text-xs placeholder:text-outline-variant focus:outline-none focus:ring-1 focus:ring-teal-500 focus:bg-surface-container-lowest transition-all font-mono"
-                  />
-                  <p className="text-[10px] text-outline-variant leading-normal pt-1">
-                    Leave blank to automatically use proxy keys. If you hit quota, paste your custom Google Maps API key.
+                  <p className="text-[10px] text-outline-variant leading-normal">
+                    Places API mode uses the server-side API key configured by the workspace administrator.
                   </p>
                 </div>
               )}
