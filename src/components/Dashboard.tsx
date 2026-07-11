@@ -14,12 +14,57 @@ import {
   Eraser,
   PenTool,
   Combine,
-  Scissors
+  Scissors,
+  Trash2,
+  ShieldAlert
 } from "lucide-react";
+
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [showPurgeConfirm, setShowPurgeConfirm] = useState(false);
+  const [purgeSuccess, setPurgeSuccess] = useState(false);
+
+  const handlePurgeAllData = () => {
+    try {
+      // Clear localStorage items containing user preferences, tokens, or configurations
+      localStorage.removeItem("agent_hub_iqamas");
+      localStorage.removeItem("agent_hub_categories");
+      localStorage.removeItem("agent_hub_active_category");
+      localStorage.removeItem("agent_hub_duplicate_alerts");
+      localStorage.removeItem("agent_hub_last_supplier");
+      localStorage.removeItem("workspace_token");
+
+      // Delete IndexedDB database
+      const req = indexedDB.deleteDatabase("IqamaImagesDB");
+      req.onsuccess = () => {
+        setPurgeSuccess(true);
+        setShowPurgeConfirm(false);
+        setTimeout(() => {
+          setPurgeSuccess(false);
+          window.location.reload();
+        }, 1500);
+      };
+      req.onerror = () => {
+        alert("Failed to delete database cache. You can clear it manually in your browser settings.");
+        setShowPurgeConfirm(false);
+      };
+      req.onblocked = () => {
+        // Fallback if DB open connections block deletion
+        setPurgeSuccess(true);
+        setShowPurgeConfirm(false);
+        setTimeout(() => {
+          setPurgeSuccess(false);
+          window.location.reload();
+        }, 1500);
+      };
+    } catch (e) {
+      console.error("Purge failure:", e);
+      alert("An error occurred while deleting data.");
+    }
+  };
+
 
   const categories = [
     "All",
@@ -242,6 +287,61 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* Privacy and Deletion Flow Panel */}
+      <div className="max-w-7xl mx-auto px-1 sm:px-4 pt-2">
+        <div className="bg-surface-container-lowest border border-[#e4e4e7] rounded-lg p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex gap-4 items-start text-left">
+            <div className="p-3 bg-red-50 rounded-DEFAULT border border-red-100 text-red-600 shrink-0 hidden sm:block">
+              <ShieldAlert size={22} />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-bold text-on-surface text-sm flex items-center gap-1.5">
+                Privacy Controls & Local Data Purge
+              </h4>
+              <p className="text-xs text-outline max-w-2xl leading-relaxed">
+                To guarantee complete privacy, this application stores configuration options and scanned document data in your browser's local sandbox memory (IndexedDB and local storage). Erase all historical logs, records, and preferences instantly.
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full md:w-auto shrink-0 flex flex-col gap-2">
+            {!showPurgeConfirm && !purgeSuccess && (
+              <button
+                onClick={() => setShowPurgeConfirm(true)}
+                className="w-full md:w-auto text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-6 py-3 rounded-DEFAULT shadow-none transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+              >
+                <Trash2 size={13} />
+                <span>Purge All Saved Data</span>
+              </button>
+            )}
+
+            {showPurgeConfirm && (
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={() => setShowPurgeConfirm(false)}
+                  className="px-4 py-2 border border-outline-variant text-on-surface rounded-DEFAULT text-xs font-semibold hover:bg-surface-container-low transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePurgeAllData}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-DEFAULT text-xs font-semibold shadow-sm active:scale-95 transition-transform"
+                >
+                  Confirm Delete All
+                </button>
+              </div>
+            )}
+
+            {purgeSuccess && (
+              <div className="text-emerald-600 text-xs font-bold flex items-center justify-center gap-1">
+                <span>✓ Data Purged Successfully!</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
 
     </div>
   );

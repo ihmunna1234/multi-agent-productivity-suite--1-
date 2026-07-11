@@ -37,7 +37,8 @@ import {
   Briefcase
 } from "lucide-react";
 import { IqamaRecord } from "../types";
-import { saveIqamaImage, getIqamaImage, deleteIqamaImage, clearAllIqamaImages } from "../utils/idb";
+import { saveIqamaImage, getIqamaImage, deleteIqamaImage, clearAllIqamaImages, saveIqamaRecords, getIqamaRecords, clearAllIqamaRecords } from "../utils/idb";
+
 
 export interface DuplicateNotification {
   id: string;
@@ -160,27 +161,42 @@ export default function IqamaExtractor() {
     touchEndXRef.current = null;
   };
 
-  // Load history on initialization from localStorage
+  // Load history on initialization from IndexedDB (with automatic migration from localStorage if found)
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("agent_hub_iqamas");
-      if (stored) {
-        setRecords(JSON.parse(stored));
+    const loadHistory = async () => {
+      try {
+        let storedRecords = await getIqamaRecords();
+        const legacyStored = localStorage.getItem("agent_hub_iqamas");
+        if (legacyStored) {
+          try {
+            const legacyRecords = JSON.parse(legacyStored);
+            if (Array.isArray(legacyRecords) && legacyRecords.length > 0) {
+              if (storedRecords.length === 0) {
+                storedRecords = legacyRecords;
+                await saveIqamaRecords(storedRecords);
+              }
+            }
+          } catch (err) {}
+          localStorage.removeItem("agent_hub_iqamas");
+        }
+        setRecords(storedRecords);
+      } catch (e) {
+        console.error("Failed loading local history from IndexedDB:", e);
       }
-    } catch (e) {
-      console.error("Failed loading local history:", e);
-    }
+    };
+    loadHistory();
   }, []);
 
-  // Save records strictly to transient React state and persist to localStorage
-  const saveRecords = (newRecords: IqamaRecord[]) => {
+  // Save records strictly to transient React state and persist to IndexedDB securely
+  const saveRecords = async (newRecords: IqamaRecord[]) => {
     setRecords(newRecords);
     try {
-      localStorage.setItem("agent_hub_iqamas", JSON.stringify(newRecords));
+      await saveIqamaRecords(newRecords);
     } catch (e) {
-      console.error("Failed saving local history:", e);
+      console.error("Failed saving local history to IndexedDB:", e);
     }
   };
+
 
   const deleteCategory = async (catToDelete: string) => {
     const updatedCategories = categories.filter(c => c.toLowerCase() !== catToDelete.toLowerCase());
@@ -457,6 +473,13 @@ export default function IqamaExtractor() {
       return;
     }
 
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_FILE_SIZE) {
+      setError(`File size exceeds 10MB limit. The selected file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`);
+      return;
+    }
+
+
     setLoading(true);
     setError(null);
     setCurrentResult(null);
@@ -561,7 +584,6 @@ export default function IqamaExtractor() {
     }
   };
 
-  // Handle incoming multiple files for heavy multi-scans (Up to 200 items limits)
   const handleMultipleFilesSelected = async (fileList: File[]) => {
     setError(null);
     const validImages = fileList.filter(file => file.type.startsWith("image/"));
@@ -570,6 +592,14 @@ export default function IqamaExtractor() {
       setError("No valid image files found. Please select PNG, JPG, JPEG, or WEBP files.");
       return;
     }
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const oversized = validImages.filter(file => file.size > MAX_FILE_SIZE);
+    if (oversized.length > 0) {
+      setError(`Some files exceed the 10MB limit: ${oversized.map(f => f.name).join(", ")}. Please resize and try again.`);
+      return;
+    }
+
 
     if (validImages.length > 200) {
       setError(`Batch queue overflow! You selected ${validImages.length} files. The system allows scanning a maximum of 200 resident ID cards to avoid rate-limit locks.`);
@@ -731,10 +761,9 @@ export default function IqamaExtractor() {
               return r.iqamaNo.trim().toLowerCase() !== record.iqamaNo.trim().toLowerCase();
             });
             const list = [record, ...cleaned];
-            try {
-              localStorage.setItem("agent_hub_iqamas", JSON.stringify(list));
-            } catch (e) {}
+            saveIqamaRecords(list).catch(() => {});
             return list;
+
           });
 
         } catch (err: any) {
