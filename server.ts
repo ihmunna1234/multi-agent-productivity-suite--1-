@@ -772,79 +772,89 @@ app.post("/api/extract-iqama", authMiddleware, async (req, res) => {
 
     try {
       // ═══════════════════════════════════════════════════════════════════════
-      // GEMINI 2.0 FLASH — Best-in-class Arabic OCR for Saudi Iqama cards
-      // Google Gemini is natively trained on Arabic text and Saudi gov documents.
-      // It handles Eastern Arabic digits (٠١٢٣٤٥٦٧٨٩) with far higher accuracy.
+      // OpenAI o3 — Most powerful OpenAI reasoning model with vision
+      // o3 uses internal chain-of-thought reasoning before producing answers,
+      // which eliminates digit hallucination on Arabic text automatically.
       // ═══════════════════════════════════════════════════════════════════════
-      const gemini = getGeminiClient();
+      const client = getOpenAIClient();
 
-      const extractionPrompt = `You are an expert Arabic OCR system specialized in reading Saudi Iqama (Residence Permit) cards.
+      const extractionPrompt = `You are an expert Arabic OCR system specialized in reading Saudi Iqama (Residence Permit) cards issued by the Kingdom of Saudi Arabia Ministry of Interior.
 
-Analyze this Iqama card image and extract ALL data fields with 100% precision.
+Carefully analyze this Iqama card image and extract every data field with 100% precision.
 
-CRITICAL RULES FOR NUMBERS:
-- The Iqama number (رقم الهوية) is a 10-digit number. It appears in Eastern Arabic digits (٠١٢٣٤٥٦٧٨٩).
-- Read each digit ONE AT A TIME from left to right. Use this exact mapping:
-  ٠=0  ١=1  ٢=2  ٣=3  ٤=4  ٥=5  ٦=6  ٧=7  ٨=8  ٩=9
-- Output ALL numbers using ONLY Western digits (0-9). Never mix digit scripts.
-- Dates must be in YYYY-MM-DD format using Western digits.
+CRITICAL RULES FOR ALL NUMBERS:
+- The Iqama number (رقم الهوية) is always exactly 10 digits. It is printed in Eastern Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩) on Saudi Iqama cards.
+- Before outputting any number, mentally scan each digit position individually from left to right.
+- Convert EVERY digit using this exact mapping:
+  ٠→0  ١→1  ٢→2  ٣→3  ٤→4  ٥→5  ٦→6  ٧→7  ٨→8  ٩→9
+- ALL output numbers must use ONLY Western/Latin digits (0-9). No Arabic digits in output.
+- Dates must be in YYYY-MM-DD format using Western digits only.
+- Saudi Iqama numbers always start with 2 (foreign residents). Verify this.
 
-EXTRACT these fields:
-1. name: Full English/Latin name exactly as printed (e.g. "RASEL UDDIN")
-2. nameArabic: Full Arabic name exactly as printed (e.g. "راسيل الدين")
-3. iqamaNo: The 10-digit Iqama ID number — convert to Western digits (e.g. "2593168796")
-4. expiryDate: Card expiry date (تاريخ الانتهاء) as YYYY-MM-DD in Western digits
-5. dob: Date of birth (تاريخ الميلاد) as YYYY-MM-DD in Western digits
-6. nationality: Nationality in English (e.g. "Bangladeshi", "Pakistani")
-7. nationalityArabic: Nationality in Arabic as printed
-8. occupation: Job title/occupation (المهنة) as printed
-9. supplierName: Sponsor/supplier name (اسم صاحب العمل), or "N/A"
-10. establishmentName: Establishment/employer name (جهة العمل), or "N/A"
-11. establishmentNo: Establishment/sponsor ID number in Western digits, or "N/A"
+EXTRACT these 11 fields precisely:
+1. name — Full English/Latin name exactly as printed on card (e.g. "RASEL UDDIN")
+2. nameArabic — Full Arabic name exactly as printed (e.g. "راسيل الدين")
+3. iqamaNo — The 10-digit Iqama ID (رقم الهوية) converted to Western digits
+4. expiryDate — Expiry date (تاريخ الانتهاء) in YYYY-MM-DD Western digits
+5. dob — Date of birth (تاريخ الميلاد) in YYYY-MM-DD Western digits
+6. nationality — Nationality in English (e.g. "Bangladeshi", "Pakistani", "Indian")
+7. nationalityArabic — Nationality in Arabic exactly as printed
+8. occupation — Job title (المهنة) exactly as printed
+9. supplierName — Sponsor/supplier name (اسم صاحب العمل), or "N/A" if absent
+10. establishmentName — Employer/establishment name, or "N/A"
+11. establishmentNo — Establishment/sponsor ID number in Western digits, or "N/A"
 
-Return ONLY valid JSON with these exact field names.`;
+Return ONLY a valid JSON object with exactly these field names.`;
 
-      const geminiResponse = await gemini.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: [
+      const ocrResult = await client.chat.completions.create({
+        model: "o3",
+        messages: [
           {
             role: "user",
-            parts: [
+            content: [
               {
-                inlineData: {
-                  mimeType: safeMimeType,
-                  data: imageBase64,
+                type: "image_url",
+                image_url: {
+                  url: `data:${safeMimeType};base64,${imageBase64}`,
+                  detail: "high"
                 }
               },
-              { text: extractionPrompt }
+              {
+                type: "text",
+                text: extractionPrompt
+              }
             ]
           }
         ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT" as any,
-            properties: {
-              name:               { type: "STRING" as any, description: "Full English name on the card." },
-              nameArabic:         { type: "STRING" as any, description: "Full Arabic name on the card." },
-              iqamaNo:            { type: "STRING" as any, description: "10-digit Iqama number in Western digits." },
-              expiryDate:         { type: "STRING" as any, description: "Expiry date as YYYY-MM-DD." },
-              dob:                { type: "STRING" as any, description: "Date of birth as YYYY-MM-DD." },
-              nationality:        { type: "STRING" as any, description: "Nationality in English." },
-              nationalityArabic:  { type: "STRING" as any, description: "Nationality in Arabic." },
-              occupation:         { type: "STRING" as any, description: "Occupation or job title." },
-              supplierName:       { type: "STRING" as any, description: "Sponsor or supplier name, or N/A." },
-              establishmentName:  { type: "STRING" as any, description: "Establishment name, or N/A." },
-              establishmentNo:    { type: "STRING" as any, description: "Establishment number in Western digits, or N/A." },
-            },
-            required: ["name", "nameArabic", "iqamaNo", "expiryDate", "dob"],
-          },
-          temperature: 0,
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "iqama_extraction",
+            strict: true,
+            schema: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                name:              { type: "string", description: "Full English name on the card." },
+                nameArabic:        { type: "string", description: "Full Arabic name on the card." },
+                iqamaNo:           { type: "string", description: "10-digit Iqama number in Western digits only." },
+                expiryDate:        { type: "string", description: "Expiry date as YYYY-MM-DD in Western digits." },
+                dob:               { type: "string", description: "Date of birth as YYYY-MM-DD in Western digits." },
+                nationality:       { type: "string", description: "Nationality in English." },
+                nationalityArabic: { type: "string", description: "Nationality in Arabic as printed on card." },
+                occupation:        { type: "string", description: "Occupation or job title." },
+                supplierName:      { type: "string", description: "Sponsor/supplier name, or N/A." },
+                establishmentName: { type: "string", description: "Establishment/employer name, or N/A." },
+                establishmentNo:   { type: "string", description: "Establishment ID number in Western digits, or N/A." },
+              },
+              required: ["name", "nameArabic", "iqamaNo", "expiryDate", "dob", "nationality", "nationalityArabic", "occupation", "supplierName", "establishmentName", "establishmentNo"],
+            }
+          }
         }
       });
 
-      const rawText = geminiResponse.text || "{}";
-      console.log("[Gemini OCR Raw Output]:", rawText);
+      const rawText = ocrResult.choices[0]?.message?.content || "{}";
+      console.log("[o3 OCR Raw Output]:", rawText);
       const parsedData = JSON.parse(rawText);
 
       // Programmatic safety-net: convert any remaining Eastern Arabic numerals
@@ -861,9 +871,8 @@ Return ONLY valid JSON with these exact field names.`;
       parsedData.dob = convertArabicToEnglishDigits(parsedData.dob);
       parsedData.establishmentNo = convertArabicToEnglishDigits(parsedData.establishmentNo);
 
-      console.log("[Iqama Final Extracted Data]:", JSON.stringify(parsedData));
+      console.log("[Iqama o3 Final Output]:", JSON.stringify(parsedData));
       res.json(parsedData);
-
 
     } catch (apiErr: any) {
       const correlationId = Math.random().toString(36).substring(2, 10);
