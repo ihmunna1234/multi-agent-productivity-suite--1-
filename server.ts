@@ -772,42 +772,41 @@ app.post("/api/extract-iqama", authMiddleware, async (req, res) => {
 
     try {
       // ═══════════════════════════════════════════════════════════════════════
-      // OpenAI o3 — Most powerful OpenAI reasoning model with vision
-      // o3 uses internal chain-of-thought reasoning before producing answers,
-      // which eliminates digit hallucination on Arabic text automatically.
+      // OpenAI gpt-4o — Flagship vision model
+      // We instruct it to copy Eastern Arabic digits VERBATIM without translating.
+      // Translating shapes to numbers causes hallucinations in LLMs.
+      // We handle the safe conversion programmatically below.
       // ═══════════════════════════════════════════════════════════════════════
       const client = getOpenAIClient();
 
-      const extractionPrompt = `You are an expert Arabic OCR system specialized in reading Saudi Iqama (Residence Permit) cards issued by the Kingdom of Saudi Arabia Ministry of Interior.
+      const extractionPrompt = `You are a strict, forensic Arabic OCR system specialized in Saudi Iqama (Residence Permit) cards.
 
-Carefully analyze this Iqama card image and extract every data field with 100% precision.
+Carefully analyze this Iqama card image and extract every data field EXACTLY as printed. 
 
-CRITICAL RULES FOR ALL NUMBERS:
-- The Iqama number (رقم الهوية) is always exactly 10 digits. It is printed in Eastern Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩) on Saudi Iqama cards.
-- Before outputting any number, mentally scan each digit position individually from left to right.
-- Convert EVERY digit using this exact mapping:
-  ٠→0  ١→1  ٢→2  ٣→3  ٤→4  ٥→5  ٦→6  ٧→7  ٨→8  ٩→9
-- ALL output numbers must use ONLY Western/Latin digits (0-9). No Arabic digits in output.
-- Dates must be in YYYY-MM-DD format using Western digits only.
-- Saudi Iqama numbers always start with 2 (foreign residents). Verify this.
+CRITICAL RULE FOR ALL NUMBERS (Iqama, Dates, Establishment No):
+- ALL numbers on this card are printed in Eastern Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩).
+- You MUST transcribe these numbers VERBATIM using the EXACT Arabic characters seen on the card.
+- DO NOT translate or convert them to Western digits (0-9).
+- For example, if the card says "٢٦١٣٠٧٢١٠٣", output EXACTLY "٢٦١٣٠٧٢١٠٣".
+- Dates MUST be kept in their original Arabic digit format with slashes (e.g., "٢٠٢٦/٠٩/١٨").
 
 EXTRACT these 11 fields precisely:
-1. name — Full English/Latin name exactly as printed on card (e.g. "RASEL UDDIN")
+1. name — Full English/Latin name exactly as printed (e.g. "RASEL UDDIN")
 2. nameArabic — Full Arabic name exactly as printed (e.g. "راسيل الدين")
-3. iqamaNo — The 10-digit Iqama ID (رقم الهوية) converted to Western digits
-4. expiryDate — Expiry date (تاريخ الانتهاء) in YYYY-MM-DD Western digits
-5. dob — Date of birth (تاريخ الميلاد) in YYYY-MM-DD Western digits
-6. nationality — Nationality in English (e.g. "Bangladeshi", "Pakistani", "Indian")
+3. iqamaNo — The 10-digit Iqama ID (رقم الهوية) in EXACT Eastern Arabic digits
+4. expiryDate — Expiry date (تاريخ الانتهاء) in EXACT Eastern Arabic digits
+5. dob — Date of birth (تاريخ الميلاد) in EXACT Eastern Arabic digits
+6. nationality — Nationality in English (e.g. "Bangladeshi", "Pakistani")
 7. nationalityArabic — Nationality in Arabic exactly as printed
 8. occupation — Job title (المهنة) exactly as printed
 9. supplierName — Sponsor/supplier name (اسم صاحب العمل), or "N/A" if absent
 10. establishmentName — Employer/establishment name, or "N/A"
-11. establishmentNo — Establishment/sponsor ID number in Western digits, or "N/A"
+11. establishmentNo — Establishment/sponsor ID number in EXACT Eastern Arabic digits, or "N/A"
 
 Return ONLY a valid JSON object with exactly these field names.`;
 
       const ocrResult = await client.chat.completions.create({
-        model: "o3",
+        model: "gpt-4o",
         messages: [
           {
             role: "user",
@@ -826,6 +825,7 @@ Return ONLY a valid JSON object with exactly these field names.`;
             ]
           }
         ],
+        temperature: 0,
         response_format: {
           type: "json_schema",
           json_schema: {
@@ -837,15 +837,15 @@ Return ONLY a valid JSON object with exactly these field names.`;
               properties: {
                 name:              { type: "string", description: "Full English name on the card." },
                 nameArabic:        { type: "string", description: "Full Arabic name on the card." },
-                iqamaNo:           { type: "string", description: "10-digit Iqama number in Western digits only." },
-                expiryDate:        { type: "string", description: "Expiry date as YYYY-MM-DD in Western digits." },
-                dob:               { type: "string", description: "Date of birth as YYYY-MM-DD in Western digits." },
+                iqamaNo:           { type: "string", description: "10-digit Iqama number in EXACT Eastern Arabic digits." },
+                expiryDate:        { type: "string", description: "Expiry date in EXACT Eastern Arabic digits." },
+                dob:               { type: "string", description: "Date of birth in EXACT Eastern Arabic digits." },
                 nationality:       { type: "string", description: "Nationality in English." },
                 nationalityArabic: { type: "string", description: "Nationality in Arabic as printed on card." },
                 occupation:        { type: "string", description: "Occupation or job title." },
                 supplierName:      { type: "string", description: "Sponsor/supplier name, or N/A." },
                 establishmentName: { type: "string", description: "Establishment/employer name, or N/A." },
-                establishmentNo:   { type: "string", description: "Establishment ID number in Western digits, or N/A." },
+                establishmentNo:   { type: "string", description: "Establishment ID number in EXACT Eastern Arabic digits, or N/A." },
               },
               required: ["name", "nameArabic", "iqamaNo", "expiryDate", "dob", "nationality", "nationalityArabic", "occupation", "supplierName", "establishmentName", "establishmentNo"],
             }
