@@ -257,7 +257,10 @@ async function generateContentWithRetry(client: OpenAI, params: any, maxAttempts
             if (part.inlineData) {
                content.push({ 
                  type: "image_url", 
-                 image_url: { url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` } 
+                 image_url: { 
+                   url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+                   detail: "high"
+                 } 
                });
             }
          }
@@ -265,7 +268,7 @@ async function generateContentWithRetry(client: OpenAI, params: any, maxAttempts
       messages = [{ role: "user", content }];
 
       const openaiParams: any = {
-         model: "gpt-4o-mini", // defaulting to mini to replace flash
+         model: "gpt-4o", // Upgraded to gpt-4o for high-accuracy OCR
          messages: messages,
       };
 
