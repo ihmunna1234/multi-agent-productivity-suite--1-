@@ -652,13 +652,19 @@ export default function IqamaExtractor() {
     const queueToProcess = [...batchQueue];
 
     // Concurrently process items with sequential throttling (e.g., 2 slots) to stay highly persistent without breaking
-    const maxActiveSlots = 2;
-    let index = 0;
+    // Atomic index counter to prevent race conditions between concurrent slots
+    let nextIndex = 0;
+    const getNextIndex = (): number => {
+      const current = nextIndex;
+      nextIndex++;
+      return current;
+    };
 
     const executeSlot = async (): Promise<void> => {
-      while (index < queueToProcess.length && !cancelBatchRef.current) {
-        const item = queueToProcess[index];
-        index++;
+      while (!cancelBatchRef.current) {
+        const idx = getNextIndex();
+        if (idx >= queueToProcess.length) break;
+        const item = queueToProcess[idx];
 
         if (item.status === "completed") {
           continue;
@@ -777,8 +783,9 @@ export default function IqamaExtractor() {
       }
     };
 
+    const maxConcurrentSlots = 2;
     const slots = [];
-    for (let s = 0; s < Math.min(maxActiveSlots, queueToProcess.length); s++) {
+    for (let s = 0; s < Math.min(maxConcurrentSlots, queueToProcess.length); s++) {
       slots.push(executeSlot());
     }
 
@@ -1048,7 +1055,7 @@ export default function IqamaExtractor() {
     : 0;
 
   // Navigate batch selection
-  const navigateBatch = (direction: "prev" | "next") => {
+  const navigateBatch = useCallback((direction: "prev" | "next") => {
     if (batchQueue.length <= 1 || !selectedReviewItem) return;
     const currentIndex = batchQueue.findIndex(item => item.id === selectedReviewItem.id);
     if (currentIndex === -1) return;
@@ -1062,7 +1069,7 @@ export default function IqamaExtractor() {
     
     setSelectedReviewItem(batchQueue[newIndex]);
     setCurrentResult(null); // Deselect isolated result
-  };
+  }, [batchQueue, selectedReviewItem]);
 
   // Keyboard navigation support for batch review
   useEffect(() => {
@@ -1973,7 +1980,7 @@ export default function IqamaExtractor() {
                         <div>
                           <h5 className="text-[11px] font-bold uppercase tracking-wider leading-none">Simulated Extraction Profile Enabled</h5>
                           <p className="text-[10px] text-amber-700 mt-1 leading-snug">
-                            The OpenAI API did not process the card. The system dynamically returned mock citizen structures to preview columns, verify tables, and inspect Excel files perfectly!
+                            The AI API did not process the card. The system dynamically returned mock citizen structures to preview columns, verify tables, and inspect Excel files perfectly!
                           </p>
                         </div>
                       </div>
@@ -1990,10 +1997,10 @@ export default function IqamaExtractor() {
                             <p className="font-bold text-[10px]">What you have to do to get real data:</p>
                             <ul className="list-disc list-inside space-y-0.5 text-[9.5px]">
                               <li>
-                                <strong>Exceeded Spend Cap (429):</strong> Change your OpenAI key or adjust your monthly spending limit at <a href="https://ai.studio/spend" target="_blank" rel="noopener noreferrer" className="underline text-primary-container hover:text-teal-950 font-bold">ai.studio/spend</a>.
+                                <strong>Exceeded Spend Cap (429):</strong> Change your Gemini key or adjust your monthly spending limit at <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="underline text-primary-container hover:text-teal-950 font-bold">aistudio.google.com</a>.
                               </li>
                               <li>
-                                <strong>Change API Key:</strong> Open the <strong>.env file</strong> in your project files and replace the value of <code>OPENAI_API_KEY</code> with your own active key.
+                                <strong>Change API Key:</strong> Open the <strong>.env file</strong> in your project files and replace the value of <code>GEMINI_API_KEY</code> with your own active key.
                               </li>
                             </ul>
                           </div>
@@ -2096,7 +2103,7 @@ export default function IqamaExtractor() {
                             <div className="mt-4 pt-3 border-t border-red-100">
                               <h5 className="text-[11px] font-bold text-on-surface-variant uppercase">Why am I seeing this?</h5>
                               <p className="text-[11px] text-outline mt-1 leading-normal">
-                                Google's <strong>OpenAI Free Tier API keys</strong> are strictly limited by Google to <strong>20 requests per day</strong> or 15 requests per minute. Batch uploading multiple images in quick succession will rapidly exhaust this free quota.
+                                Google's <strong>Gemini Free Tier API keys</strong> are limited by Google. Batch uploading multiple images in quick succession will rapidly exhaust this free quota.
                               </p>
                               <h5 className="text-[11px] font-bold text-on-surface-variant uppercase mt-3">How to resolve:</h5>
                               <ul className="list-disc pl-4 text-[11px] text-outline mt-1 space-y-1">

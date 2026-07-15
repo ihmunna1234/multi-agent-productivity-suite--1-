@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
-import OpenAI from "openai";
+// OpenAI dependency removed — all AI features now use Google Gemini exclusively
 import { GoogleGenAI } from "@google/genai";
 const Type = { STRING: "string", NUMBER: "number", INTEGER: "integer", BOOLEAN: "boolean", ARRAY: "array", OBJECT: "object" };
 
@@ -41,7 +41,7 @@ app.use((req, res, next) => {
     `img-src 'self' data: https: blob:; ` +
     `style-src 'self' 'unsafe-inline'; ` +
     `font-src 'self' data:; ` +
-    `connect-src 'self' https://api.openai.com https://places.googleapis.com;`
+    `connect-src 'self' https://places.googleapis.com;`
   );
   next();
 });
@@ -224,116 +224,25 @@ function getGeminiClient(): GoogleGenAI {
   return geminiClient;
 }
 
-// Lazy initializer for the OpenAI client to avoid startup crashes if key is omitted
-let aiClient: OpenAI | null = null;
-function getOpenAIClient(): OpenAI {
-  if (!aiClient) {
-    let apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error("OPENAI_API_KEY is missing. Please set your real OpenAI API Key in Settings > Secrets.");
-    }
-
-    // Clean up any enclosing quotes and extra whitespace from the key
-    apiKey = apiKey.trim();
-    if (apiKey.startsWith('"') && apiKey.endsWith('"')) {
-      apiKey = apiKey.slice(1, -1).trim();
-    } else if (apiKey.startsWith("'") && apiKey.endsWith("'")) {
-      apiKey = apiKey.slice(1, -1).trim();
-    }
-
-    const maskedKey = apiKey.length > 10 
-      ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}` 
-      : "***";
-    console.log(`[OpenAI API] Client successfully initialized. Loaded key: ${maskedKey} (Length: ${apiKey.length})`);
-
-    aiClient = new OpenAI({
-      apiKey,
-    });
-  }
-  return aiClient;
-}
-
-// Utility function to execute Gemini models.generateContent with retry logic for transient errors (e.g. 503 service unavailable, but immediately throws on 429 quota exhaustion to serve high-quality fallbacks instantly)
-async function generateContentWithRetry(client: OpenAI, params: any, maxAttempts = 3, initialDelayMs = 1200): Promise<any> {
+// Gemini retry helper — retries on transient 503 errors, immediately throws on 429 quota
+async function generateContentWithRetry(client: GoogleGenAI, params: any, maxAttempts = 3, initialDelayMs = 1200): Promise<any> {
   let attempt = 0;
   while (true) {
     try {
       attempt++;
-      
-      let messages = [];
-      let content = [];
-      if (typeof params.contents === "string") {
-         content = params.contents;
-      } else if (Array.isArray(params.contents)) {
-         for (const part of params.contents) {
-            if (part.text) {
-               content.push({ type: "text", text: part.text });
-            }
-            if (part.inlineData) {
-               content.push({ 
-                 type: "image_url", 
-                 image_url: { 
-                   url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
-                   detail: "high"
-                 } 
-               });
-            }
-         }
-      }
-      messages = [{ role: "user", content }];
-
-      const openaiParams: any = {
-         model: "gpt-4o", // Upgraded to gpt-4o for high-accuracy OCR
-         messages: messages,
-      };
-
-      if (params.config?.responseMimeType === "application/json" && params.config?.responseSchema) {
-         const schema = JSON.parse(JSON.stringify(params.config.responseSchema));
-         
-         function fixSchema(s) {
-             if (s.type === "object") {
-                 s.additionalProperties = false;
-                 if (!s.required) s.required = [];
-                 if (s.properties) {
-                    for (const k of Object.keys(s.properties)) {
-                       fixSchema(s.properties[k]);
-                       if (!s.required.includes(k)) s.required.push(k);
-                    }
-                 }
-             } else if (s.type === "array" && s.items) {
-                 fixSchema(s.items);
-             }
-         }
-         fixSchema(schema);
-
-         openaiParams.response_format = {
-            type: "json_schema",
-            json_schema: {
-               name: "json_response",
-               schema: schema,
-               strict: true
-            }
-         };
-      }
-
-      const response = await client.chat.completions.create(openaiParams);
-      const responseText = response.choices[0]?.message?.content || "";
-      return { text: responseText };
+      const response = await client.models.generateContent(params);
+      return response;
     } catch (err: any) {
-      let errMsg = err.message || String(err);
-      const statusText = String(err.status || err.code || "").toUpperCase();
+      const errMsg = err.message || String(err);
       const statusCode = Number(err.status || err.statusCode || 0);
 
-      const isQuotaExceeded = statusText === "RESOURCE_EXHAUSTED" || statusCode === 429 || errMsg.includes("429") || errMsg.includes("quota");
-      if (isQuotaExceeded) {
-        throw err;
-      }
+      const isQuotaExceeded = statusCode === 429 || errMsg.includes("429") || errMsg.includes("quota") || errMsg.includes("RESOURCE_EXHAUSTED");
+      if (isQuotaExceeded) throw err;
 
-      const isTransient = statusText === "UNAVAILABLE" || statusCode === 503 || errMsg.includes("503") || errMsg.includes("high demand") || errMsg.includes("temporary");
-        
+      const isTransient = statusCode === 503 || errMsg.includes("503") || errMsg.includes("UNAVAILABLE") || errMsg.includes("high demand");
       if (isTransient && attempt < maxAttempts) {
         const delay = initialDelayMs * Math.pow(2, attempt - 1);
-        console.log(`[OpenAI Auto-Retry] Attempt ${attempt} - Busy. Retrying in ${delay}ms...`);
+        console.log(`[Gemini Auto-Retry] Attempt ${attempt} failed (503). Retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
@@ -805,7 +714,7 @@ EXTRACT these 11 fields precisely:
 Return ONLY a valid JSON object with exactly these field names.`;
 
       const response = await client.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: [
           {
             role: "user",
@@ -880,7 +789,7 @@ Return ONLY a valid JSON object with exactly these field names.`;
   }
 });
 
-// Fast raw text OCR endpoint for local text-only LLMs (like Gemma 2 / Gamma 4)
+// Fast raw text OCR endpoint using Gemini multimodal
 app.post("/api/ocr-text", authMiddleware, async (req, res) => {
   try {
     const { imageBase64, mimeType } = req.body;
@@ -898,29 +807,25 @@ app.post("/api/ocr-text", authMiddleware, async (req, res) => {
     const safeMimeType = validation.mimeType;
 
     try {
-      const client = getOpenAIClient();
-
-      const imagePart = {
-        inlineData: {
-          mimeType: safeMimeType, // VULN-05: use server-validated MIME type
-          data: imageBase64,
-        },
-      };
-
-      const promptPart = {
-        text: "Perform basic Optical Character Recognition (OCR). Transcribe all readable text lines exactly as printed on this identity card, including English names, Arabic names, numbers, dates, sponsor, and corporate details. Print lines flat with simple spacing. Do not attempt to summarize or create JSON.",
-      };
+      const client = getGeminiClient();
 
       const response = await generateContentWithRetry(client, {
-        model: "gemini-3.5-flash",
-        contents: [imagePart, promptPart],
+        model: "gemini-2.0-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { inlineData: { mimeType: safeMimeType, data: imageBase64 } },
+              { text: "Perform basic Optical Character Recognition (OCR). Transcribe all readable text lines exactly as printed on this identity card, including English names, Arabic names, numbers, dates, sponsor, and corporate details. Print lines flat with simple spacing. Do not attempt to summarize or create JSON." }
+            ]
+          }
+        ]
       });
 
       res.json({ rawText: response.text || "" });
     } catch (apiErr: any) {
       console.log("[OCR Fallback Activated] Serving high-quality layout raw text sample.");
-      // Fallback raw text representation
-      res.json({ 
+      res.json({
         rawText: `المملكة العربية السعودية (Kingdom of Saudi Arabia)
 رقم الإقامة: ٢٦٠٠٣٧٢٣٥٢
 الاسم: محمد منى
@@ -945,7 +850,7 @@ app.post("/api/find-products", authMiddleware, async (req, res) => {
     const { category, niche } = req.body;
     
     try {
-      const client = getOpenAIClient();
+      const client = getGeminiClient();
 
       const defaultNiches: Record<string, string> = {
         tech: "smart wearables and futuristic home gadgets",
@@ -980,7 +885,7 @@ For each product opportunity, supply:
 Return your research strictly in a structured JSON schema. Include any citations or search references where you found current sales momentum.`;
 
       const response = await generateContentWithRetry(client, {
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
@@ -1114,7 +1019,7 @@ app.post("/api/ai-resume-helper", authMiddleware, async (req, res) => {
     }
 
     try {
-      const client = getOpenAIClient();
+      const client = getGeminiClient();
 
       // VULN-07: Sanitize user-controlled inputs before prompt interpolation
       const safeRole = sanitizePromptInput(role, 100);
@@ -1152,7 +1057,7 @@ Return the skills as a clean JSON list under the key 'suggestions'.`;
       }
 
       const response = await generateContentWithRetry(client, {
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -1281,9 +1186,9 @@ app.post("/api/extract-maps-data", authMiddleware, async (req, res) => {
       }
     }
 
-    // AI Search Grounding Mode (Zero Key Required for user if GEMINI_API_KEY is active)
+    // AI Search Grounding Mode using Gemini
     try {
-      const client = getOpenAIClient();
+      const client = getGeminiClient();
 
       const prompt = `Research local businesses or service providers matching the search query:
 Keyword / Business Type: '${safeKeyword}'
@@ -1308,7 +1213,7 @@ Be precise. Do not invent details. If rating or phone is missing, output 'N/A' o
 Output JSON only confirming to the specified schema.`;
 
       const aiResponse = await generateContentWithRetry(client, {
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
@@ -1367,7 +1272,7 @@ Output JSON only confirming to the specified schema.`;
       console.log("[Maps Extractor Integration] Switching to standard content generation layout.");
       
       try {
-        const client = getOpenAIClient();
+        const client = getGeminiClient();
         const fallbackPrompt = `Research and generate a highly realistic list of 8 physical businesses or service providers matching this query:
 Keyword / Business Type: '${safeKeyword}'
 Location: '${safeLocation}'
@@ -1390,7 +1295,7 @@ For each business, compile the following fields precisely matching the schema:
 Be precise. Format output only as matching JSON.`;
 
         const fallbackResponse = await generateContentWithRetry(client, {
-          model: "gemini-3.5-flash",
+          model: "gemini-2.0-flash",
           contents: fallbackPrompt,
           config: {
             responseMimeType: "application/json",
@@ -1563,7 +1468,7 @@ app.post("/api/ocr-pdf-page", authMiddleware, async (req, res) => {
     const safeMimeType = validation.mimeType;
 
     try {
-      const client = getOpenAIClient();
+      const client = getGeminiClient();
 
       const imagePart = {
         inlineData: {
@@ -1586,8 +1491,16 @@ Analyze the text content, formatting structure, table alignment, and typography 
       };
 
       const response = await generateContentWithRetry(client, {
-        model: "gemini-3.5-flash",
-        contents: [imagePart, promptPart],
+        model: "gemini-2.0-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { inlineData: imagePart.inlineData },
+              promptPart
+            ]
+          }
+        ]
       });
 
       const extractedText = (response.text || "").trim();
@@ -1608,7 +1521,7 @@ This report highlights administrative activities and supplier records processed 
 
 To fully utilize advanced multi-lingual and formatting recognition, ensure GEMINI_API_KEY is properly saved in the workspace settings. Use the toolbar on the right to edit, realign paragraphs, and customize Word typography features prior to downloading.`;
 
-      res.json({ text: sampleText, isFallback: true, apiError: "OpenAI OCR service temporary failure. Utilizing document layout cache fallback." });
+      res.json({ text: sampleText, isFallback: true, apiError: "Gemini OCR service temporary failure. Utilizing document layout cache fallback." });
     }
   } catch (err: any) {
     const correlationId = Math.random().toString(36).substring(2, 10);

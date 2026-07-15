@@ -5,19 +5,19 @@ const DB_VERSION = 1;
 let dbInstance: IDBDatabase | null = null;
 
 // ─── VULN-08 fix: AES-GCM encryption for all PII stored in IndexedDB ──────────
-// A per-session 256-bit encryption key is derived via PBKDF2 from a random salt
-// stored in sessionStorage. Data cannot be read across sessions or by browser
-// extensions that don't have access to sessionStorage.
+// A persistent 256-bit encryption key is derived via PBKDF2 from a random salt
+// stored in localStorage. Data persists across sessions but remains encrypted
+// at rest, protecting against direct IndexedDB inspection.
 
-const SESSION_KEY_NAME = "iqama_session_salt";
+const SESSION_KEY_NAME = "iqama_encryption_salt";
 
 async function getSessionKey(): Promise<CryptoKey> {
-  // Retrieve or create a per-session random salt
-  let saltB64 = sessionStorage.getItem(SESSION_KEY_NAME);
+  // Retrieve or create a persistent random salt (localStorage survives tab close)
+  let saltB64 = localStorage.getItem(SESSION_KEY_NAME);
   if (!saltB64) {
     const salt = window.crypto.getRandomValues(new Uint8Array(32));
     saltB64 = btoa(String.fromCharCode(...salt));
-    sessionStorage.setItem(SESSION_KEY_NAME, saltB64);
+    localStorage.setItem(SESSION_KEY_NAME, saltB64);
   }
 
   const saltBytes = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
