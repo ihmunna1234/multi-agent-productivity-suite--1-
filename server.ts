@@ -5,6 +5,7 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
 import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 const Type = { STRING: "string", NUMBER: "number", INTEGER: "integer", BOOLEAN: "boolean", ARRAY: "array", OBJECT: "object" };
 
 dotenv.config({ override: true });
@@ -209,7 +210,21 @@ function sanitizePromptInput(input: unknown, maxLength = 500): string {
 }
 
 
-// Lazy initializer for the Gemini client to avoid startup crashes if key is omitted
+// Lazy initializer for the Google Gemini client (superior Arabic OCR)
+let geminiClient: GoogleGenAI | null = null;
+function getGeminiClient(): GoogleGenAI {
+  if (!geminiClient) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey.trim() === "") {
+      throw new Error("GEMINI_API_KEY is not set. Add it to Vercel Environment Variables.");
+    }
+    geminiClient = new GoogleGenAI({ apiKey: apiKey.trim() });
+    console.log("[Gemini API] Client initialized for Arabic OCR.");
+  }
+  return geminiClient;
+}
+
+// Lazy initializer for the OpenAI client to avoid startup crashes if key is omitted
 let aiClient: OpenAI | null = null;
 function getOpenAIClient(): OpenAI {
   if (!aiClient) {
@@ -756,112 +771,89 @@ app.post("/api/extract-iqama", authMiddleware, async (req, res) => {
     const safeMimeType = validation.mimeType;
 
     try {
-      const client = getOpenAIClient();
+      // ═══════════════════════════════════════════════════════════════════════
+      // GEMINI 2.0 FLASH — Best-in-class Arabic OCR for Saudi Iqama cards
+      // Google Gemini is natively trained on Arabic text and Saudi gov documents.
+      // It handles Eastern Arabic digits (٠١٢٣٤٥٦٧٨٩) with far higher accuracy.
+      // ═══════════════════════════════════════════════════════════════════════
+      const gemini = getGeminiClient();
 
-      const imagePart = {
-        inlineData: {
-          mimeType: safeMimeType, // VULN-05: use server-validated MIME type
-          data: imageBase64,
-        },
-      };
+      const extractionPrompt = `You are an expert Arabic OCR system specialized in reading Saudi Iqama (Residence Permit) cards.
 
-      // ═══════════════════════════════════════════════════════════════
-      // TWO-PASS OCR APPROACH for 100% digit accuracy
-      // Pass 1: Pure character-level OCR (just READ the card, no structuring)
-      // Pass 2: Parse raw OCR text into structured JSON (no image needed)
-      // This eliminates digit hallucination completely.
-      // ═══════════════════════════════════════════════════════════════
+Analyze this Iqama card image and extract ALL data fields with 100% precision.
 
-      // ── PASS 1: Raw OCR — read every character on the card ──────
-      const ocrPrompt = {
-        text: `You are a precision OCR engine. Your ONLY job is to read and transcribe every piece of text visible on this identity card image.
+CRITICAL RULES FOR NUMBERS:
+- The Iqama number (رقم الهوية) is a 10-digit number. It appears in Eastern Arabic digits (٠١٢٣٤٥٦٧٨٩).
+- Read each digit ONE AT A TIME from left to right. Use this exact mapping:
+  ٠=0  ١=1  ٢=2  ٣=3  ٤=4  ٥=5  ٦=6  ٧=7  ٨=8  ٩=9
+- Output ALL numbers using ONLY Western digits (0-9). Never mix digit scripts.
+- Dates must be in YYYY-MM-DD format using Western digits.
 
-CRITICAL RULES:
-- Transcribe EVERY line of text you see, exactly as printed
-- For EACH digit, read it individually and carefully one by one
-- If digits are in Eastern Arabic numerals (٠١٢٣٤٥٦٧٨٩), write them EXACTLY as Eastern Arabic — do NOT convert to Western digits
-- If digits are in Western numerals (0123456789), write them as-is
-- Include field labels AND their values on the same line
-- Separate each field on its own line
-- Do NOT interpret, summarize, translate, or restructure anything
-- Do NOT output JSON — output plain text only
-
-Example output format:
-رقم الهوية: ٢٥٩٣١٦٨٧٩٦
-الاسم: راسيل الدين
-Name: RASEL UDDIN
-تاريخ الانتهاء: ٢٠٢٧/٠٢/٠٥
-...
-
-Now transcribe this card completely:`
-      };
-
-      const ocrResponse = await generateContentWithRetry(client, {
-        model: "gpt-4o",
-        contents: [imagePart, ocrPrompt],
-      });
-      const rawOcrText = ocrResponse.text || "";
-      console.log("[Iqama OCR Pass 1 - Raw Text]:", rawOcrText);
-
-      // ── PASS 2: Parse raw OCR text into structured JSON (no image) ──
-      const parsePrompt = `You are a data parser. Below is raw OCR text extracted from a Saudi Iqama (residence permit) card. Parse it into structured JSON fields.
-
-RAW OCR TEXT:
----
-${rawOcrText}
----
-
-PARSING RULES:
-1. name: The English/Latin name on the card (e.g. "RASEL UDDIN")
-2. nameArabic: The Arabic name on the card (e.g. "راسيل الدين")
-3. iqamaNo: The 10-digit ID/Iqama number. Convert any Eastern Arabic digits (٠١٢٣٤٥٦٧٨٩) to standard Western digits (0123456789) using this exact mapping: ٠=0, ١=1, ٢=2, ٣=3, ٤=4, ٥=5, ٦=6, ٧=7, ٨=8, ٩=9. Process each digit ONE AT A TIME from left to right.
-4. expiryDate: The expiry/end date. Convert any Eastern Arabic digits to Western digits. Output as YYYY-MM-DD format.
-5. dob: Date of birth. Convert any Eastern Arabic digits to Western digits. Output as YYYY-MM-DD format.
+EXTRACT these fields:
+1. name: Full English/Latin name exactly as printed (e.g. "RASEL UDDIN")
+2. nameArabic: Full Arabic name exactly as printed (e.g. "راسيل الدين")
+3. iqamaNo: The 10-digit Iqama ID number — convert to Western digits (e.g. "2593168796")
+4. expiryDate: Card expiry date (تاريخ الانتهاء) as YYYY-MM-DD in Western digits
+5. dob: Date of birth (تاريخ الميلاد) as YYYY-MM-DD in Western digits
 6. nationality: Nationality in English (e.g. "Bangladeshi", "Pakistani")
-7. nationalityArabic: Nationality in Arabic (e.g. "بنجلاديشية")
-8. occupation: Job title/occupation as written on the card
-9. supplierName: Sponsor/supplier/company name, or "N/A"
-10. establishmentName: Establishment/employer name, or "N/A"
-11. establishmentNo: Establishment number (10-digit), converted to Western digits if needed, or "N/A"
+7. nationalityArabic: Nationality in Arabic as printed
+8. occupation: Job title/occupation (المهنة) as printed
+9. supplierName: Sponsor/supplier name (اسم صاحب العمل), or "N/A"
+10. establishmentName: Establishment/employer name (جهة العمل), or "N/A"
+11. establishmentNo: Establishment/sponsor ID number in Western digits, or "N/A"
 
-CRITICAL for digits: Convert each Eastern Arabic digit independently:
-٠→0  ١→1  ٢→2  ٣→3  ٤→4  ٥→5  ٦→6  ٧→7  ٨→8  ٩→9
+Return ONLY valid JSON with these exact field names.`;
 
-Return clean JSON matching the schema.`;
-
-      const parseResponse = await generateContentWithRetry(client, {
-        model: "gpt-4o",
-        contents: parsePrompt,
+      const geminiResponse = await gemini.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                inlineData: {
+                  mimeType: safeMimeType,
+                  data: imageBase64,
+                }
+              },
+              { text: extractionPrompt }
+            ]
+          }
+        ],
         config: {
           responseMimeType: "application/json",
           responseSchema: {
-            type: Type.OBJECT,
+            type: "OBJECT" as any,
             properties: {
-              name: { type: Type.STRING, description: "Full name in English." },
-              nameArabic: { type: Type.STRING, description: "Full name in Arabic." },
-              iqamaNo: { type: Type.STRING, description: "10-digit Iqama number in Western digits." },
-              expiryDate: { type: Type.STRING, description: "Expiry date as YYYY-MM-DD." },
-              dob: { type: Type.STRING, description: "Date of birth as YYYY-MM-DD." },
-              nationality: { type: Type.STRING, description: "Nationality in English." },
-              nationalityArabic: { type: Type.STRING, description: "Nationality in Arabic." },
-              occupation: { type: Type.STRING, description: "Occupation/job title." },
-              supplierName: { type: Type.STRING, description: "Sponsor or supplier name, or N/A." },
-              establishmentName: { type: Type.STRING, description: "Establishment name, or N/A." },
-              establishmentNo: { type: Type.STRING, description: "Establishment number in Western digits, or N/A." },
+              name:               { type: "STRING" as any, description: "Full English name on the card." },
+              nameArabic:         { type: "STRING" as any, description: "Full Arabic name on the card." },
+              iqamaNo:            { type: "STRING" as any, description: "10-digit Iqama number in Western digits." },
+              expiryDate:         { type: "STRING" as any, description: "Expiry date as YYYY-MM-DD." },
+              dob:                { type: "STRING" as any, description: "Date of birth as YYYY-MM-DD." },
+              nationality:        { type: "STRING" as any, description: "Nationality in English." },
+              nationalityArabic:  { type: "STRING" as any, description: "Nationality in Arabic." },
+              occupation:         { type: "STRING" as any, description: "Occupation or job title." },
+              supplierName:       { type: "STRING" as any, description: "Sponsor or supplier name, or N/A." },
+              establishmentName:  { type: "STRING" as any, description: "Establishment name, or N/A." },
+              establishmentNo:    { type: "STRING" as any, description: "Establishment number in Western digits, or N/A." },
             },
             required: ["name", "nameArabic", "iqamaNo", "expiryDate", "dob"],
           },
-        },
+          temperature: 0,
+        }
       });
 
-      const parsedData = JSON.parse(parseResponse.text || "{}");
-      
-      // Final safety net: programmatic conversion of any remaining Eastern Arabic numerals
-      const convertArabicToEnglishDigits = (str: any) => {
-        if (typeof str !== 'string') return str;
-        return str.replace(/[٠-٩۰-۹]/g, (d) => {
-          return d.charCodeAt(0) >= 0x06F0 ? (d.charCodeAt(0) - 0x06F0).toString() : (d.charCodeAt(0) - 0x0660).toString();
-        }).replace(/\//g, "-");
+      const rawText = geminiResponse.text || "{}";
+      console.log("[Gemini OCR Raw Output]:", rawText);
+      const parsedData = JSON.parse(rawText);
+
+      // Programmatic safety-net: convert any remaining Eastern Arabic numerals
+      const convertArabicToEnglishDigits = (str: any): string => {
+        if (typeof str !== "string") return String(str || "");
+        return str
+          .replace(/[\u0660-\u0669]/g, (d) => (d.charCodeAt(0) - 0x0660).toString())
+          .replace(/[\u06F0-\u06F9]/g, (d) => (d.charCodeAt(0) - 0x06F0).toString())
+          .replace(/\//g, "-");
       };
 
       parsedData.iqamaNo = convertArabicToEnglishDigits(parsedData.iqamaNo);
@@ -869,8 +861,10 @@ Return clean JSON matching the schema.`;
       parsedData.dob = convertArabicToEnglishDigits(parsedData.dob);
       parsedData.establishmentNo = convertArabicToEnglishDigits(parsedData.establishmentNo);
 
-      console.log("[Iqama OCR Pass 2 - Final Parsed Data]:", JSON.stringify(parsedData));
+      console.log("[Iqama Final Extracted Data]:", JSON.stringify(parsedData));
       res.json(parsedData);
+
+
     } catch (apiErr: any) {
       const correlationId = Math.random().toString(36).substring(2, 10);
       console.log(`[OpenAI Fallback Activated - Error ID: ${correlationId}] Serving resilient Iqama parsed data fallback. Error details:`, apiErr);
