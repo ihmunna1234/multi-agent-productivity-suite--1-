@@ -769,9 +769,9 @@ app.post("/api/extract-iqama", authMiddleware, async (req, res) => {
         text: `Analyze this image of an Iqama card (Saudi National Residence Card or similar Government ID card) and extract the following identification details precisely:
 1. Name in English (Full English Name) - Look for the English/Latin character name on the card (e.g., "NEZAM UDDIN"). This is typically located on the upper-right section of the card.
 2. Name in Arabic (Full Arabic Name) - Look for the corresponding Arabic script name on the card (e.g., "نظام الدين"). This is located immediately directly on the line ABOVE the English name ("NEZAM UDDIN"). Match and set these precisely.
-3. Iqama Number in English Digits - Find the 10-digit card ID/Iqama number. Highly critical: Output this Iqama Number strictly in English/standard Western digits (e.g., 0, 1, 2, 3, 4, 5, 6, 7, 8, 9). If the number on the card is in Eastern Arabic digits (e.g. ١، ٢، ٣، ٤، ٥، ٦، ٧، ٨، ٩, ٠), you MUST convert or transliterate them into standard English digits (e.g., "2596872024").
-4. Expiry Date - Extract the expiration date or valid-until date of the card AND convert/format it strictly as Gregorian standard using only English standard Western digits (YYYY-MM-DD or YYYY/MM/DD, e.g., "2026-04-07"). If the card shows an Eastern Arabic or Hijri date like "٢٠٢٦/٠٤/٠٧" or a Hijri equivalent, transliterate, parse, or translate it strictly into the English-digit Gregorian equivalent "2026-04-07".
-5. Date of Birth (DOB) - Extract the cardholder's date of birth AND convert/format it strictly as Gregorian standard using only English standard Western digits (YYYY-MM-DD or YYYY/MM/DD, e.g., "1980-06-15"). If the numerals are Eastern Arabic digits (e.g. ١٩٨٠/٠٦/١٥), you MUST convert/transliterate them into standard English digits (e.g., "1980-06-15").
+3. Iqama Number - Extract the 10-digit card ID/Iqama number EXACTLY as written on the card, even if it is in Eastern Arabic digits (e.g. ٢٦١٠٢٧٩٦٦٩). Do not translate or modify it.
+4. Expiry Date - Extract the expiration date EXACTLY as written on the card, preserving Eastern Arabic digits if present (e.g. ٢٠٢٧/٠٦/٢١). Format as YYYY-MM-DD or YYYY/MM/DD.
+5. Date of Birth (DOB) - Extract the date of birth EXACTLY as written on the card, preserving Eastern Arabic digits if present. Format as YYYY-MM-DD or YYYY/MM/DD.
 6. Supplier Name / Sponsor / Company (Supplier Name) - Find any company, sponsor, or supplier/employer name mentioned on the card (typically at the bottom right line next to "اسم صاحب العمل", e.g., "مؤسسة علي محمد بن علي مجرشي التجارية"). If none is found, return "N/A" or "None".
 7. Establishment Name - Find the official name of the business/employer/establishment on the card ("جهة العمل" or "صاحب العمل" or Sponsor Name, e.g., "مؤسسة علي محمد بن علي مجرشي التجارية").
 8. Establishment Number - Find the 10-digit establishment identifier / sponsor number on the card (this is often next to the sponsor name or on a separate line representing establishment ID, e.g., "1010567890" or "7001234567"). If not found, look for any secondary 10-digit business/corporate ID.
@@ -779,7 +779,7 @@ app.post("/api/extract-iqama", authMiddleware, async (req, res) => {
 10. Nationality - Find the nationality of the resident holder (labeled "الجنسية" or "Nationality").
 11. Nationality in Arabic - Find the nationality of the resident holder in Arabic (e.g., "بنجلاديشية", "هندي").
 
-Please return the parsed data in clean JSON conforming strictly to the requested schema. Ensure all dates (Expiry Date and DOB) and numeric values like the Iqama No are strictly in standard English numerals (0-9).`,
+Please return the parsed data in clean JSON conforming strictly to the requested schema. Preserve Eastern Arabic numerals exactly as seen on the card to ensure 100% data accuracy.`,
       };
 
       const response = await generateContentWithRetry(client, {
@@ -792,9 +792,9 @@ Please return the parsed data in clean JSON conforming strictly to the requested
             properties: {
               name: { type: Type.STRING, description: "Full logical name in English on the identity card." },
               nameArabic: { type: Type.STRING, description: "Full logical name in Arabic on the identity card." },
-              iqamaNo: { type: Type.STRING, description: "The exact 10-digit ID/Iqama number in English digits." },
-              expiryDate: { type: Type.STRING, description: "The exact expiration date strictly in Gregorian format (YYYY-MM-DD) utilizing standard English digits (0-9)." },
-              dob: { type: Type.STRING, description: "Date of Birth strictly in Gregorian format (YYYY-MM-DD) utilizing standard English digits (0-9)." },
+              iqamaNo: { type: Type.STRING, description: "The exact 10-digit ID/Iqama number." },
+              expiryDate: { type: Type.STRING, description: "The exact expiration date (YYYY-MM-DD)." },
+              dob: { type: Type.STRING, description: "Date of Birth (YYYY-MM-DD)." },
               nationality: { type: Type.STRING, description: "Nationality of the resident if identified, e.g. 'Pakistani', 'Indian', 'Yemeni'." },
               nationalityArabic: { type: Type.STRING, description: "Nationality of the resident in Arabic as listed on the card, e.g. 'بنجلاديشية', 'باكستاني', 'هندي'." },
               occupation: { type: Type.STRING, description: "The job position, profession, or occupation listed on the card (e.g. 'LABOURER', 'Barber', 'SECURITY GUARD')." },
@@ -808,6 +808,20 @@ Please return the parsed data in clean JSON conforming strictly to the requested
       });
 
       const parsedData = JSON.parse(response.text || "{}");
+      
+      // Programmatic 100% accurate post-processing to convert any Eastern Arabic numerals to standard English numerals
+      const convertArabicToEnglishDigits = (str: any) => {
+        if (typeof str !== 'string') return str;
+        return str.replace(/[٠-٩۰-۹]/g, (d) => {
+          return d.charCodeAt(0) >= 0x06F0 ? (d.charCodeAt(0) - 0x06F0).toString() : (d.charCodeAt(0) - 0x0660).toString();
+        }).replace(/\//g, "-");
+      };
+
+      parsedData.iqamaNo = convertArabicToEnglishDigits(parsedData.iqamaNo);
+      parsedData.expiryDate = convertArabicToEnglishDigits(parsedData.expiryDate);
+      parsedData.dob = convertArabicToEnglishDigits(parsedData.dob);
+      parsedData.establishmentNo = convertArabicToEnglishDigits(parsedData.establishmentNo);
+
       res.json(parsedData);
     } catch (apiErr: any) {
       const correlationId = Math.random().toString(36).substring(2, 10);
