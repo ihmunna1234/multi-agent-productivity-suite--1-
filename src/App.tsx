@@ -20,7 +20,8 @@ import {
   Combine,
   Scissors,
   Layers,
-  MapPin
+  MapPin,
+  LogOut
 } from "lucide-react";
 
 // Import custom agents
@@ -140,6 +141,19 @@ export default function App() {
                 aria-label="Toggle navigation menu"
               >
                 {isMobileMenuOpen ? <X size={20} className="text-on-background" /> : <Menu size={20} className="text-on-background" />}
+              </button>
+
+              {/* Lock / Logout Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem("workspace_token");
+                  window.location.reload();
+                }}
+                className="p-2.5 rounded-2xl transition-all cursor-pointer flex items-center justify-center border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 shadow-xs active:scale-95"
+                title="Lock Workspace (Logout)"
+              >
+                <LogOut size={20} strokeWidth={2.5} />
               </button>
             </div>
 
