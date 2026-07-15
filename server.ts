@@ -805,7 +805,7 @@ EXTRACT these 11 fields precisely:
 Return ONLY a valid JSON object with exactly these field names.`;
 
       const response = await client.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-3.5-flash",
         contents: [
           {
             role: "user",
