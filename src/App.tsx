@@ -36,6 +36,7 @@ import GoogleMapsExtractor from "./components/GoogleMapsExtractor";
 import MergePdf from "./components/MergePdf";
 import SplitPdf from "./components/SplitPdf";
 import OrganizePdf from "./components/OrganizePdf";
+import Login from "./components/Login";
 
 export default function App() {
   const navigate = useNavigate();
@@ -88,6 +89,7 @@ export default function App() {
       <Helmet>
         <title>Injamus's AI Workspace</title>
       </Helmet>
+      <Login />
       
       {/* Premium Top Navigation Bar */}
       <header className="bg-surface-container-lowest border-b border-outline-variant flex-shrink-0 z-50 relative shadow-sm">
