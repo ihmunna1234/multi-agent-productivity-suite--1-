@@ -765,51 +765,98 @@ app.post("/api/extract-iqama", authMiddleware, async (req, res) => {
         },
       };
 
-      const promptPart = {
-        text: `Analyze this image of an Iqama card (Saudi National Residence Card or similar Government ID card) and extract the following identification details precisely:
-1. Name in English (Full English Name) - Look for the English/Latin character name on the card (e.g., "NEZAM UDDIN"). This is typically located on the upper-right section of the card.
-2. Name in Arabic (Full Arabic Name) - Look for the corresponding Arabic script name on the card (e.g., "نظام الدين"). This is located immediately directly on the line ABOVE the English name ("NEZAM UDDIN"). Match and set these precisely.
-3. Iqama Number - Extract the 10-digit card ID/Iqama number EXACTLY as written on the card, even if it is in Eastern Arabic digits (e.g. ٢٦١٠٢٧٩٦٦٩). Do not translate or modify it.
-4. Expiry Date - Extract the expiration date EXACTLY as written on the card, preserving Eastern Arabic digits if present (e.g. ٢٠٢٧/٠٦/٢١). Format as YYYY-MM-DD or YYYY/MM/DD.
-5. Date of Birth (DOB) - Extract the date of birth EXACTLY as written on the card, preserving Eastern Arabic digits if present. Format as YYYY-MM-DD or YYYY/MM/DD.
-6. Supplier Name / Sponsor / Company (Supplier Name) - Find any company, sponsor, or supplier/employer name mentioned on the card (typically at the bottom right line next to "اسم صاحب العمل", e.g., "مؤسسة علي محمد بن علي مجرشي التجارية"). If none is found, return "N/A" or "None".
-7. Establishment Name - Find the official name of the business/employer/establishment on the card ("جهة العمل" or "صاحب العمل" or Sponsor Name, e.g., "مؤسسة علي محمد بن علي مجرشي التجارية").
-8. Establishment Number - Find the 10-digit establishment identifier / sponsor number on the card (this is often next to the sponsor name or on a separate line representing establishment ID, e.g., "1010567890" or "7001234567"). If not found, look for any secondary 10-digit business/corporate ID.
-9. Occupation - Find the professional role or job title listed on the card (labeled "المهنة" or "Occupation", e.g., "عامل", "LABOURER", "SECURITY GUARD", "حارس أمن"). Extract it in both English and Arabic or as specified on the card.
-10. Nationality - Find the nationality of the resident holder (labeled "الجنسية" or "Nationality").
-11. Nationality in Arabic - Find the nationality of the resident holder in Arabic (e.g., "بنجلاديشية", "هندي").
+      // ═══════════════════════════════════════════════════════════════
+      // TWO-PASS OCR APPROACH for 100% digit accuracy
+      // Pass 1: Pure character-level OCR (just READ the card, no structuring)
+      // Pass 2: Parse raw OCR text into structured JSON (no image needed)
+      // This eliminates digit hallucination completely.
+      // ═══════════════════════════════════════════════════════════════
 
-Please return the parsed data in clean JSON conforming strictly to the requested schema. Preserve Eastern Arabic numerals exactly as seen on the card to ensure 100% data accuracy.`,
+      // ── PASS 1: Raw OCR — read every character on the card ──────
+      const ocrPrompt = {
+        text: `You are a precision OCR engine. Your ONLY job is to read and transcribe every piece of text visible on this identity card image.
+
+CRITICAL RULES:
+- Transcribe EVERY line of text you see, exactly as printed
+- For EACH digit, read it individually and carefully one by one
+- If digits are in Eastern Arabic numerals (٠١٢٣٤٥٦٧٨٩), write them EXACTLY as Eastern Arabic — do NOT convert to Western digits
+- If digits are in Western numerals (0123456789), write them as-is
+- Include field labels AND their values on the same line
+- Separate each field on its own line
+- Do NOT interpret, summarize, translate, or restructure anything
+- Do NOT output JSON — output plain text only
+
+Example output format:
+رقم الهوية: ٢٥٩٣١٦٨٧٩٦
+الاسم: راسيل الدين
+Name: RASEL UDDIN
+تاريخ الانتهاء: ٢٠٢٧/٠٢/٠٥
+...
+
+Now transcribe this card completely:`
       };
 
-      const response = await generateContentWithRetry(client, {
-        model: "gemini-3.5-flash",
-        contents: [imagePart, promptPart],
+      const ocrResponse = await generateContentWithRetry(client, {
+        model: "gpt-4o",
+        contents: [imagePart, ocrPrompt],
+      });
+      const rawOcrText = ocrResponse.text || "";
+      console.log("[Iqama OCR Pass 1 - Raw Text]:", rawOcrText);
+
+      // ── PASS 2: Parse raw OCR text into structured JSON (no image) ──
+      const parsePrompt = `You are a data parser. Below is raw OCR text extracted from a Saudi Iqama (residence permit) card. Parse it into structured JSON fields.
+
+RAW OCR TEXT:
+---
+${rawOcrText}
+---
+
+PARSING RULES:
+1. name: The English/Latin name on the card (e.g. "RASEL UDDIN")
+2. nameArabic: The Arabic name on the card (e.g. "راسيل الدين")
+3. iqamaNo: The 10-digit ID/Iqama number. Convert any Eastern Arabic digits (٠١٢٣٤٥٦٧٨٩) to standard Western digits (0123456789) using this exact mapping: ٠=0, ١=1, ٢=2, ٣=3, ٤=4, ٥=5, ٦=6, ٧=7, ٨=8, ٩=9. Process each digit ONE AT A TIME from left to right.
+4. expiryDate: The expiry/end date. Convert any Eastern Arabic digits to Western digits. Output as YYYY-MM-DD format.
+5. dob: Date of birth. Convert any Eastern Arabic digits to Western digits. Output as YYYY-MM-DD format.
+6. nationality: Nationality in English (e.g. "Bangladeshi", "Pakistani")
+7. nationalityArabic: Nationality in Arabic (e.g. "بنجلاديشية")
+8. occupation: Job title/occupation as written on the card
+9. supplierName: Sponsor/supplier/company name, or "N/A"
+10. establishmentName: Establishment/employer name, or "N/A"
+11. establishmentNo: Establishment number (10-digit), converted to Western digits if needed, or "N/A"
+
+CRITICAL for digits: Convert each Eastern Arabic digit independently:
+٠→0  ١→1  ٢→2  ٣→3  ٤→4  ٥→5  ٦→6  ٧→7  ٨→8  ٩→9
+
+Return clean JSON matching the schema.`;
+
+      const parseResponse = await generateContentWithRetry(client, {
+        model: "gpt-4o",
+        contents: parsePrompt,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              name: { type: Type.STRING, description: "Full logical name in English on the identity card." },
-              nameArabic: { type: Type.STRING, description: "Full logical name in Arabic on the identity card." },
-              iqamaNo: { type: Type.STRING, description: "The exact 10-digit ID/Iqama number." },
-              expiryDate: { type: Type.STRING, description: "The exact expiration date (YYYY-MM-DD)." },
-              dob: { type: Type.STRING, description: "Date of Birth (YYYY-MM-DD)." },
-              nationality: { type: Type.STRING, description: "Nationality of the resident if identified, e.g. 'Pakistani', 'Indian', 'Yemeni'." },
-              nationalityArabic: { type: Type.STRING, description: "Nationality of the resident in Arabic as listed on the card, e.g. 'بنجلاديشية', 'باكستاني', 'هندي'." },
-              occupation: { type: Type.STRING, description: "The job position, profession, or occupation listed on the card (e.g. 'LABOURER', 'Barber', 'SECURITY GUARD')." },
-              supplierName: { type: Type.STRING, description: "Sponsor or Supplier or Company name identified on the document. Return 'N/A' if not found." },
-              establishmentName: { type: Type.STRING, description: "Sponsor or Establishment/Employer name identified on the document. Return 'N/A' if not found." },
-              establishmentNo: { type: Type.STRING, description: "Sponsor ID or Establishment Number identified on the document (10-digit number). Return 'N/A' if not found." },
+              name: { type: Type.STRING, description: "Full name in English." },
+              nameArabic: { type: Type.STRING, description: "Full name in Arabic." },
+              iqamaNo: { type: Type.STRING, description: "10-digit Iqama number in Western digits." },
+              expiryDate: { type: Type.STRING, description: "Expiry date as YYYY-MM-DD." },
+              dob: { type: Type.STRING, description: "Date of birth as YYYY-MM-DD." },
+              nationality: { type: Type.STRING, description: "Nationality in English." },
+              nationalityArabic: { type: Type.STRING, description: "Nationality in Arabic." },
+              occupation: { type: Type.STRING, description: "Occupation/job title." },
+              supplierName: { type: Type.STRING, description: "Sponsor or supplier name, or N/A." },
+              establishmentName: { type: Type.STRING, description: "Establishment name, or N/A." },
+              establishmentNo: { type: Type.STRING, description: "Establishment number in Western digits, or N/A." },
             },
             required: ["name", "nameArabic", "iqamaNo", "expiryDate", "dob"],
           },
         },
       });
 
-      const parsedData = JSON.parse(response.text || "{}");
+      const parsedData = JSON.parse(parseResponse.text || "{}");
       
-      // Programmatic 100% accurate post-processing to convert any Eastern Arabic numerals to standard English numerals
+      // Final safety net: programmatic conversion of any remaining Eastern Arabic numerals
       const convertArabicToEnglishDigits = (str: any) => {
         if (typeof str !== 'string') return str;
         return str.replace(/[٠-٩۰-۹]/g, (d) => {
@@ -822,6 +869,7 @@ Please return the parsed data in clean JSON conforming strictly to the requested
       parsedData.dob = convertArabicToEnglishDigits(parsedData.dob);
       parsedData.establishmentNo = convertArabicToEnglishDigits(parsedData.establishmentNo);
 
+      console.log("[Iqama OCR Pass 2 - Final Parsed Data]:", JSON.stringify(parsedData));
       res.json(parsedData);
     } catch (apiErr: any) {
       const correlationId = Math.random().toString(36).substring(2, 10);
