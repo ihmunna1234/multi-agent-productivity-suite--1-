@@ -11,11 +11,11 @@ const Type = { STRING: "string", NUMBER: "number", INTEGER: "integer", BOOLEAN: 
 dotenv.config({ override: true });
 
 // Refuse to start if critical environment variables are missing or set to defaults
-const criticalApiKey = process.env.OPENAI_API_KEY;
+const criticalApiKey = process.env.GEMINI_API_KEY;
 if (!criticalApiKey || criticalApiKey === "YOUR_API_KEY" || criticalApiKey.trim() === "") {
   console.error("===============================================================");
-  console.error("CRITICAL CONFIGURATION ERROR: OPENAI_API_KEY is not set or is a placeholder.");
-  console.error("Please configure a valid API key in your environment settings.");
+  console.error("CRITICAL CONFIGURATION ERROR: GEMINI_API_KEY is not set or is a placeholder.");
+  console.error("Please configure a valid Gemini API key in your environment settings.");
   console.error("===============================================================");
   process.exit(1);
 }
@@ -772,12 +772,11 @@ app.post("/api/extract-iqama", authMiddleware, async (req, res) => {
 
     try {
       // ═══════════════════════════════════════════════════════════════════════
-      // OpenAI gpt-4o — Flagship vision model
+      // Google Gemini 2.0 Flash — Native Arabic OCR Model
       // We instruct it to copy Eastern Arabic digits VERBATIM without translating.
-      // Translating shapes to numbers causes hallucinations in LLMs.
       // We handle the safe conversion programmatically below.
       // ═══════════════════════════════════════════════════════════════════════
-      const client = getOpenAIClient();
+      const client = getGeminiClient();
 
       const extractionPrompt = `You are a strict, forensic Arabic OCR system specialized in Saudi Iqama (Residence Permit) cards.
 
@@ -805,56 +804,47 @@ EXTRACT these 11 fields precisely:
 
 Return ONLY a valid JSON object with exactly these field names.`;
 
-      const ocrResult = await client.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
+      const response = await client.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: [
           {
             role: "user",
-            content: [
+            parts: [
               {
-                type: "image_url",
-                image_url: {
-                  url: `data:${safeMimeType};base64,${imageBase64}`,
-                  detail: "high"
+                inlineData: {
+                  data: imageBase64,
+                  mimeType: safeMimeType,
                 }
               },
-              {
-                type: "text",
-                text: extractionPrompt
-              }
+              { text: extractionPrompt }
             ]
           }
         ],
-        temperature: 0,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "iqama_extraction",
-            strict: true,
-            schema: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                name:              { type: "string", description: "Full English name on the card." },
-                nameArabic:        { type: "string", description: "Full Arabic name on the card." },
-                iqamaNo:           { type: "string", description: "10-digit Iqama number in EXACT Eastern Arabic digits." },
-                expiryDate:        { type: "string", description: "Expiry date in EXACT Eastern Arabic digits." },
-                dob:               { type: "string", description: "Date of birth in EXACT Eastern Arabic digits." },
-                nationality:       { type: "string", description: "Nationality in English." },
-                nationalityArabic: { type: "string", description: "Nationality in Arabic as printed on card." },
-                occupation:        { type: "string", description: "Occupation or job title." },
-                supplierName:      { type: "string", description: "Sponsor/supplier name, or N/A." },
-                establishmentName: { type: "string", description: "Establishment/employer name, or N/A." },
-                establishmentNo:   { type: "string", description: "Establishment ID number in EXACT Eastern Arabic digits, or N/A." },
-              },
-              required: ["name", "nameArabic", "iqamaNo", "expiryDate", "dob", "nationality", "nationalityArabic", "occupation", "supplierName", "establishmentName", "establishmentNo"],
-            }
+        config: {
+          temperature: 0,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              name: { type: Type.STRING },
+              nameArabic: { type: Type.STRING },
+              iqamaNo: { type: Type.STRING },
+              expiryDate: { type: Type.STRING },
+              dob: { type: Type.STRING },
+              nationality: { type: Type.STRING },
+              nationalityArabic: { type: Type.STRING },
+              occupation: { type: Type.STRING },
+              supplierName: { type: Type.STRING },
+              establishmentName: { type: Type.STRING },
+              establishmentNo: { type: Type.STRING }
+            },
+            required: ["name", "nameArabic", "iqamaNo", "expiryDate", "dob", "nationality", "nationalityArabic", "occupation", "supplierName", "establishmentName", "establishmentNo"]
           }
         }
       });
 
-      const rawText = ocrResult.choices[0]?.message?.content || "{}";
-      console.log("[o3 OCR Raw Output]:", rawText);
+      const rawText = response.text || "{}";
+      console.log("[Gemini OCR Raw Output]:", rawText);
       const parsedData = JSON.parse(rawText);
 
       // Programmatic safety-net: convert any remaining Eastern Arabic numerals
