@@ -714,7 +714,7 @@ EXTRACT these 11 fields precisely:
 Return ONLY a valid JSON object with exactly these field names.`;
 
       const response = await client.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-3.5-flash",
         contents: [
           {
             role: "user",
@@ -810,7 +810,7 @@ app.post("/api/ocr-text", authMiddleware, async (req, res) => {
       const client = getGeminiClient();
 
       const response = await generateContentWithRetry(client, {
-        model: "gemini-2.0-flash",
+        model: "gemini-3.5-flash",
         contents: [
           {
             role: "user",
@@ -885,7 +885,7 @@ For each product opportunity, supply:
 Return your research strictly in a structured JSON schema. Include any citations or search references where you found current sales momentum.`;
 
       const response = await generateContentWithRetry(client, {
-        model: "gemini-2.0-flash",
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
@@ -1057,7 +1057,7 @@ Return the skills as a clean JSON list under the key 'suggestions'.`;
       }
 
       const response = await generateContentWithRetry(client, {
-        model: "gemini-2.0-flash",
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -1213,7 +1213,7 @@ Be precise. Do not invent details. If rating or phone is missing, output 'N/A' o
 Output JSON only confirming to the specified schema.`;
 
       const aiResponse = await generateContentWithRetry(client, {
-        model: "gemini-2.0-flash",
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
@@ -1295,7 +1295,7 @@ For each business, compile the following fields precisely matching the schema:
 Be precise. Format output only as matching JSON.`;
 
         const fallbackResponse = await generateContentWithRetry(client, {
-          model: "gemini-2.0-flash",
+          model: "gemini-3.5-flash",
           contents: fallbackPrompt,
           config: {
             responseMimeType: "application/json",
@@ -1491,7 +1491,7 @@ Analyze the text content, formatting structure, table alignment, and typography 
       };
 
       const response = await generateContentWithRetry(client, {
-        model: "gemini-2.0-flash",
+        model: "gemini-3.5-flash",
         contents: [
           {
             role: "user",

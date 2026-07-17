@@ -762,7 +762,7 @@ export default function PdfToWord() {
                     AI Quota Reached — Fallback Data Used
                   </h4>
                   <p className="text-[11px] text-amber-800">
-                    Your OpenAI API quota has been exhausted. The system rendered a formatted document fallback. Set a valid API key to get real OCR results.
+                    Your Gemini API quota has been exhausted. The system rendered a formatted document fallback. Set a valid API key to get real OCR results.
                   </p>
                   {extractedPages.find((p) => p.apiError)?.apiError && (
                     <p className="font-mono text-[9px] bg-surface-container-lowest/70 p-2 rounded-lg border border-amber-200/50 text-amber-950 break-words mt-1">

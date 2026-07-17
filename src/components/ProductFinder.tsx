@@ -281,7 +281,7 @@ export default function ProductFinder() {
     } catch (err: any) {
       console.error("Search error:", err);
       setError(
-        "Could not compile market intelligence. Please check that your OpenAI API key is configured and try again."
+        "Could not compile market intelligence. Please check that your Gemini API key is configured and try again."
       );
     } finally {
       setLoading(false);
@@ -595,13 +595,13 @@ export default function ProductFinder() {
                     [PIPELINE_INITIOTIALIZED_LOG]
                   </h4>
                   <p className="text-xs text-outline-variant font-mono max-w-md mx-auto leading-relaxed">
-                    Connecting to Google OpenAI Search Grounding framework. Isolating demographic indices in 2026. Structuring unit wholesale databases...
+                    Connecting to Google Gemini Search Grounding framework. Isolating demographic indices in 2026. Structuring unit wholesale databases...
                   </p>
                 </div>
 
                 <div className="border border-on-surface bg-slate-950/80 rounded-DEFAULT p-4 text-left max-w-sm mx-auto space-y-1 font-mono text-[9px] text-outline select-none">
                   <p className="text-teal-400">&gt; GET /api/find-products HTTP/1.1</p>
-                  <p>&gt; Host: ais-OpenAI-agent-hub</p>
+                  <p>&gt; Host: ais-Gemini-agent-hub</p>
                   <p>&gt; category: &quot;{category}&quot;</p>
                   <p>&gt; filters-bias: &quot;{trajectoryBias}&quot;</p>
                   <p className="text-teal-500">&gt; Status: Retrieving live e-commerce search vectors...</p>
@@ -659,7 +659,7 @@ export default function ProductFinder() {
                       High-Growth Secondary Database Catalog Enforced (API Resource Warning)
                     </h4>
                     <p className="text-[11px] leading-relaxed text-amber-800">
-                      Standard OpenAI API quota boundaries or credit limits were hit. Dynamic sandbox analytics have automatically loaded to ensure continuous evaluation of interface components and pricing variables.
+                      Standard Gemini API quota boundaries or credit limits were hit. Dynamic sandbox analytics have automatically loaded to ensure continuous evaluation of interface components and pricing variables.
                     </p>
                     {results.apiError && (
                       <div className="mt-2 text-left">
