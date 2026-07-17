@@ -46,6 +46,17 @@ async function getSessionKey(): Promise<CryptoKey> {
   );
 }
 
+// Safe base64 encoder for large Uint8Arrays — avoids call stack overflow
+// that occurs when using btoa(String.fromCharCode(...largeArray))
+function uint8ToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const CHUNK = 8192; // 8 KB at a time — stays well within call stack limits
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
+}
+
 async function encryptString(plaintext: string): Promise<string> {
   const key = await getSessionKey();
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
@@ -57,16 +68,21 @@ async function encryptString(plaintext: string): Promise<string> {
     encoded
   );
 
-  // Combine iv (12 bytes) + ciphertext, encode as base64
+  // Combine iv (12 bytes) + ciphertext, encode as base64 (chunked — safe for large images)
   const combined = new Uint8Array(iv.byteLength + ciphertext.byteLength);
   combined.set(iv, 0);
   combined.set(new Uint8Array(ciphertext), iv.byteLength);
-  return btoa(String.fromCharCode(...combined));
+  return uint8ToBase64(combined);
 }
 
 async function decryptString(b64: string): Promise<string> {
   const key = await getSessionKey();
-  const combined = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  // atob returns a binary string; charCodeAt per-char is safe (no spread needed)
+  const binaryStr = atob(b64);
+  const combined = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    combined[i] = binaryStr.charCodeAt(i);
+  }
 
   const iv = combined.slice(0, 12);
   const ciphertext = combined.slice(12);

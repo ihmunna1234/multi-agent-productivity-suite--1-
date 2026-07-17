@@ -39,30 +39,43 @@ import SplitPdf from "./components/SplitPdf";
 import OrganizePdf from "./components/OrganizePdf";
 import Login from "./components/Login";
 
-export default function App() {
+// ─── Auth Gate ───────────────────────────────────────────────────────────────
+// Returns true if there is a JWT token stored in localStorage.
+function isAuthenticated(): boolean {
+  try {
+    return !!localStorage.getItem("workspace_token");
+  } catch {
+    return false;
+  }
+}
+
+// ─── Workspace Shell ─────────────────────────────────────────────────────────
+function WorkspaceShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark" | "night">(() => {
     try {
       const stored = localStorage.getItem("workspace_theme");
-      if (stored === "dark" || stored === "night" || stored === "light") {
-        return stored;
-      }
-    } catch (e) {
-      // safe fallback
-    }
+      if (stored === "dark" || stored === "night" || stored === "light") return stored;
+    } catch { /* safe fallback */ }
     return "light";
   });
-  
+
   const handleThemeChange = (newTheme: "light" | "dark" | "night") => {
     setTheme(newTheme);
-    try {
-      localStorage.setItem("workspace_theme", newTheme);
-    } catch (e) {
-      // ignore
-    }
+    try { localStorage.setItem("workspace_theme", newTheme); } catch { /* ignore */ }
   };
+
+  // Listen for session-expired events and redirect to root (which shows Login)
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      localStorage.removeItem("workspace_token");
+      window.location.replace("/");
+    };
+    window.addEventListener("auth-unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("auth-unauthorized", handleUnauthorized);
+  }, []);
 
   const navigationItems = [
     { path: "/iqama-extractor", name: "Iqama Extractor", icon: <Database size={16} />, pill: "AI OCR" },
@@ -80,7 +93,7 @@ export default function App() {
 
   const handleNavigate = (path: string) => {
     navigate(path);
-    setIsMobileMenuOpen(false); // Close mobile popup navigation if open
+    setIsMobileMenuOpen(false);
   };
 
   const themeClass = theme === "dark" ? "theme-dark" : theme === "night" ? "theme-night" : "theme-light";
@@ -90,13 +103,12 @@ export default function App() {
       <Helmet>
         <title>Injamus's AI Workspace</title>
       </Helmet>
-      <Login />
-      
+
       {/* Premium Top Navigation Bar */}
       <header className="bg-surface-container-lowest border-b border-outline-variant flex-shrink-0 z-50 relative shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-18">
-            
+
             {/* Logo/Branding Node */}
             <div className="flex items-center gap-2.5 cursor-pointer select-none" onClick={() => handleNavigate("/")}>
               <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-sm shadow-primary/20 active:scale-95 transition-transform">
@@ -112,11 +124,9 @@ export default function App() {
               </div>
             </div>
 
-            {/* Desktop Dynamic Navigation has been replaced by the unified mobile phone hamburger toggler */}
-
-            {/* Right Side Hamburger Toggle & Theme Switchers */}
+            {/* Right Side Controls */}
             <div className="flex items-center gap-3">
-              {/* Single Button Theme Cycler (Light -> Dark -> Night) */}
+              {/* Single Button Theme Cycler */}
               <button
                 type="button"
                 onClick={() => {
@@ -132,8 +142,7 @@ export default function App() {
                 {theme === "night" && <Contrast size={20} className="text-rose-400 stroke-[2.5]" />}
               </button>
 
-
-              {/* Mobile phone style hamburger menu toggle (Active on all devices & screens) */}
+              {/* Hamburger menu toggle */}
               <button
                 id="hamburger-menu-toggle-btn"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -148,7 +157,7 @@ export default function App() {
                 type="button"
                 onClick={() => {
                   localStorage.removeItem("workspace_token");
-                  window.location.reload();
+                  window.location.replace("/");
                 }}
                 className="p-2.5 rounded-2xl transition-all cursor-pointer flex items-center justify-center border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 shadow-xs active:scale-95"
                 title="Lock Workspace (Logout)"
@@ -160,7 +169,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Universal Mobile Dropdown Menu displayed on all devices */}
+        {/* Universal Mobile Dropdown Menu */}
         {isMobileMenuOpen && (
           <div className="border-t border-outline-variant bg-surface-container-lowest absolute top-16 left-0 right-0 md:left-auto md:right-8 md:w-80 md:rounded-3xl md:border md:shadow-xl px-5 py-4 space-y-1.5 animate-fade-in z-50">
             <h3 className="text-[10px] font-bold text-outline uppercase tracking-widest px-3 mb-2">
@@ -198,10 +207,8 @@ export default function App() {
         )}
       </header>
 
-      {/* Primary Main Content Node */}
+      {/* Primary Main Content */}
       <main className="flex-1 overflow-y-auto flex flex-col h-full bg-background min-w-0">
-        
-        {/* Dynamic Workspaces */}
         <div id="workspace-content-body" className="p-4 md:p-8 max-w-7xl w-full mx-auto flex-1 pb-16 bg-background">
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -219,7 +226,33 @@ export default function App() {
           </Routes>
         </div>
       </main>
-
     </div>
   );
+}
+
+// ─── Root App — Auth Gate ─────────────────────────────────────────────────────
+// This is the single source of truth for authentication.
+// If no token exists → render <Login /> full page (nothing else shown).
+// If token exists   → render the full <WorkspaceShell /> with all routes.
+export default function App() {
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Check localStorage token synchronously on mount
+    setAuthenticated(isAuthenticated());
+
+    // Also react to storage changes (e.g., logout in another tab)
+    const handleStorage = () => setAuthenticated(isAuthenticated());
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  // Null = still resolving (avoids flicker on first paint)
+  if (authenticated === null) return null;
+
+  // Not authenticated → full-page login, no app shell visible
+  if (!authenticated) return <Login />;
+
+  // Authenticated → full workspace
+  return <WorkspaceShell />;
 }
