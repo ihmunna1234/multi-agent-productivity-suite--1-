@@ -104,9 +104,9 @@ app.use("/api", (req, res, next) => {
   if (record.count > maxRequestsPerIp) {
     const correlationId = Math.random().toString(36).substring(2, 10);
     console.warn(`[Rate Limit Exceeded] IP: ${ip}, Request Count: ${record.count}, Error ID: ${correlationId}`);
-    res.status(429).json({ 
-      error: "Too many requests. Please try again later.", 
-      correlationId 
+    res.status(429).json({
+      error: "Too many requests. Please try again later.",
+      correlationId
     });
     return;
   }
@@ -176,12 +176,12 @@ function validateBase64Image(
   try {
     const decoded = Buffer.from(imageBase64.substring(0, 24), "base64");
     const isJpeg = decoded[0] === 0xff && decoded[1] === 0xd8;
-    const isPng  = decoded[0] === 0x89 && decoded[1] === 0x50 && decoded[2] === 0x4e && decoded[3] === 0x47;
-    const isGif  = decoded[0] === 0x47 && decoded[1] === 0x49 && decoded[2] === 0x46;
+    const isPng = decoded[0] === 0x89 && decoded[1] === 0x50 && decoded[2] === 0x4e && decoded[3] === 0x47;
+    const isGif = decoded[0] === 0x47 && decoded[1] === 0x49 && decoded[2] === 0x46;
     // WebP: bytes 0-3 = RIFF, bytes 8-11 = WEBP
     const isWebp = decoded[0] === 0x52 && decoded[1] === 0x49 && decoded[8] === 0x57 && decoded[9] === 0x45;
     // BMP magic bytes
-    const isBmp  = decoded[0] === 0x42 && decoded[1] === 0x4d;
+    const isBmp = decoded[0] === 0x42 && decoded[1] === 0x4d;
 
     if (!isJpeg && !isPng && !isGif && !isWebp && !isBmp) {
       return {
@@ -632,8 +632,8 @@ function getFallbackProducts(category: string, niche: string): any {
       }
     ];
 
-    const finalUsp = niche && niche.trim().length > 0 
-      ? `${p.usp} (Optimized for ${niche.trim()})` 
+    const finalUsp = niche && niche.trim().length > 0
+      ? `${p.usp} (Optimized for ${niche.trim()})`
       : p.usp;
 
     return {
@@ -778,7 +778,7 @@ Return ONLY a valid JSON object with exactly these field names.`;
       console.log(`[OpenAI Fallback Activated - Error ID: ${correlationId}] Serving resilient Iqama parsed data fallback. Error details:`, apiErr);
       const fallbackResult = {
         ...getFallbackIqamaData(imageBase64),
-        apiError: "AI service transient failure. Utilizing layout cache."
+        apiError: `AI service transient failure. Detail: ${apiErr.message || String(apiErr)}`
       };
       res.json(fallbackResult);
     }
@@ -848,7 +848,7 @@ Name: MOHAMMAD MUNNA
 app.post("/api/find-products", authMiddleware, async (req, res) => {
   try {
     const { category, niche } = req.body;
-    
+
     try {
       const client = getGeminiClient();
 
@@ -998,7 +998,7 @@ Return your research strictly in a structured JSON schema. Include any citations
       res.json({
         ...fallbackResult,
         isFallback: true,
-        apiError: "AI product search grounding temporary error. Utilizing local trends library."
+        apiError: `AI product search grounding temporary error. Detail: ${apiErr.message || String(apiErr)}`
       });
     }
   } catch (err: any) {
@@ -1012,7 +1012,7 @@ Return your research strictly in a structured JSON schema. Include any citations
 app.post("/api/ai-resume-helper", authMiddleware, async (req, res) => {
   try {
     const { action, role, text } = req.body;
-    
+
     if (!action || !role) {
       res.status(400).json({ error: "Missing required params: 'action' and 'role' are mandatory." });
       return;
@@ -1080,7 +1080,7 @@ Return the skills as a clean JSON list under the key 'suggestions'.`;
     } catch (apiErr: any) {
       const correlationId = Math.random().toString(36).substring(2, 10);
       console.log(`[Resume Helper Fallback Activated - Error ID: ${correlationId}] Serving clean fallback text items. Error details:`, apiErr);
-      
+
       // Dynamic tailored fallbacks for bullet optimization or executive summary
       let fallbackSuggestions: string[] = [];
       if (action === "improve-bullets") {
@@ -1108,7 +1108,7 @@ Return the skills as a clean JSON list under the key 'suggestions'.`;
       res.json({
         suggestions: fallbackSuggestions,
         isFallback: true,
-        apiError: "AI resume assistant temporary connection issue. Utilizing default template library."
+        apiError: `AI resume assistant temporary connection issue. Detail: ${apiErr.message || String(apiErr)}`
       });
     }
   } catch (err: any) {
@@ -1123,7 +1123,7 @@ app.post("/api/extract-maps-data", authMiddleware, async (req, res) => {
   try {
     // VULN-04 fix: removed clientApiKey — server exclusively uses its own env var
     const { keyword, location, mode } = req.body;
-    
+
     if (!keyword || !location) {
       res.status(400).json({ error: "Keyword and location are required inputs." });
       return;
@@ -1249,7 +1249,7 @@ Output JSON only confirming to the specified schema.`;
       });
 
       const parsed = JSON.parse(aiResponse.text || '{"results": []}');
-      
+
       // Clean and sanitize results
       const results = (parsed.results || []).map((item: any) => ({
         name: item.name || "Unknown Business",
@@ -1270,7 +1270,7 @@ Output JSON only confirming to the specified schema.`;
       res.json({ results, count: results.length });
     } catch (apiErr: any) {
       console.log("[Maps Extractor Integration] Switching to standard content generation layout.");
-      
+
       try {
         const client = getGeminiClient();
         const fallbackPrompt = `Research and generate a highly realistic list of 8 physical businesses or service providers matching this query:
@@ -1355,7 +1355,7 @@ Be precise. Format output only as matching JSON.`;
         return;
       } catch (innerErr: any) {
         console.log("[Maps Extractor Sandbox] Activating sandbox simulations.");
-        
+
         // Highly realistic mock data in fallback
         const mockBusinesses = [
           {
@@ -1439,7 +1439,7 @@ Be precise. Format output only as matching JSON.`;
           results: mockBusinesses,
           count: mockBusinesses.length,
           isFallback: true,
-          apiError: "Google Maps lead crawler connection timeout. Utilizing simulation database fallback."
+          apiError: `Google Maps lead crawler connection timeout. Detail: ${innerErr.message || String(innerErr)}`
         });
       }
     }
@@ -1508,7 +1508,7 @@ Analyze the text content, formatting structure, table alignment, and typography 
     } catch (apiErr: any) {
       const correlationId = Math.random().toString(36).substring(2, 10);
       console.log(`[OCR Page Fallback - Error ID: ${correlationId}] Serving standard layout fallback for Page ${pageNumber}. Error details:`, apiErr);
-      
+
       // Serve a high-fidelity mock fallback text matching document structure
       const sampleText = `[HEADING] EXECUTIVE BUSINESS OVERVIEW & PERFORMANCE ANALYSIS
 Page ${pageNumber || 1} of ${totalPages || 1} — Converted via AI Sandbox Fallback Engine
@@ -1521,7 +1521,7 @@ This report highlights administrative activities and supplier records processed 
 
 To fully utilize advanced multi-lingual and formatting recognition, ensure GEMINI_API_KEY is properly saved in the workspace settings. Use the toolbar on the right to edit, realign paragraphs, and customize Word typography features prior to downloading.`;
 
-      res.json({ text: sampleText, isFallback: true, apiError: "Gemini OCR service temporary failure. Utilizing document layout cache fallback." });
+      res.json({ text: sampleText, isFallback: true, apiError: `Gemini OCR service temporary failure. Detail: ${apiErr.message || String(apiErr)}` });
     }
   } catch (err: any) {
     const correlationId = Math.random().toString(36).substring(2, 10);
