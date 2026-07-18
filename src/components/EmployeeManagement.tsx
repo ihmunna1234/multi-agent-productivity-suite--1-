@@ -162,6 +162,7 @@ export default function EmployeeManagement() {
   const [newProjectDesc, setNewProjectDesc] = useState("");
   const [ocrLoading, setOcrLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Employee Form State
@@ -211,6 +212,7 @@ export default function EmployeeManagement() {
   }, [selectedProjectId, year, month]);
 
   const loadEmployeeAndTimesheetData = async () => {
+    setDataLoading(true);
     try {
       const emps = await getEmployeesByProject(selectedProjectId);
       setEmployees(emps);
@@ -243,6 +245,8 @@ export default function EmployeeManagement() {
       setTimesheets(tsMap);
     } catch (e) {
       console.error("Failed loading employee/timesheet data:", e);
+    } finally {
+      setDataLoading(false);
     }
   };
 
@@ -864,7 +868,13 @@ export default function EmployeeManagement() {
             </button>
           </div>
 
-          {employees.length === 0 ? (
+          {dataLoading ? (
+            <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-12 flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+              <h4 className="font-bold text-on-background text-sm font-sans">Loading...</h4>
+              <p className="text-xs text-outline mt-1 mb-4">Fetching data from the database.</p>
+            </div>
+          ) : employees.length === 0 ? (
             <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-12 flex flex-col items-center justify-center">
               <Users size={48} className="text-outline/50 mb-3" />
               <h4 className="font-bold text-on-background text-sm">No Employees Registered</h4>
@@ -982,7 +992,13 @@ export default function EmployeeManagement() {
             </div>
           </div>
 
-          {employees.length === 0 ? (
+          {dataLoading ? (
+            <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-12 flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+              <h4 className="font-bold text-on-background text-sm font-sans">Loading...</h4>
+              <p className="text-xs text-outline mt-1 mb-4">Fetching data from the database.</p>
+            </div>
+          ) : employees.length === 0 ? (
             <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-12 flex flex-col items-center justify-center">
               <Calendar size={48} className="text-outline/50 mb-3" />
               <h4 className="font-bold text-on-background text-sm font-sans">No Employees Registered</h4>
