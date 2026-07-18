@@ -1598,7 +1598,6 @@ export default function EmployeeManagement() {
                 <div>
                   <p className="text-xs text-slate-500 mb-1">Full Name</p>
                   <p className="text-xl font-bold text-slate-900">{payslipData.employee.name}</p>
-                  {payslipData.employee.nameArabic && <p className="text-sm text-slate-600 font-arabic mt-1" dir="rtl">{payslipData.employee.nameArabic}</p>}
                 </div>
                 <div>
                   <p className="text-xs text-slate-500 mb-1">Trade / Designation</p>
