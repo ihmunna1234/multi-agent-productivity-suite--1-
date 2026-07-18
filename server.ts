@@ -1923,8 +1923,13 @@ app.get("/api/employee-management/projects", authMiddleware, async (req: express
     if (error) throw error;
     res.json((data || []).map(mapProjectRow));
   } catch (err: any) {
-    console.error("[Employee Mgmt] Failed to load projects:", err.message);
-    res.status(500).json({ error: "Failed to load projects from database." });
+    console.error("[Employee Mgmt] Failed to load projects:", err.message || err);
+    res.status(500).json({ 
+      error: "Failed to load projects from database.", 
+      details: err.message,
+      code: err.code,
+      hint: err.hint
+    });
   }
 });
 
