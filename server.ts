@@ -1955,8 +1955,13 @@ app.post("/api/employee-management/projects", authMiddleware, async (req: expres
     if (error) throw error;
     res.json({ success: true });
   } catch (err: any) {
-    console.error("[Employee Mgmt] Failed to save project:", err.message);
-    res.status(500).json({ error: "Failed to save project to database." });
+    console.error("[Employee Mgmt] Failed to save project:", err.message || err);
+    res.status(500).json({ 
+      error: "Failed to save project to database.", 
+      details: err.message,
+      code: err.code,
+      hint: err.hint
+    });
   }
 });
 
