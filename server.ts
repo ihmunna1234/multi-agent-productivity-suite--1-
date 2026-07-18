@@ -10,6 +10,21 @@ const Type = { STRING: "string", NUMBER: "number", INTEGER: "integer", BOOLEAN: 
 
 dotenv.config({ override: true });
 
+// Standardize console logs to include UTC timestamps for production monitoring
+const originalLog = console.log;
+const originalWarn = console.warn;
+const originalError = console.error;
+
+console.log = (...args: any[]) => {
+  originalLog(`[${new Date().toISOString()}] [INFO]`, ...args);
+};
+console.warn = (...args: any[]) => {
+  originalWarn(`[${new Date().toISOString()}] [WARN]`, ...args);
+};
+console.error = (...args: any[]) => {
+  originalError(`[${new Date().toISOString()}] [ERROR]`, ...args);
+};
+
 // Refuse to start if critical environment variables are missing or set to defaults
 const criticalApiKey = process.env.GEMINI_API_KEY;
 if (!criticalApiKey || criticalApiKey === "YOUR_API_KEY" || criticalApiKey.trim() === "") {
@@ -277,6 +292,11 @@ app.post("/api/auth/login", (req, res) => {
   );
 
   res.json({ token });
+});
+
+// Route to verify if the client's current session token is valid and not expired
+app.get("/api/auth/verify", authMiddleware, (req, res) => {
+  res.json({ valid: true, user: (req as any).user });
 });
 
 // Ensure the client-facing APIs are placed BEFORE Vite middleware
@@ -824,7 +844,7 @@ app.post("/api/ocr-text", authMiddleware, async (req, res) => {
 
       res.json({ rawText: response.text || "" });
     } catch (apiErr: any) {
-      console.log("[OCR Fallback Activated] Serving high-quality layout raw text sample.");
+      console.log("[OCR Fallback Activated] Serving high-quality layout raw text sample. Error details:", apiErr);
       res.json({
         rawText: `المملكة العربية السعودية (Kingdom of Saudi Arabia)
 رقم الإقامة: ٢٦٠٠٣٧٢٣٥٢
@@ -834,7 +854,9 @@ Name: MOHAMMAD MUNNA
 المهنة: عامل (Worker)
 الجنسية: بنجلاديش (Bangladesh)
 تاريخ الانتهاء: ١٤٤٩/٠٥/٢٠ (Expiry: 2027-11-20)
-صاحب العمل: الشركة الوطنية للخدمات الأمنية (National Security Services Company)`
+صاحب العمل: الشركة الوطنية للخدمات الأمنية (National Security Services Company)`,
+        isFallback: true,
+        apiError: `Gemini OCR service temporary failure. Detail: ${apiErr.message || String(apiErr)}`
       });
     }
   } catch (err: any) {
