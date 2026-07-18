@@ -1551,13 +1551,15 @@ async function serveApp() {
         // Always transform using the base URL context to guarantee React Fast Refresh preamble is injected
         template = await vite.transformIndexHtml(req.baseUrl || "/", template);
         
-        // Safety net: ensure React Refresh installation flag is explicitly set if preamble is present
-        if (template.includes("/@react-refresh") && !template.includes("__vite_plugin_react_preamble_installed__")) {
-          template = template.replace(
-            `window.$RefreshSig$ = () => (type) => type;`,
-            `window.$RefreshSig$ = () => (type) => type;\nwindow.__vite_plugin_react_preamble_installed__ = true;`
-          );
-        }
+        // Force-inject synchronous preamble placeholders at the top of head to prevent plugin-react from crashing
+        const syncPreamble = `
+    <script>
+      window.$RefreshReg$ = () => {};
+      window.$RefreshSig$ = () => (type) => type;
+      window.__vite_plugin_react_preamble_installed__ = true;
+    </script>
+`;
+        template = template.replace("<head>", `<head>${syncPreamble}`);
 
         res.status(200).set({ "Content-Type": "text/html" }).end(template);
       } catch (e: any) {
@@ -1565,7 +1567,6 @@ async function serveApp() {
         next(e);
       }
     });
-
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
