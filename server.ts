@@ -1541,10 +1541,15 @@ async function serveApp() {
     app.use(vite.middlewares);
 
     app.use("*", async (req, res, next) => {
+      // Only serve index.html for GET page navigation requests, bypassing static assets / source files
+      if (req.method !== "GET" || (!req.headers.accept?.includes("text/html") && req.originalUrl.includes("."))) {
+        return next();
+      }
       try {
         const fs = await import("fs");
         let template = fs.readFileSync(path.resolve(process.cwd(), "index.html"), "utf-8");
-        template = await vite.transformIndexHtml(req.originalUrl, template);
+        // Always transform using the base URL context to guarantee React Fast Refresh preamble is injected
+        template = await vite.transformIndexHtml(req.baseUrl || "/", template);
         res.status(200).set({ "Content-Type": "text/html" }).end(template);
       } catch (e: any) {
         vite.ssrFixStacktrace(e);
