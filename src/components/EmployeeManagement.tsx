@@ -232,7 +232,7 @@ export default function EmployeeManagement() {
             employeeId: emp.id,
             year,
             month,
-            regularHours: 260,
+            regularHours: 0,
             overtimeHours: 0,
             absentDays: 0,
             otherAllowances: 0,
@@ -490,7 +490,7 @@ export default function EmployeeManagement() {
   const calculatedSalaryRows = useMemo(() => {
     return employees.map((emp) => {
       const ts = timesheets[emp.id] || {
-        regularHours: 260,
+        regularHours: 0,
         overtimeHours: 0,
         absentDays: 0,
         otherAllowances: 0,
@@ -608,7 +608,7 @@ export default function EmployeeManagement() {
     doc.text(`Iqama / ID No: ${emp.iqamaNo}`, 15, 60);
     doc.text(`Nationality: ${emp.nationality || "-"}`, 110, 60);
     doc.text(`Trade / Designation: ${emp.trade}`, 15, 66);
-    doc.text(`Regular Hours: ${ts.regularHours} / 260`, 110, 66);
+    doc.text(`Regular Hours: ${ts.regularHours}`, 110, 66);
 
     // Salary Breakdown Table
     doc.setFontSize(11);
@@ -1011,7 +1011,7 @@ export default function EmployeeManagement() {
                   <thead>
                     <tr className="bg-surface-container-low text-on-surface-variant font-bold border-b border-outline-variant/60">
                       <th className="p-4 w-52">Employee Name & Trade</th>
-                      <th className="p-4 text-center w-24">Regular Hrs (Default 260)</th>
+                      <th className="p-4 text-center w-24">Regular Hrs (Default 0)</th>
                       <th className="p-4 text-center w-24">Overtime (Hrs)</th>
                       <th className="p-4 text-center w-24">Absent Days</th>
                       <th className="p-4 text-center w-28">Other Allowance (SAR)</th>
@@ -1023,7 +1023,7 @@ export default function EmployeeManagement() {
                   <tbody className="divide-y divide-outline-variant/40">
                     {employees.map((emp) => {
                       const entry = timesheets[emp.id] || {
-                        regularHours: 260,
+                        regularHours: 0,
                         overtimeHours: 0,
                         absentDays: 0,
                         otherAllowances: 0,
