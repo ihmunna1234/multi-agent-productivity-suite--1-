@@ -232,11 +232,12 @@ export default function EmployeeManagement() {
             employeeId: emp.id,
             year,
             month,
-            daysWorked: 30,
+            regularHours: 260,
             overtimeHours: 0,
             absentDays: 0,
             otherAllowances: 0,
             deductions: 0,
+            advance: 0,
           };
         }
       });
@@ -500,6 +501,7 @@ export default function EmployeeManagement() {
 
       // Purely hourly salary logic. Standard month = 260 hours.
       const hourlyRate = emp.baseSalary / 260;
+      const dailyRate = emp.baseSalary / 30;
 
       const basicPayEarned = hourlyRate * ts.regularHours;
       const overtimeEarned = hourlyRate * ts.overtimeHours;
@@ -608,7 +610,7 @@ export default function EmployeeManagement() {
     doc.text(`Iqama / ID No: ${emp.iqamaNo}`, 15, 60);
     doc.text(`Nationality: ${emp.nationality || "-"}`, 110, 60);
     doc.text(`Trade / Designation: ${emp.trade}`, 15, 66);
-    doc.text(`Days Worked: ${ts.daysWorked} / 30`, 110, 66);
+    doc.text(`Regular Hours: ${ts.regularHours} / 260`, 110, 66);
 
     // Salary Breakdown Table
     doc.setFontSize(11);
