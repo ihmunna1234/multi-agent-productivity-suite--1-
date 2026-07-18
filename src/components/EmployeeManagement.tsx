@@ -123,9 +123,8 @@ interface Employee {
   dob?: string;
   nationality?: string;
   trade: string;
-  baseSalary: number;
-  allowance: number;
-  createdAt: number;
+  hourlyRate: number;
+    createdAt: number;
 }
 
 interface TimesheetEntry {
@@ -175,8 +174,7 @@ export default function EmployeeManagement() {
     dob: "",
     nationality: "",
     trade: "Laborer",
-    baseSalary: 1500,
-    allowance: 300,
+    hourlyRate: 15,
   });
 
   // Card preview state
@@ -302,8 +300,7 @@ export default function EmployeeManagement() {
       dob: "",
       nationality: "",
       trade: "Laborer",
-      baseSalary: 1500,
-      allowance: 300,
+      hourlyRate: 15,
     });
     setErrorMsg(null);
     setIsEmployeeModalOpen(true);
@@ -319,9 +316,8 @@ export default function EmployeeManagement() {
       dob: emp.dob || "",
       nationality: emp.nationality || "",
       trade: emp.trade,
-      baseSalary: emp.baseSalary,
-      allowance: emp.allowance,
-    });
+      hourlyRate: emp.hourlyRate,
+          });
     setErrorMsg(null);
     setIsEmployeeModalOpen(true);
   };
@@ -347,9 +343,8 @@ export default function EmployeeManagement() {
         dob: empForm.dob || undefined,
         nationality: empForm.nationality.trim() || undefined,
         trade: empForm.trade,
-        baseSalary: Number(empForm.baseSalary) || 0,
-        allowance: Number(empForm.allowance) || 0,
-        createdAt: Date.now(),
+        hourlyRate: Number(empForm.hourlyRate) || 0,
+                createdAt: Date.now(),
       };
 
       await saveEmployee(savedEmp);
@@ -500,12 +495,12 @@ export default function EmployeeManagement() {
       };
 
       // Purely hourly salary logic. Standard month = 260 hours.
-      const hourlyRate = emp.baseSalary / 260;
-      const dailyRate = emp.baseSalary / 30;
+      const hourlyRate = emp.hourlyRate;
+      const dailyRate = emp.hourlyRate * 8;
 
       const basicPayEarned = hourlyRate * ts.regularHours;
       const overtimeEarned = hourlyRate * ts.overtimeHours;
-      const totalAllowance = emp.allowance + ts.otherAllowances;
+      const totalAllowance = ts.otherAllowances;
       const netSalary = basicPayEarned + totalAllowance - ts.deductions - (ts.advance || 0);
 
       return {
@@ -537,8 +532,7 @@ export default function EmployeeManagement() {
       "Iqama / ID No": row.employee.iqamaNo,
       "Trade": row.employee.trade,
       "Nationality": row.employee.nationality || "-",
-      "Base Salary (SAR)": row.employee.baseSalary,
-      "Fixed Allowance (SAR)": row.employee.allowance,
+      "Hourly Rate (SAR)": row.employee.hourlyRate,
       "Regular Hours": row.timesheet.regularHours,
       "Basic Pay Earned (SAR)": Math.round(row.basicPayEarned * 100) / 100,
       "Overtime Hours": row.timesheet.overtimeHours,
@@ -630,13 +624,8 @@ export default function EmployeeManagement() {
     // Row: Basic Salary
     doc.setFont("Helvetica", "normal");
     doc.text("Basic Salary (Calculated / الراتب الأساسي)", 20, 100);
-    doc.text(`${emp.baseSalary.toFixed(2)}`, 90, 100);
+    doc.text(`${emp.hourlyRate.toFixed(2)}`, 90, 100);
     doc.text(`${basicPayEarned.toFixed(2)}`, 150, 100);
-
-    // Row: Fixed Allowance
-    doc.text("Fixed Allowance (بدل سكن وانتقال)", 20, 108);
-    doc.text(`${emp.allowance.toFixed(2)}`, 90, 108);
-    doc.text(`${emp.allowance.toFixed(2)}`, 150, 108);
 
     // Row: Overtime Pay
     doc.text(`Overtime Pay (${ts.overtimeHours} hrs / الإضافي)`, 20, 116);
@@ -897,8 +886,7 @@ export default function EmployeeManagement() {
                       <th className="p-4">Iqama / ID No</th>
                       <th className="p-4">Nationality</th>
                       <th className="p-4">Trade</th>
-                      <th className="p-4">Base Salary</th>
-                      <th className="p-4">Allowance</th>
+                      <th className="p-4">Hourly Rate</th>
                       <th className="p-4 text-center">Card Scan</th>
                       <th className="p-4 text-right">Actions</th>
                     </tr>
@@ -917,8 +905,7 @@ export default function EmployeeManagement() {
                             {emp.trade}
                           </span>
                         </td>
-                        <td className="p-4 font-semibold">{emp.baseSalary} SAR</td>
-                        <td className="p-4 font-semibold text-on-surface-variant">{emp.allowance} SAR</td>
+                        <td className="p-4 font-semibold">{emp.hourlyRate} SAR</td>
                         <td className="p-4 text-center">
                           <button
                             onClick={() => handleViewCard(emp)}
@@ -1388,15 +1375,15 @@ export default function EmployeeManagement() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-outline uppercase tracking-wider block">Base Monthly Salary (SAR)</label>
+                  <label className="text-[10px] font-bold text-outline uppercase tracking-wider block">Hourly Rate (SAR)</label>
                   <div className="relative">
                     <DollarSign size={14} className="absolute left-3 top-2.5 text-outline" />
                     <input 
                       type="number"
                       required
                       min="0"
-                      value={empForm.baseSalary}
-                      onChange={(e) => setEmpForm({...empForm, baseSalary: Number(e.target.value) || 0})}
+                      value={empForm.hourlyRate}
+                      onChange={(e) => setEmpForm({...empForm, hourlyRate: Number(e.target.value) || 0})}
                       className="w-full border border-outline-variant/60 rounded-xl py-2 pl-8 pr-3 focus:outline-none text-xs font-semibold text-primary"
                     />
                   </div>
