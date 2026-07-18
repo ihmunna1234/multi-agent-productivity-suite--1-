@@ -1398,23 +1398,10 @@ export default function EmployeeManagement() {
                       type="number"
                       required
                       min="0"
+                      step="any"
                       value={empForm.hourlyRate}
                       onChange={(e) => setEmpForm({...empForm, hourlyRate: Number(e.target.value) || 0})}
                       className="w-full border border-outline-variant/60 rounded-xl py-2 pl-8 pr-3 focus:outline-none text-xs font-semibold text-primary"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-outline uppercase tracking-wider block">Monthly Fixed Allowance (SAR)</label>
-                  <div className="relative">
-                    <DollarSign size={14} className="absolute left-3 top-2.5 text-outline" />
-                    <input 
-                      type="number"
-                      required
-                      min="0"
-                      value={empForm.allowance}
-                      onChange={(e) => setEmpForm({...empForm, allowance: Number(e.target.value) || 0})}
-                      className="w-full border border-outline-variant/60 rounded-xl py-2 pl-8 pr-3 focus:outline-none text-xs font-semibold text-green-600"
                     />
                   </div>
                 </div>
