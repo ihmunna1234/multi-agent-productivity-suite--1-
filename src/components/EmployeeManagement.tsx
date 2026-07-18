@@ -139,6 +139,7 @@ interface TimesheetEntry {
   absentDays: number;
   otherAllowances: number;
   deductions: number;
+  advance: number;
   notes?: string;
 }
 
@@ -494,15 +495,17 @@ export default function EmployeeManagement() {
         absentDays: 0,
         otherAllowances: 0,
         deductions: 0,
+        advance: 0,
       };
 
-      const dailyRate = emp.baseSalary / 30;
-      const hourlyRate = dailyRate / 8;
+      // Normal working hours: 10 hrs/day, 6 days/week. Monthly total approx 260 hours.
+      const dailyRate = emp.baseSalary / 26;
+      const hourlyRate = dailyRate / 10;
 
       const basicPayEarned = dailyRate * ts.daysWorked;
-      const overtimeEarned = hourlyRate * 1.5 * ts.overtimeHours;
+      const overtimeEarned = hourlyRate * ts.overtimeHours; // Overtime is same as hourly rate
       const totalAllowance = emp.allowance + ts.otherAllowances;
-      const netSalary = basicPayEarned + totalAllowance - ts.deductions;
+      const netSalary = basicPayEarned + totalAllowance - ts.deductions - (ts.advance || 0);
 
       return {
         employee: emp,
@@ -541,6 +544,7 @@ export default function EmployeeManagement() {
       "Overtime Pay (SAR)": Math.round(row.overtimeEarned * 100) / 100,
       "Other Allowances (SAR)": row.timesheet.otherAllowances,
       "Deductions (SAR)": row.timesheet.deductions,
+      "Advance (SAR)": row.timesheet.advance || 0,
       "Net Salary (SAR)": Math.round(row.netSalary * 100) / 100,
       "Notes / Signature": row.timesheet.notes || "",
     }));
@@ -673,17 +677,21 @@ export default function EmployeeManagement() {
     doc.text("Custom Deductions / خصومات أخرى", 20, 168);
     doc.text(`${ts.deductions.toFixed(2)}`, 150, 168);
 
-    doc.line(15, 172, 195, 172);
+    // Row: Advance
+    doc.text("Advance / سلفة", 20, 176);
+    doc.text(`${(ts.advance || 0).toFixed(2)}`, 150, 176);
+
+    doc.line(15, 180, 195, 180);
 
     // Summary Block
     doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(15, 182, 180, 14, "F");
+    doc.rect(15, 188, 180, 14, "F");
 
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     doc.setFont("Helvetica", "bold");
-    doc.text("NET SALARY PAID / صافي الراتب المستحق", 20, 191);
-    doc.text(`${Math.round(netSalary * 100 / 100).toFixed(2)} SAR`, 150, 191);
+    doc.text("NET SALARY PAID / صافي الراتب المستحق", 20, 197);
+    doc.text(`${Math.round(netSalary * 100 / 100).toFixed(2)} SAR`, 150, 197);
 
     // Footer signatures
     doc.setTextColor(0, 0, 0);
@@ -1004,6 +1012,7 @@ export default function EmployeeManagement() {
                       <th className="p-4 text-center w-24">Absent Days</th>
                       <th className="p-4 text-center w-28">Other Allowance (SAR)</th>
                       <th className="p-4 text-center w-28">Deduction (SAR)</th>
+                      <th className="p-4 text-center w-28">Advance (SAR)</th>
                       <th className="p-4 w-60">Notes / Remarks</th>
                     </tr>
                   </thead>
@@ -1015,6 +1024,7 @@ export default function EmployeeManagement() {
                         absentDays: 0,
                         otherAllowances: 0,
                         deductions: 0,
+                        advance: 0,
                         notes: "",
                       };
 
@@ -1068,6 +1078,15 @@ export default function EmployeeManagement() {
                               value={entry.deductions}
                               onChange={(e) => handleTimesheetChange(emp.id, "deductions", Number(e.target.value) || 0)}
                               className="w-20 text-center border border-outline-variant/60 rounded-lg py-1 px-1.5 focus:outline-none font-semibold text-red-600"
+                            />
+                          </td>
+                          <td className="p-4 text-center">
+                            <input 
+                              type="number"
+                              min="0"
+                              value={entry.advance || 0}
+                              onChange={(e) => handleTimesheetChange(emp.id, "advance", Number(e.target.value) || 0)}
+                              className="w-20 text-center border border-outline-variant/60 rounded-lg py-1 px-1.5 focus:outline-none font-semibold text-orange-500"
                             />
                           </td>
                           <td className="p-4">
@@ -1148,6 +1167,7 @@ export default function EmployeeManagement() {
                       <th className="p-4 text-right">OT Earned</th>
                       <th className="p-4 text-right">Allowances</th>
                       <th className="p-4 text-right">Deductions</th>
+                      <th className="p-4 text-right">Advance</th>
                       <th className="p-4 text-right font-bold text-primary">Net Salary</th>
                       <th className="p-4 text-center w-28">Pay Slip</th>
                     </tr>
@@ -1167,6 +1187,7 @@ export default function EmployeeManagement() {
                         <td className="p-4 text-right text-blue-500 font-medium">{Math.round(row.overtimeEarned).toFixed(2)} SAR</td>
                         <td className="p-4 text-right text-green-600 font-medium">+{Math.round(row.totalAllowance).toFixed(2)} SAR</td>
                         <td className="p-4 text-right text-red-500 font-medium">-{Math.round(row.timesheet.deductions).toFixed(2)} SAR</td>
+                        <td className="p-4 text-right text-orange-500 font-medium">-{Math.round(row.timesheet.advance || 0).toFixed(2)} SAR</td>
                         <td className="p-4 text-right font-bold text-primary text-sm">{Math.round(row.netSalary).toFixed(2)} SAR</td>
                         <td className="p-4 text-center">
                           <button

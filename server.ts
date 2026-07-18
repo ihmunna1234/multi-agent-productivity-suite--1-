@@ -1626,6 +1626,7 @@ function mapTimesheetRow(row: any) {
     absentDays: row.absent_days,
     otherAllowances: Number(row.other_allowances),
     deductions: Number(row.deductions),
+    advance: Number(row.advance || 0),
     notes: row.notes,
   };
 }
@@ -1905,7 +1906,7 @@ app.post("/api/employee-management/timesheets", authMiddleware, async (req: expr
       return;
     }
 
-    const { id, projectId, employeeId, year, month, daysWorked, overtimeHours, absentDays, otherAllowances, deductions, notes } = req.body;
+    const { id, projectId, employeeId, year, month, daysWorked, overtimeHours, absentDays, otherAllowances, deductions, advance, notes } = req.body;
     if (!id || !projectId || !employeeId || !year || !month) {
       res.status(400).json({ error: "Timesheet id, projectId, employeeId, year, and month are required." });
       return;
@@ -1924,6 +1925,7 @@ app.post("/api/employee-management/timesheets", authMiddleware, async (req: expr
         absent_days: absentDays ?? 0,
         other_allowances: otherAllowances ?? 0,
         deductions: deductions ?? 0,
+        advance: advance ?? 0,
         notes: notes || null,
       }, { onConflict: "id" });
 
