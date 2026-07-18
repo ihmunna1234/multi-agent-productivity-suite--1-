@@ -1608,7 +1608,7 @@ function mapEmployeeRow(row: any) {
     dob: row.dob,
     nationality: row.nationality,
     trade: row.trade,
-    baseSalary: Number(row.base_salary),
+    hourlyRate: Number(row.base_salary),
     allowance: Number(row.allowance),
     createdAt: Number(row.created_at),
   };
@@ -1804,7 +1804,7 @@ app.post("/api/employee-management/employees", authMiddleware, async (req: expre
       return;
     }
 
-    const { id, projectId, name, nameArabic, iqamaNo, expiryDate, dob, nationality, trade, baseSalary, allowance, createdAt } = req.body;
+    const { id, projectId, name, nameArabic, iqamaNo, expiryDate, dob, nationality, trade, hourlyRate, allowance, createdAt } = req.body;
     if (!name || !iqamaNo || !projectId) {
       res.status(400).json({ error: "Employee name, iqamaNo, and projectId are required." });
       return;
@@ -1822,7 +1822,7 @@ app.post("/api/employee-management/employees", authMiddleware, async (req: expre
         dob: dob || null,
         nationality: nationality?.trim() || null,
         trade: trade || "Laborer",
-        base_salary: baseSalary || 0,
+        base_salary: hourlyRate || 0,
         allowance: allowance || 0,
         created_at: createdAt || Date.now(),
       }, { onConflict: "id" });
