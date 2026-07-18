@@ -134,7 +134,7 @@ interface TimesheetEntry {
   employeeId: string;
   year: number;
   month: number;
-  daysWorked: number;
+  regularHours: number;
   overtimeHours: number;
   absentDays: number;
   otherAllowances: number;
@@ -490,7 +490,7 @@ export default function EmployeeManagement() {
   const calculatedSalaryRows = useMemo(() => {
     return employees.map((emp) => {
       const ts = timesheets[emp.id] || {
-        daysWorked: 30,
+        regularHours: 260,
         overtimeHours: 0,
         absentDays: 0,
         otherAllowances: 0,
@@ -498,12 +498,11 @@ export default function EmployeeManagement() {
         advance: 0,
       };
 
-      // Normal working hours: 10 hrs/day, 6 days/week. Monthly total approx 260 hours.
-      const dailyRate = emp.baseSalary / 26;
-      const hourlyRate = dailyRate / 10;
+      // Purely hourly salary logic. Standard month = 260 hours.
+      const hourlyRate = emp.baseSalary / 260;
 
-      const basicPayEarned = dailyRate * ts.daysWorked;
-      const overtimeEarned = hourlyRate * ts.overtimeHours; // Overtime is same as hourly rate
+      const basicPayEarned = hourlyRate * ts.regularHours;
+      const overtimeEarned = hourlyRate * ts.overtimeHours;
       const totalAllowance = emp.allowance + ts.otherAllowances;
       const netSalary = basicPayEarned + totalAllowance - ts.deductions - (ts.advance || 0);
 
@@ -538,7 +537,7 @@ export default function EmployeeManagement() {
       "Nationality": row.employee.nationality || "-",
       "Base Salary (SAR)": row.employee.baseSalary,
       "Fixed Allowance (SAR)": row.employee.allowance,
-      "Days Worked": row.timesheet.daysWorked,
+      "Regular Hours": row.timesheet.regularHours,
       "Basic Pay Earned (SAR)": Math.round(row.basicPayEarned * 100) / 100,
       "Overtime Hours": row.timesheet.overtimeHours,
       "Overtime Pay (SAR)": Math.round(row.overtimeEarned * 100) / 100,
@@ -669,7 +668,7 @@ export default function EmployeeManagement() {
 
     // Row: Absent Deductions
     doc.setFont("Helvetica", "normal");
-    const absentDeduction = ts.absentDays * row.dailyRate;
+    const absentDeduction = ts.absentDays * 10 * row.hourlyRate; // 10 hours per day
     doc.text(`Absences Deductions (${ts.absentDays} days / غياب)`, 20, 160);
     doc.text(`${absentDeduction.toFixed(2)}`, 150, 160);
 
@@ -1007,7 +1006,7 @@ export default function EmployeeManagement() {
                   <thead>
                     <tr className="bg-surface-container-low text-on-surface-variant font-bold border-b border-outline-variant/60">
                       <th className="p-4 w-52">Employee Name & Trade</th>
-                      <th className="p-4 text-center w-24">Worked Days (Default 30)</th>
+                      <th className="p-4 text-center w-24">Regular Hrs (Default 260)</th>
                       <th className="p-4 text-center w-24">Overtime (Hrs)</th>
                       <th className="p-4 text-center w-24">Absent Days</th>
                       <th className="p-4 text-center w-28">Other Allowance (SAR)</th>
@@ -1019,7 +1018,7 @@ export default function EmployeeManagement() {
                   <tbody className="divide-y divide-outline-variant/40">
                     {employees.map((emp) => {
                       const entry = timesheets[emp.id] || {
-                        daysWorked: 30,
+                        regularHours: 260,
                         overtimeHours: 0,
                         absentDays: 0,
                         otherAllowances: 0,
@@ -1038,9 +1037,8 @@ export default function EmployeeManagement() {
                             <input 
                               type="number"
                               min="0"
-                              max="31"
-                              value={entry.daysWorked}
-                              onChange={(e) => handleTimesheetChange(emp.id, "daysWorked", Number(e.target.value) || 0)}
+                              value={entry.regularHours}
+                              onChange={(e) => handleTimesheetChange(emp.id, "regularHours", Number(e.target.value) || 0)}
                               className="w-16 text-center border border-outline-variant/60 rounded-lg py-1 px-1.5 focus:outline-none font-semibold"
                             />
                           </td>
@@ -1162,7 +1160,7 @@ export default function EmployeeManagement() {
                     <tr className="bg-surface-container-low text-on-surface-variant font-bold border-b border-outline-variant/60">
                       <th className="p-4">Employee</th>
                       <th className="p-4">Trade</th>
-                      <th className="p-4 text-center">Worked / Abs</th>
+                      <th className="p-4 text-center">Reg. Hrs / Abs</th>
                       <th className="p-4 text-right">Basic Earned</th>
                       <th className="p-4 text-right">OT Earned</th>
                       <th className="p-4 text-right">Allowances</th>
@@ -1181,7 +1179,7 @@ export default function EmployeeManagement() {
                         </td>
                         <td className="p-4">{row.employee.trade}</td>
                         <td className="p-4 text-center font-medium">
-                          {row.timesheet.daysWorked}d / {row.timesheet.absentDays}d
+                          {row.timesheet.regularHours}h / {row.timesheet.absentDays}d
                         </td>
                         <td className="p-4 text-right font-medium">{Math.round(row.basicPayEarned).toFixed(2)} SAR</td>
                         <td className="p-4 text-right text-blue-500 font-medium">{Math.round(row.overtimeEarned).toFixed(2)} SAR</td>
