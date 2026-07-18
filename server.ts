@@ -1864,6 +1864,48 @@ function mapTimesheetRow(row: any) {
   };
 }
 
+// ─── GET /api/employee-management/health — Public diagnostic endpoint ─────────
+app.get("/api/employee-management/health", async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.json({
+        status: "error",
+        supabaseConfigured: false,
+        supabaseUrl: process.env.SUPABASE_URL ? "SET (length: " + process.env.SUPABASE_URL.length + ")" : "NOT SET",
+        supabaseKey: process.env.SUPABASE_ANON_KEY ? "SET (length: " + process.env.SUPABASE_ANON_KEY.length + ")" : "NOT SET",
+        message: "Supabase is not configured. SUPABASE_URL or SUPABASE_ANON_KEY is missing."
+      });
+      return;
+    }
+
+    // Try a simple query to test connectivity
+    const { data, error } = await supabase.from("em_projects").select("id").limit(1);
+    if (error) {
+      res.json({
+        status: "error",
+        supabaseConfigured: true,
+        supabaseUrl: process.env.SUPABASE_URL ? "SET" : "NOT SET",
+        dbError: error.message,
+        dbCode: error.code,
+        dbHint: error.hint || null,
+        dbDetails: error.details || null,
+      });
+      return;
+    }
+
+    res.json({
+      status: "ok",
+      supabaseConfigured: true,
+      tablesAccessible: true,
+      projectCount: data?.length ?? 0,
+      message: "Supabase connection is healthy."
+    });
+  } catch (err: any) {
+    res.json({ status: "error", message: err.message });
+  }
+});
+
 // ─── GET /api/employee-management/projects ────────────────────────────────────
 app.get("/api/employee-management/projects", authMiddleware, async (req: express.Request, res: express.Response) => {
   try {
