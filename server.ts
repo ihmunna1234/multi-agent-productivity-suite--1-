@@ -89,7 +89,7 @@ app.use((req, res, next) => {
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
@@ -1814,6 +1814,366 @@ To fully utilize advanced multi-lingual and formatting recognition, ensure GEMIN
     const correlationId = Math.random().toString(36).substring(2, 10);
     console.error(`[Error ID: ${correlationId}] PDF page OCR endpoint server error:`, err);
     res.status(500).json({ error: "Failed to process document page with AI OCR engine", correlationId });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── EMPLOYEE MANAGEMENT SYSTEM API ROUTES (Supabase-backed) ─────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Helper: map snake_case DB rows to camelCase frontend format
+function mapProjectRow(row: any) {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    createdAt: Number(row.created_at),
+  };
+}
+
+function mapEmployeeRow(row: any) {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    name: row.name,
+    nameArabic: row.name_arabic,
+    iqamaNo: row.iqama_no,
+    expiryDate: row.expiry_date,
+    dob: row.dob,
+    nationality: row.nationality,
+    trade: row.trade,
+    baseSalary: Number(row.base_salary),
+    allowance: Number(row.allowance),
+    createdAt: Number(row.created_at),
+  };
+}
+
+function mapTimesheetRow(row: any) {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    employeeId: row.employee_id,
+    year: row.year,
+    month: row.month,
+    daysWorked: row.days_worked,
+    overtimeHours: Number(row.overtime_hours),
+    absentDays: row.absent_days,
+    otherAllowances: Number(row.other_allowances),
+    deductions: Number(row.deductions),
+    notes: row.notes,
+  };
+}
+
+// ─── GET /api/employee-management/projects ────────────────────────────────────
+app.get("/api/employee-management/projects", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY." });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("em_projects")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    res.json((data || []).map(mapProjectRow));
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to load projects:", err.message);
+    res.status(500).json({ error: "Failed to load projects from database." });
+  }
+});
+
+// ─── POST /api/employee-management/projects ───────────────────────────────────
+app.post("/api/employee-management/projects", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const { id, name, description, createdAt } = req.body;
+    if (!name || !name.trim()) {
+      res.status(400).json({ error: "Project name is required." });
+      return;
+    }
+
+    const { error } = await supabase
+      .from("em_projects")
+      .upsert({
+        id,
+        name: name.trim(),
+        description: description?.trim() || null,
+        created_at: createdAt || Date.now(),
+      }, { onConflict: "id" });
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to save project:", err.message);
+    res.status(500).json({ error: "Failed to save project to database." });
+  }
+});
+
+// ─── DELETE /api/employee-management/projects/:id ─────────────────────────────
+app.delete("/api/employee-management/projects/:id", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Project ID is required." });
+      return;
+    }
+
+    // CASCADE will auto-delete employees, timesheets, and images
+    const { error } = await supabase
+      .from("em_projects")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to delete project:", err.message);
+    res.status(500).json({ error: "Failed to delete project from database." });
+  }
+});
+
+// ─── GET /api/employee-management/employees ───────────────────────────────────
+app.get("/api/employee-management/employees", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const projectId = req.query.projectId as string;
+    if (!projectId) {
+      res.status(400).json({ error: "projectId query parameter is required." });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("em_employees")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: true });
+
+    if (error) throw error;
+    res.json((data || []).map(mapEmployeeRow));
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to load employees:", err.message);
+    res.status(500).json({ error: "Failed to load employees from database." });
+  }
+});
+
+// ─── POST /api/employee-management/employees ──────────────────────────────────
+app.post("/api/employee-management/employees", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const { id, projectId, name, nameArabic, iqamaNo, expiryDate, dob, nationality, trade, baseSalary, allowance, createdAt } = req.body;
+    if (!name || !iqamaNo || !projectId) {
+      res.status(400).json({ error: "Employee name, iqamaNo, and projectId are required." });
+      return;
+    }
+
+    const { error } = await supabase
+      .from("em_employees")
+      .upsert({
+        id,
+        project_id: projectId,
+        name: name.trim(),
+        name_arabic: nameArabic?.trim() || null,
+        iqama_no: iqamaNo.trim(),
+        expiry_date: expiryDate || null,
+        dob: dob || null,
+        nationality: nationality?.trim() || null,
+        trade: trade || "Laborer",
+        base_salary: baseSalary || 0,
+        allowance: allowance || 0,
+        created_at: createdAt || Date.now(),
+      }, { onConflict: "id" });
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to save employee:", err.message);
+    res.status(500).json({ error: "Failed to save employee to database." });
+  }
+});
+
+// ─── DELETE /api/employee-management/employees/:id ────────────────────────────
+app.delete("/api/employee-management/employees/:id", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ error: "Employee ID is required." });
+      return;
+    }
+
+    // CASCADE will auto-delete timesheets and images for this employee
+    const { error } = await supabase
+      .from("em_employees")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to delete employee:", err.message);
+    res.status(500).json({ error: "Failed to delete employee from database." });
+  }
+});
+
+// ─── GET /api/employee-management/timesheets ──────────────────────────────────
+app.get("/api/employee-management/timesheets", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const projectId = req.query.projectId as string;
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+
+    if (!projectId || !year || !month) {
+      res.status(400).json({ error: "projectId, year, and month query parameters are required." });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("em_timesheets")
+      .select("*")
+      .eq("project_id", projectId)
+      .eq("year", year)
+      .eq("month", month);
+
+    if (error) throw error;
+    res.json((data || []).map(mapTimesheetRow));
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to load timesheets:", err.message);
+    res.status(500).json({ error: "Failed to load timesheets from database." });
+  }
+});
+
+// ─── POST /api/employee-management/timesheets ─────────────────────────────────
+app.post("/api/employee-management/timesheets", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const { id, projectId, employeeId, year, month, daysWorked, overtimeHours, absentDays, otherAllowances, deductions, notes } = req.body;
+    if (!id || !projectId || !employeeId || !year || !month) {
+      res.status(400).json({ error: "Timesheet id, projectId, employeeId, year, and month are required." });
+      return;
+    }
+
+    const { error } = await supabase
+      .from("em_timesheets")
+      .upsert({
+        id,
+        project_id: projectId,
+        employee_id: employeeId,
+        year,
+        month,
+        days_worked: daysWorked ?? 30,
+        overtime_hours: overtimeHours ?? 0,
+        absent_days: absentDays ?? 0,
+        other_allowances: otherAllowances ?? 0,
+        deductions: deductions ?? 0,
+        notes: notes || null,
+      }, { onConflict: "id" });
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to save timesheet:", err.message);
+    res.status(500).json({ error: "Failed to save timesheet to database." });
+  }
+});
+
+// ─── GET /api/employee-management/images/:employeeId ──────────────────────────
+app.get("/api/employee-management/images/:employeeId", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const { employeeId } = req.params;
+    if (!employeeId) {
+      res.status(400).json({ error: "Employee ID is required." });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("em_iqama_images")
+      .select("image_base64")
+      .eq("employee_id", employeeId)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error; // PGRST116 = no rows found
+    res.json({ imageBase64: data?.image_base64 || null });
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to load card image:", err.message);
+    res.status(500).json({ error: "Failed to load card scan from database." });
+  }
+});
+
+// ─── POST /api/employee-management/images ─────────────────────────────────────
+app.post("/api/employee-management/images", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const { employeeId, imageBase64 } = req.body;
+    if (!employeeId || !imageBase64) {
+      res.status(400).json({ error: "employeeId and imageBase64 are required." });
+      return;
+    }
+
+    const { error } = await supabase
+      .from("em_iqama_images")
+      .upsert({
+        employee_id: employeeId,
+        image_base64: imageBase64,
+        created_at: Date.now(),
+      }, { onConflict: "employee_id" });
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to save card image:", err.message);
+    res.status(500).json({ error: "Failed to save card scan to database." });
   }
 });
 
