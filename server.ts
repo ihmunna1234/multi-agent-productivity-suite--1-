@@ -1628,6 +1628,7 @@ function mapTimesheetRow(row: any) {
     deductions: Number(row.deductions),
     advance: Number(row.advance || 0),
     notes: row.notes,
+    isPaid: row.is_paid === true,
   };
 }
 
@@ -1906,7 +1907,7 @@ app.post("/api/employee-management/timesheets", authMiddleware, async (req: expr
       return;
     }
 
-    const { id, projectId, employeeId, year, month, regularHours, overtimeHours, absentDays, otherAllowances, deductions, advance, notes } = req.body;
+    const { id, projectId, employeeId, year, month, regularHours, overtimeHours, absentDays, otherAllowances, deductions, advance, notes, isPaid } = req.body;
     if (!id || !projectId || !employeeId || !year || !month) {
       res.status(400).json({ error: "Timesheet id, projectId, employeeId, year, and month are required." });
       return;

@@ -140,6 +140,7 @@ interface TimesheetEntry {
   deductions: number;
   advance: number;
   notes?: string;
+  isPaid?: boolean;
 }
 
 export default function EmployeeManagement() {
@@ -147,7 +148,8 @@ export default function EmployeeManagement() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [timesheets, setTimesheets] = useState<Record<string, TimesheetEntry>>({}); // employeeId -> entry
+  const [timesheets, setTimesheets] = useState<Record<string, TimesheetEntry>>({});
+  const [allTimesheets, setAllTimesheets] = useState<TimesheetEntry[]>([]); // employeeId -> entry
 
   // Timesheet date selectors
   const [year, setYear] = useState<number>(new Date().getFullYear());
@@ -218,6 +220,15 @@ export default function EmployeeManagement() {
       setEmployees(emps);
 
       const tsList = await getTimesheetsByProject(selectedProjectId, year, month);
+
+      // Fetch all timesheets to calculate past dues
+      try {
+        const allTsRes = await apiFetch(`/api/employee-management/timesheets/all?projectId=${selectedProjectId}`);
+        if (allTsRes.ok) {
+          const allTs = await allTsRes.json();
+          setAllTimesheets(allTs);
+        }
+      } catch(e) { console.error(e); }
       const tsMap: Record<string, TimesheetEntry> = {};
       tsList.forEach((t: TimesheetEntry) => {
         tsMap[t.employeeId] = t;
@@ -507,6 +518,20 @@ export default function EmployeeManagement() {
       const totalAllowance = ts.otherAllowances;
       const netSalary = basicPayEarned + totalAllowance - ts.deductions - (ts.advance || 0);
 
+      // Calculate previous due
+      let previousDue = 0;
+      allTimesheets.forEach(pastTs => {
+        if (pastTs.employeeId === emp.id && !pastTs.isPaid) {
+          if (pastTs.year < year || (pastTs.year === year && pastTs.month < month)) {
+            const pBasic = hourlyRate * pastTs.regularHours;
+            const pOT = hourlyRate * pastTs.overtimeHours;
+            const pNet = pBasic + pOT + pastTs.otherAllowances - pastTs.deductions - (pastTs.advance || 0);
+            previousDue += pNet;
+          }
+        }
+      });
+      const netPayable = netSalary + previousDue;
+
       return {
         employee: emp,
         timesheet: ts,
@@ -516,9 +541,11 @@ export default function EmployeeManagement() {
         overtimeEarned,
         totalAllowance,
         netSalary,
+        previousDue,
+        netPayable,
       };
     });
-  }, [employees, timesheets]);
+  }, [employees, timesheets, allTimesheets, year, month]);
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June", 
@@ -526,6 +553,30 @@ export default function EmployeeManagement() {
   ];
 
   // --- Export Excel ---
+  
+  const handleTogglePaid = async (row: typeof calculatedSalaryRows[0]) => {
+    const newStatus = !row.timesheet.isPaid;
+    const entry = { ...row.timesheet, isPaid: newStatus };
+    
+    // Optimistic UI updates
+    setTimesheets(prev => ({ ...prev, [row.employee.id]: entry }));
+    setAllTimesheets(prev => prev.map(t => t.id === entry.id ? { ...t, isPaid: newStatus } : t));
+
+    try {
+      // Create a dummy body if it's new
+      const res = await apiFetch("/api/employee-management/timesheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry)
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to update paid status");
+      // Revert optimism if needed (ignored for simplicity)
+    }
+  };
+
   const handleExportExcel = () => {
     if (calculatedSalaryRows.length === 0) return;
 
@@ -1171,7 +1222,10 @@ export default function EmployeeManagement() {
                       <th className="p-4 text-right">Allowances</th>
                       <th className="p-4 text-right">Deductions</th>
                       <th className="p-4 text-right">Advance</th>
-                      <th className="p-4 text-right font-bold text-primary">Net Salary</th>
+                      <th className="p-4 text-right font-bold text-primary">Current Net</th>
+                      <th className="p-4 text-right text-orange-600">Past Due</th>
+                      <th className="p-4 text-right font-bold text-teal-600">Total Payable</th>
+                      <th className="p-4 text-center">Status</th>
                       <th className="p-4 text-center w-28">Pay Slip</th>
                     </tr>
                   </thead>
@@ -1192,6 +1246,16 @@ export default function EmployeeManagement() {
                         <td className="p-4 text-right text-red-500 font-medium">-{Math.round(row.timesheet.deductions).toFixed(2)} SAR</td>
                         <td className="p-4 text-right text-orange-500 font-medium">-{Math.round(row.timesheet.advance || 0).toFixed(2)} SAR</td>
                         <td className="p-4 text-right font-bold text-primary text-sm">{Math.round(row.netSalary).toFixed(2)} SAR</td>
+                        <td className="p-4 text-right text-orange-600 font-medium">{Math.round(row.previousDue).toFixed(2)} SAR</td>
+                        <td className="p-4 text-right font-bold text-teal-600 text-sm">{Math.round(row.netPayable).toFixed(2)} SAR</td>
+                        <td className="p-4 text-center">
+                          <button
+                            onClick={() => handleTogglePaid(row)}
+                            className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${row.timesheet.isPaid ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                          >
+                            {row.timesheet.isPaid ? 'Paid' : 'Unpaid'}
+                          </button>
+                        </td>
                         <td className="p-4 text-center">
                           <button
                             onClick={() => handleDownloadPaySlip(row)}
