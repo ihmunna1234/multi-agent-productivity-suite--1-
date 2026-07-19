@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Users, Building2, Wallet, FileText, Download, Briefcase, Calculator, CheckCircle2, Scan, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Users, Building2, Wallet, FileText, Download, Briefcase, Calculator, CheckCircle2, Scan, Edit, Trash2, UploadCloud } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
 import html2canvas from "html2canvas";
@@ -80,6 +80,74 @@ export default function ManpowerERP() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const [isScanning, setIsScanning] = useState(false);
+  const [isUploadingCSV, setIsUploadingCSV] = useState(false);
+
+  const handleBulkUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingCSV(true);
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result as string;
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length <= 1) {
+         alert("CSV is empty or missing data.");
+         setIsUploadingCSV(false);
+         return;
+      }
+      
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/ /g, '_'));
+      
+      const workersToInsert = [];
+      for (let i = 1; i < lines.length; i++) {
+        // Handle basic CSV splitting (ignoring commas inside quotes for now as it's a simple template)
+        const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        const worker: any = { id: crypto.randomUUID(), status: "ACTIVE" };
+        
+        headers.forEach((header, index) => {
+           if (header === 'iqama_no' || header === 'iqama') worker.iqama_no = values[index];
+           if (header === 'full_name' || header === 'name') worker.full_name = values[index];
+           if (header === 'arabic_name') worker.arabic_name = values[index];
+           if (header === 'hourly_rate' || header === 'rate') worker.hourly_rate = Number(values[index]) || 0;
+           if (header === 'trade') worker.trade = values[index];
+           if (header === 'nationality') worker.nationality = values[index];
+           if (header === 'bank_name' || header === 'bank') worker.bank_name = values[index];
+           if (header === 'iban') worker.iban = values[index];
+        });
+        
+        if (worker.iqama_no && worker.full_name) {
+           workersToInsert.push(worker);
+        }
+      }
+      
+      if (workersToInsert.length === 0) {
+        alert("No valid workers found. Ensure columns like 'iqama_no' and 'full_name' exist.");
+        setIsUploadingCSV(false);
+        return;
+      }
+
+      try {
+        const res = await apiFetch("/api/manpower-erp/workers/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ workers: workersToInsert })
+        });
+        if (res.ok) {
+           alert(`Successfully added ${workersToInsert.length} workers.`);
+           fetchData();
+        } else {
+           alert("Failed to upload workers. Check API logs.");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      setIsUploadingCSV(false);
+      e.target.value = ''; // reset input
+    };
+    reader.readAsText(file);
+  };
+
   const payslipRef = React.useRef<HTMLDivElement>(null);
   const [payslipData, setPayslipData] = useState<MonthlyHour | null>(null);
 
@@ -307,6 +375,11 @@ export default function ManpowerERP() {
                   {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   <option value="unassigned">Unassigned</option>
                 </select>
+                
+                <label className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors">
+                  <UploadCloud size={18} /> {isUploadingCSV ? "Uploading..." : "Bulk CSV"}
+                  <input type="file" accept=".csv" className="hidden" onChange={handleBulkUpload} disabled={isUploadingCSV} />
+                </label>
                 <button onClick={() => { setEditingWorker(null); setShowWorkerModal(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"><Plus size={18} /> Add Worker</button>
               </div>
             </div>

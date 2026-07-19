@@ -2056,6 +2056,20 @@ app.post("/api/employee-management/images", authMiddleware, async (req: express.
     }
   });
 
+  app.post("/api/manpower-erp/workers/bulk", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { workers } = req.body;
+      const { error } = await supabase.from("erp_workers").upsert(workers);
+      if (error) throw error;
+      res.json({ success: true, count: workers.length });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post("/api/manpower-erp/workers", authMiddleware, async (req: express.Request, res: express.Response) => {
     try {
       const supabase = getSupabaseClient();
