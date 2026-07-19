@@ -20,6 +20,8 @@ export default function ManpowerERP() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [ledger, setLedger] = useState<Ledger[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
+  const [filterYear, setFilterYear] = useState(new Date().getFullYear());
 
   // Forms
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -204,7 +206,10 @@ export default function ManpowerERP() {
                     </tr>
                   ))}
                   {ledger.filter(l => l.outstanding_balance > 0).length === 0 && <tr><td colSpan={5} className="p-8 text-center text-slate-500">No outstanding balances.</td></tr>}
-                </tbody>
+                {hours.filter(h => h.month === filterMonth && h.year === filterYear).length === 0 && (
+                      <tr><td colSpan={7} className="p-8 text-center text-slate-500 font-medium">No timesheets recorded for this month.</td></tr>
+                    )}
+                  </tbody>
               </table>
             </div>
           </div>
@@ -262,13 +267,22 @@ export default function ManpowerERP() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-slate-800">Monthly Hours (Timesheets)</h2>
-              <button onClick={() => setShowHoursModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"><Plus size={18} /> Add Timesheet</button>
+              <div className="flex items-center gap-4">
+                <div className="flex bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+                  <select value={filterMonth} onChange={e => setFilterMonth(Number(e.target.value))} className="bg-transparent border-none outline-none font-medium text-slate-700 px-2 cursor-pointer">
+                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => <option key={m} value={m}>{new Date(0, m-1).toLocaleString('default', { month: 'long' })}</option>)}
+                  </select>
+                  <div className="w-px bg-slate-200 mx-2"></div>
+                  <input type="number" value={filterYear} onChange={e => setFilterYear(Number(e.target.value))} className="bg-transparent border-none outline-none font-medium text-slate-700 w-20 text-center" />
+                </div>
+                <button onClick={() => setShowHoursModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"><Plus size={18} /> Add Timesheet</button>
+              </div>
             </div>
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase"><tr><th className="p-4">Worker</th><th className="p-4">Month/Year</th><th className="p-4">Project</th><th className="p-4">Reg Hrs</th><th className="p-4">Rate</th><th className="p-4">Net Payable</th><th className="p-4">Action</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">
-                  {hours.map(h => (
+                  {hours.filter(h => h.month === filterMonth && h.year === filterYear).map(h => (
                     <tr key={h.id} className="hover:bg-slate-50">
                       <td className="p-4 font-bold text-slate-900">{h.erp_workers?.full_name} <br/><span className="font-mono font-normal text-xs text-slate-500">{h.erp_workers?.iqama_no}</span></td>
                       <td className="p-4 text-slate-600">{h.month}/{h.year}</td>
