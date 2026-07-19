@@ -1038,159 +1038,226 @@ export default function EmployeeManagement() {
 
       {/* --- Tab Content: Monthly Timesheets --- */}
       {activeTab === "timesheets" && (
-        <div className="space-y-4">
+        <div className="space-y-5">
+
+          {/* ── Header Row ── */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-on-background">Attendance & Hours Timesheet</h3>
-              <p className="text-[11px] text-outline">Update Monthly worked days, overtime hours, and salary modifications.</p>
+              <h3 className="text-base font-bold text-on-background">Monthly Timesheet</h3>
+              <p className="text-[11px] text-outline">Select a month, bulk-fill hours, adjust per employee, then submit all at once.</p>
             </div>
-            
-            {/* Year & Month selectors */}
-            <div className="flex items-center gap-2">
-              <select 
-                value={month} 
+
+            {/* Month + Year pickers */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <select
+                value={month}
                 onChange={(e) => setMonth(Number(e.target.value))}
-                className="bg-surface border border-outline-variant/60 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none cursor-pointer"
+                className="bg-surface border border-outline-variant/60 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none cursor-pointer"
               >
                 {monthNames.map((name, idx) => (
                   <option key={name} value={idx + 1}>{name}</option>
                 ))}
               </select>
-              <select 
-                value={year} 
+              <select
+                value={year}
                 onChange={(e) => setYear(Number(e.target.value))}
-                className="bg-surface border border-outline-variant/60 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none cursor-pointer"
+                className="bg-surface border border-outline-variant/60 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none cursor-pointer"
               >
-                {[2025, 2026, 2027, 2028].map(y => (
+                {[2024, 2025, 2026, 2027, 2028].map(y => (
                   <option key={y} value={y}>{y}</option>
                 ))}
               </select>
-              <button
-                onClick={handleSaveTimesheet}
-                disabled={actionLoading || employees.length === 0}
-                className="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 cursor-pointer shadow-sm shadow-primary/20 transition-all"
-              >
-                {actionLoading ? "Saving..." : "Save Timesheet"}
-              </button>
             </div>
           </div>
 
           {dataLoading ? (
             <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-12 flex flex-col items-center justify-center">
               <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
-              <h4 className="font-bold text-on-background text-sm font-sans">Loading...</h4>
-              <p className="text-xs text-outline mt-1 mb-4">Fetching data from the database.</p>
+              <h4 className="font-bold text-on-background text-sm">Loading timesheet data...</h4>
             </div>
           ) : employees.length === 0 ? (
             <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-12 flex flex-col items-center justify-center">
               <Calendar size={48} className="text-outline/50 mb-3" />
-              <h4 className="font-bold text-on-background text-sm font-sans">No Employees Registered</h4>
-              <p className="text-xs text-outline mt-1 mb-4">Please add employee profiles under the "Employees" tab first.</p>
+              <h4 className="font-bold text-on-background text-sm">No Employees Registered</h4>
+              <p className="text-xs text-outline mt-1">Add employee profiles under the "Employees" tab first.</p>
             </div>
           ) : (
-            <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl overflow-hidden shadow-xs">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-surface-container-low text-on-surface-variant font-bold border-b border-outline-variant/60">
-                      <th className="p-4 w-52">Employee Name & Trade</th>
-                      <th className="p-4 text-center w-24">Regular Hrs (Default 0)</th>
-                      <th className="p-4 text-center w-24">Overtime (Hrs)</th>
-                      <th className="p-4 text-center w-24">Absent Days</th>
-                      <th className="p-4 text-center w-28">Other Allowance (SAR)</th>
-                      <th className="p-4 text-center w-28">Deduction (SAR)</th>
-                      <th className="p-4 text-center w-28">Advance (SAR)</th>
-                      <th className="p-4 w-60">Notes / Remarks</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant/40">
-                    {employees.map((emp) => {
-                      const entry = timesheets[emp.id] || {
-                        regularHours: 0,
-                        overtimeHours: 0,
-                        absentDays: 0,
-                        otherAllowances: 0,
-                        deductions: 0,
-                        advance: 0,
-                        notes: "",
-                      };
-
-                      return (
-                        <tr key={emp.id} className="hover:bg-surface-container-lowest/50 transition-colors">
-                          <td className="p-4">
-                            <div className="font-semibold text-on-background">{emp.name}</div>
-                            <div className="text-[10px] text-outline mt-0.5">{emp.trade} • {emp.iqamaNo}</div>
-                          </td>
-                          <td className="p-4 text-center">
-                            <input 
-                              type="number"
-                              min="0"
-                              value={entry.regularHours}
-                              onChange={(e) => handleTimesheetChange(emp.id, "regularHours", Number(e.target.value) || 0)}
-                              className="w-16 text-center border border-outline-variant/60 rounded-lg py-1 px-1.5 focus:outline-none font-semibold"
-                            />
-                          </td>
-                          <td className="p-4 text-center">
-                            <input 
-                              type="number"
-                              min="0"
-                              value={entry.overtimeHours}
-                              onChange={(e) => handleTimesheetChange(emp.id, "overtimeHours", Number(e.target.value) || 0)}
-                              className="w-16 text-center border border-outline-variant/60 rounded-lg py-1 px-1.5 focus:outline-none font-semibold text-blue-500"
-                            />
-                          </td>
-                          <td className="p-4 text-center">
-                            <input 
-                              type="number"
-                              min="0"
-                              value={entry.absentDays}
-                              onChange={(e) => handleTimesheetChange(emp.id, "absentDays", Number(e.target.value) || 0)}
-                              className="w-16 text-center border border-outline-variant/60 rounded-lg py-1 px-1.5 focus:outline-none font-semibold text-red-500"
-                            />
-                          </td>
-                          <td className="p-4 text-center">
-                            <input 
-                              type="number"
-                              min="0"
-                              value={entry.otherAllowances}
-                              onChange={(e) => handleTimesheetChange(emp.id, "otherAllowances", Number(e.target.value) || 0)}
-                              className="w-20 text-center border border-outline-variant/60 rounded-lg py-1 px-1.5 focus:outline-none font-semibold text-green-600"
-                            />
-                          </td>
-                          <td className="p-4 text-center">
-                            <input 
-                              type="number"
-                              min="0"
-                              value={entry.deductions}
-                              onChange={(e) => handleTimesheetChange(emp.id, "deductions", Number(e.target.value) || 0)}
-                              className="w-20 text-center border border-outline-variant/60 rounded-lg py-1 px-1.5 focus:outline-none font-semibold text-red-600"
-                            />
-                          </td>
-                          <td className="p-4 text-center">
-                            <input 
-                              type="number"
-                              min="0"
-                              value={entry.advance || 0}
-                              onChange={(e) => handleTimesheetChange(emp.id, "advance", Number(e.target.value) || 0)}
-                              className="w-20 text-center border border-outline-variant/60 rounded-lg py-1 px-1.5 focus:outline-none font-semibold text-orange-500"
-                            />
-                          </td>
-                          <td className="p-4">
-                            <input 
-                              type="text"
-                              placeholder="e.g. sick leave, travel allowance, etc."
-                              value={entry.notes || ""}
-                              onChange={(e) => handleTimesheetChange(emp.id, "notes", e.target.value)}
-                              className="w-full border border-outline-variant/60 rounded-lg py-1 px-2.5 focus:outline-none text-xs"
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+            <>
+              {/* ── Bulk Fill Bar ── */}
+              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock size={15} className="text-primary" />
+                  <span className="text-xs font-bold text-primary">Bulk Fill — Apply same values to ALL employees</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                  {[
+                    { key: "regularHours", label: "Reg. Hours", color: "text-on-background", placeholder: "e.g. 208" },
+                    { key: "overtimeHours", label: "OT Hours", color: "text-blue-500", placeholder: "e.g. 20" },
+                    { key: "absentDays", label: "Absent Days", color: "text-red-500", placeholder: "e.g. 0" },
+                    { key: "otherAllowances", label: "Allowance", color: "text-green-600", placeholder: "e.g. 500" },
+                    { key: "deductions", label: "Deductions", color: "text-red-600", placeholder: "e.g. 0" },
+                    { key: "advance", label: "Advance", color: "text-orange-500", placeholder: "e.g. 0" },
+                  ].map(({ key, label, color, placeholder }) => (
+                    <div key={key} className="space-y-1">
+                      <label className={`text-[9px] font-bold uppercase tracking-wider block ${color}`}>{label}</label>
+                      <div className="flex gap-1">
+                        <input
+                          id={`bulk-${key}`}
+                          type="number"
+                          min="0"
+                          placeholder={placeholder}
+                          className={`w-full border border-primary/30 bg-surface rounded-lg py-1.5 px-2 focus:outline-none text-xs font-semibold ${color}`}
+                        />
+                        <button
+                          type="button"
+                          title={`Apply ${label} to all`}
+                          onClick={() => {
+                            const val = Number((document.getElementById(`bulk-${key}`) as HTMLInputElement)?.value) || 0;
+                            setTimesheets(prev => {
+                              const updated = { ...prev };
+                              employees.forEach(emp => {
+                                updated[emp.id] = {
+                                  ...updated[emp.id],
+                                  id: updated[emp.id]?.id || `${selectedProjectId}_${year}_${month}_${emp.id}`,
+                                  projectId: selectedProjectId,
+                                  employeeId: emp.id,
+                                  year,
+                                  month,
+                                  regularHours: updated[emp.id]?.regularHours ?? 0,
+                                  overtimeHours: updated[emp.id]?.overtimeHours ?? 0,
+                                  absentDays: updated[emp.id]?.absentDays ?? 0,
+                                  otherAllowances: updated[emp.id]?.otherAllowances ?? 0,
+                                  deductions: updated[emp.id]?.deductions ?? 0,
+                                  advance: updated[emp.id]?.advance ?? 0,
+                                  [key]: val,
+                                };
+                              });
+                              return updated;
+                            });
+                          }}
+                          className="px-2 py-1 rounded-lg bg-primary text-on-primary text-[9px] font-bold hover:bg-primary/90 cursor-pointer transition-all whitespace-nowrap"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+
+              {/* ── Per-Employee Editable Table ── */}
+              <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl overflow-hidden shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-surface-container-low text-on-surface-variant font-bold border-b border-outline-variant/60 text-[10px]">
+                        <th className="p-3 w-48">Employee</th>
+                        <th className="p-3 text-center">Reg. Hrs</th>
+                        <th className="p-3 text-center text-blue-500">OT Hrs</th>
+                        <th className="p-3 text-center text-red-500">Absent Days</th>
+                        <th className="p-3 text-center text-green-600">Allowance (SAR)</th>
+                        <th className="p-3 text-center text-red-600">Deductions (SAR)</th>
+                        <th className="p-3 text-center text-orange-500">Advance (SAR)</th>
+                        <th className="p-3">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/40">
+                      {employees.map((emp) => {
+                        const entry = timesheets[emp.id] || {
+                          id: `${selectedProjectId}_${year}_${month}_${emp.id}`,
+                          projectId: selectedProjectId,
+                          employeeId: emp.id,
+                          year, month,
+                          regularHours: 0, overtimeHours: 0, absentDays: 0,
+                          otherAllowances: 0, deductions: 0, advance: 0, notes: "",
+                        };
+                        // Live net preview
+                        const net = (entry.regularHours * emp.hourlyRate)
+                          + (entry.overtimeHours * emp.hourlyRate)
+                          + entry.otherAllowances
+                          - (entry.absentDays * 8 * emp.hourlyRate)
+                          - entry.deductions
+                          - (entry.advance || 0);
+
+                        return (
+                          <tr key={emp.id} className="hover:bg-surface-container-low/40 transition-colors">
+                            <td className="p-3">
+                              <div className="font-semibold text-on-background leading-tight">{emp.name}</div>
+                              <div className="text-[9px] text-outline mt-0.5">{emp.trade} • {emp.hourlyRate} SAR/hr</div>
+                              <div className={`text-[9px] font-bold mt-1 ${net >= 0 ? "text-teal-600" : "text-red-500"}`}>
+                                Net ≈ {net.toFixed(0)} SAR
+                              </div>
+                            </td>
+                            <td className="p-3 text-center">
+                              <input type="number" min="0" value={entry.regularHours}
+                                onChange={(e) => handleTimesheetChange(emp.id, "regularHours", Number(e.target.value) || 0)}
+                                className="w-16 text-center border border-outline-variant/60 rounded-lg py-1.5 px-1 focus:outline-none font-semibold focus:border-primary text-xs"
+                              />
+                            </td>
+                            <td className="p-3 text-center">
+                              <input type="number" min="0" value={entry.overtimeHours}
+                                onChange={(e) => handleTimesheetChange(emp.id, "overtimeHours", Number(e.target.value) || 0)}
+                                className="w-16 text-center border border-outline-variant/60 rounded-lg py-1.5 px-1 focus:outline-none font-semibold text-blue-500 focus:border-blue-400 text-xs"
+                              />
+                            </td>
+                            <td className="p-3 text-center">
+                              <input type="number" min="0" value={entry.absentDays}
+                                onChange={(e) => handleTimesheetChange(emp.id, "absentDays", Number(e.target.value) || 0)}
+                                className="w-16 text-center border border-outline-variant/60 rounded-lg py-1.5 px-1 focus:outline-none font-semibold text-red-500 focus:border-red-400 text-xs"
+                              />
+                            </td>
+                            <td className="p-3 text-center">
+                              <input type="number" min="0" value={entry.otherAllowances}
+                                onChange={(e) => handleTimesheetChange(emp.id, "otherAllowances", Number(e.target.value) || 0)}
+                                className="w-20 text-center border border-outline-variant/60 rounded-lg py-1.5 px-1 focus:outline-none font-semibold text-green-600 focus:border-green-400 text-xs"
+                              />
+                            </td>
+                            <td className="p-3 text-center">
+                              <input type="number" min="0" value={entry.deductions}
+                                onChange={(e) => handleTimesheetChange(emp.id, "deductions", Number(e.target.value) || 0)}
+                                className="w-20 text-center border border-outline-variant/60 rounded-lg py-1.5 px-1 focus:outline-none font-semibold text-red-600 focus:border-red-400 text-xs"
+                              />
+                            </td>
+                            <td className="p-3 text-center">
+                              <input type="number" min="0" value={entry.advance || 0}
+                                onChange={(e) => handleTimesheetChange(emp.id, "advance", Number(e.target.value) || 0)}
+                                className="w-20 text-center border border-outline-variant/60 rounded-lg py-1.5 px-1 focus:outline-none font-semibold text-orange-500 focus:border-orange-400 text-xs"
+                              />
+                            </td>
+                            <td className="p-3">
+                              <input type="text" placeholder="Remarks..."
+                                value={entry.notes || ""}
+                                onChange={(e) => handleTimesheetChange(emp.id, "notes", e.target.value)}
+                                className="w-full border border-outline-variant/60 rounded-lg py-1.5 px-2 focus:outline-none text-xs focus:border-primary"
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* ── Submit Footer ── */}
+                <div className="border-t border-outline-variant/60 bg-surface-container-low px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-xs text-outline">
+                    <span className="font-bold text-on-background">{employees.length} employees</span> · {monthNames[month - 1]} {year}
+                    <span className="ml-2 text-outline/70">— Review values above, then submit all at once.</span>
+                  </div>
+                  <button
+                    onClick={handleSaveTimesheet}
+                    disabled={actionLoading || employees.length === 0}
+                    className="px-6 py-2.5 rounded-2xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 disabled:opacity-50 cursor-pointer shadow-md shadow-primary/25 transition-all flex items-center gap-2 active:scale-95"
+                  >
+                    {actionLoading ? (
+                      <><Loader2 size={14} className="animate-spin" /> Saving {employees.length} records...</>
+                    ) : (
+                      <><Check size={14} /> Submit All Timesheets — {monthNames[month - 1]} {year}</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}
