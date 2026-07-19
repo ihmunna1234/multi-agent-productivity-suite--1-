@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Users, Building2, Wallet, FileText, Download, Briefcase, Calculator, CheckCircle2, Scan, Edit, Trash2, UploadCloud } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { ArrowLeft, Plus, Users, Building2, Wallet, FileText, Download, Briefcase, Calculator, CheckCircle2, Scan, Edit, Trash2, UploadCloud, Clock, Check, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
 import html2canvas from "html2canvas";
@@ -24,6 +24,22 @@ export default function ManpowerERP() {
     const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [editingProject, setEditingProject] = useState<any>(null);
   const [editingWorker, setEditingWorker] = useState<Worker | null>(null);
+
+  // Bulk monthly timesheet state
+  type BulkRow = {
+    worker_id: string;
+    project_id: string;
+    total_hours: number;
+    overtime_hours: number;
+    hourly_rate: number;
+    allowances: number;
+    advance: number;
+    deductions: number;
+  };
+  const [bulkRows, setBulkRows] = useState<Record<string, BulkRow>>({});
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkSuccess, setBulkSuccess] = useState(false);
+  const [bulkProjectFilter, setBulkProjectFilter] = useState<string>("");
 
     const exportSalarySheet = () => {
     const filtered = hours.filter(h => h.month === filterMonth && h.year === filterYear);
@@ -464,43 +480,307 @@ export default function ManpowerERP() {
 
         {/* MONTHLY HOURS TAB */}
         {activeTab === "monthly-hours" && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-slate-800">Monthly Hours (Timesheets)</h2>
-              <div className="flex items-center gap-4">
-                <div className="flex bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
-                  <select value={filterMonth} onChange={e => setFilterMonth(Number(e.target.value))} className="bg-transparent border-none outline-none font-medium text-slate-700 px-2 cursor-pointer">
+          <div className="space-y-5">
+
+            {/* ── Header ── */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">Monthly Timesheet</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Select month, bulk-fill hours for all workers, then submit once.</p>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Project filter */}
+                <select
+                  value={bulkProjectFilter}
+                  onChange={e => { setBulkProjectFilter(e.target.value); setBulkRows({}); }}
+                  className="border border-slate-200 rounded-lg px-3 py-2 bg-white text-sm font-medium"
+                >
+                  <option value="">All Workers</option>
+                  {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+                {/* Month + Year */}
+                <div className="flex bg-white border border-slate-200 rounded-lg p-1 shadow-sm items-center gap-1">
+                  <select value={filterMonth} onChange={e => setFilterMonth(Number(e.target.value))} className="bg-transparent border-none outline-none font-medium text-slate-700 px-2 cursor-pointer text-sm">
                     {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => <option key={m} value={m}>{new Date(0, m-1).toLocaleString('default', { month: 'long' })}</option>)}
                   </select>
-                  <div className="w-px bg-slate-200 mx-2"></div>
-                  <input type="number" value={filterYear} onChange={e => setFilterYear(Number(e.target.value))} className="bg-transparent border-none outline-none font-medium text-slate-700 w-20 text-center" />
+                  <div className="w-px bg-slate-200 mx-1 h-5"></div>
+                  <input type="number" value={filterYear} onChange={e => setFilterYear(Number(e.target.value))} className="bg-transparent border-none outline-none font-medium text-slate-700 w-20 text-center text-sm" />
                 </div>
-                <button onClick={exportSalarySheet} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"><FileText size={18} /> Export Salary Sheet</button>
-                <button onClick={() => setShowHoursModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"><Plus size={18} /> Add Timesheet</button>
+                <button onClick={exportSalarySheet} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 text-sm">
+                  <FileText size={16} /> Export CSV
+                </button>
               </div>
             </div>
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase"><tr><th className="p-4">Worker</th><th className="p-4">Month/Year</th><th className="p-4">Project</th><th className="p-4">Reg Hrs</th><th className="p-4">Rate</th><th className="p-4">Net Payable</th><th className="p-4">Action</th></tr></thead>
-                <tbody className="divide-y divide-slate-100">
-                  {hours.filter(h => h.month === filterMonth && h.year === filterYear).map(h => (
-                    <tr key={h.id} className="hover:bg-slate-50">
-                      <td className="p-4 font-bold text-slate-900">{h.erp_workers?.full_name} <br/><span className="font-mono font-normal text-xs text-slate-500">{h.erp_workers?.iqama_no}</span></td>
-                      <td className="p-4 text-slate-600">{h.month}/{h.year}</td>
-                      <td className="p-4 text-slate-600">{h.erp_projects?.name || '-'}</td>
-                      <td className="p-4 text-slate-600">{h.total_hours}</td>
-                      <td className="p-4 text-slate-600">{h.hourly_rate}</td>
-                      <td className="p-4 font-bold text-slate-900">{h.net_payable} SAR</td>
-                      <td className="p-4">
-                        <button onClick={() => setPayslipData(h)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Download Payslip">
-                          <Download size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+
+            {(() => {
+              const visibleWorkers = workers.filter(w =>
+                !bulkProjectFilter ? true : w.project_id === bulkProjectFilter
+              );
+
+              if (visibleWorkers.length === 0) {
+                return (
+                  <div className="bg-white border border-slate-200 rounded-2xl p-12 flex flex-col items-center justify-center">
+                    <Users size={48} className="text-slate-300 mb-3" />
+                    <h4 className="font-bold text-slate-700">No Workers Found</h4>
+                    <p className="text-sm text-slate-500 mt-1">Add workers under the Workers tab or change the project filter.</p>
+                  </div>
+                );
+              }
+
+              const getRow = (w: Worker): BulkRow => bulkRows[w.id] || {
+                worker_id: w.id,
+                project_id: w.project_id || "",
+                total_hours: 0,
+                overtime_hours: 0,
+                hourly_rate: w.hourly_rate,
+                allowances: 0,
+                advance: 0,
+                deductions: 0,
+              };
+
+              const updateRow = (workerId: string, field: keyof BulkRow, value: number) => {
+                const w = workers.find(x => x.id === workerId)!;
+                setBulkRows(prev => ({
+                  ...prev,
+                  [workerId]: { ...getRow(w), ...prev[workerId], [field]: value }
+                }));
+              };
+
+              const handleBulkFill = (field: keyof BulkRow, value: number) => {
+                setBulkRows(prev => {
+                  const updated = { ...prev };
+                  visibleWorkers.forEach(w => {
+                    updated[w.id] = { ...getRow(w), ...updated[w.id], [field]: value };
+                  });
+                  return updated;
+                });
+              };
+
+              const handleSubmitAll = async () => {
+                setBulkLoading(true);
+                try {
+                  await Promise.all(visibleWorkers.map(w => {
+                    const row = getRow(w);
+                    return apiFetch("/api/manpower-erp/monthly-hours", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        id: crypto.randomUUID(),
+                        worker_id: w.id,
+                        project_id: w.project_id || null,
+                        year: filterYear,
+                        month: filterMonth,
+                        total_hours: row.total_hours,
+                        overtime_hours: row.overtime_hours,
+                        hourly_rate: w.hourly_rate,
+                        allowances: row.allowances,
+                        advance: row.advance,
+                        deductions: row.deductions,
+                      })
+                    });
+                  }));
+                  setBulkSuccess(true);
+                  setTimeout(() => setBulkSuccess(false), 3000);
+                  fetchData();
+                } catch (err) {
+                  console.error("Bulk submit failed", err);
+                  alert("Some records failed to save. Check console.");
+                } finally {
+                  setBulkLoading(false);
+                }
+              };
+
+              const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+              return (
+                <>
+                  {/* ── Bulk Fill Bar ── */}
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Clock size={15} className="text-indigo-600" />
+                      <span className="text-sm font-bold text-indigo-700">Bulk Fill — Apply same values to ALL {visibleWorkers.length} workers</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                      {[
+                        { field: "total_hours" as keyof BulkRow, label: "Reg. Hours", color: "text-slate-800", placeholder: "e.g. 208" },
+                        { field: "overtime_hours" as keyof BulkRow, label: "OT Hours", color: "text-blue-600", placeholder: "e.g. 20" },
+                        { field: "allowances" as keyof BulkRow, label: "Allowances", color: "text-emerald-600", placeholder: "e.g. 500" },
+                        { field: "deductions" as keyof BulkRow, label: "Deductions", color: "text-rose-600", placeholder: "e.g. 0" },
+                        { field: "advance" as keyof BulkRow, label: "Advance", color: "text-orange-500", placeholder: "e.g. 0" },
+                      ].map(({ field, label, color, placeholder }) => (
+                        <div key={field} className="space-y-1">
+                          <label className={`text-[10px] font-bold uppercase tracking-wider block ${color}`}>{label}</label>
+                          <div className="flex gap-1">
+                            <input
+                              id={`erp-bulk-${field}`}
+                              type="number" min="0"
+                              placeholder={placeholder}
+                              className={`w-full border border-indigo-200 bg-white rounded-lg py-1.5 px-2 focus:outline-none text-xs font-semibold ${color}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const val = Number((document.getElementById(`erp-bulk-${field}`) as HTMLInputElement)?.value) || 0;
+                                handleBulkFill(field, val);
+                              }}
+                              className="px-2 py-1 rounded-lg bg-indigo-600 text-white text-[10px] font-bold hover:bg-indigo-700 cursor-pointer transition-all whitespace-nowrap"
+                            >
+                              Apply
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── Per-Worker Table ── */}
+                  <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-bold">
+                            <th className="p-3 w-48">Worker</th>
+                            <th className="p-3 text-center">Rate (SAR/hr)</th>
+                            <th className="p-3 text-center">Reg. Hrs</th>
+                            <th className="p-3 text-center text-blue-600">OT Hrs</th>
+                            <th className="p-3 text-center text-emerald-600">Allowances</th>
+                            <th className="p-3 text-center text-rose-600">Deductions</th>
+                            <th className="p-3 text-center text-orange-500">Advance</th>
+                            <th className="p-3 text-right font-bold text-indigo-700">Net Payable</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {visibleWorkers.map(w => {
+                            const row = getRow(w);
+                            const basicPay = row.total_hours * w.hourly_rate;
+                            const otPay = row.overtime_hours * w.hourly_rate;
+                            const net = basicPay + otPay + row.allowances - row.deductions - row.advance;
+                            return (
+                              <tr key={w.id} className="hover:bg-slate-50 transition-colors">
+                                <td className="p-3">
+                                  <div className="font-bold text-slate-900 leading-tight">{w.full_name}</div>
+                                  <div className="text-[10px] text-slate-400 mt-0.5">{w.trade || 'Worker'} · {w.iqama_no}</div>
+                                  <div className="text-[10px] text-slate-400">{w.erp_projects?.name || 'Unassigned'}</div>
+                                </td>
+                                <td className="p-3 text-center font-semibold text-slate-600">{w.hourly_rate}</td>
+                                <td className="p-3 text-center">
+                                  <input type="number" min="0" value={row.total_hours}
+                                    onChange={e => updateRow(w.id, "total_hours", Number(e.target.value) || 0)}
+                                    className="w-16 text-center border border-slate-200 rounded-lg py-1.5 px-1 focus:outline-none font-semibold focus:border-indigo-400 text-xs"
+                                  />
+                                </td>
+                                <td className="p-3 text-center">
+                                  <input type="number" min="0" value={row.overtime_hours}
+                                    onChange={e => updateRow(w.id, "overtime_hours", Number(e.target.value) || 0)}
+                                    className="w-16 text-center border border-slate-200 rounded-lg py-1.5 px-1 focus:outline-none font-semibold text-blue-600 focus:border-blue-400 text-xs"
+                                  />
+                                </td>
+                                <td className="p-3 text-center">
+                                  <input type="number" min="0" value={row.allowances}
+                                    onChange={e => updateRow(w.id, "allowances", Number(e.target.value) || 0)}
+                                    className="w-20 text-center border border-slate-200 rounded-lg py-1.5 px-1 focus:outline-none font-semibold text-emerald-600 focus:border-emerald-400 text-xs"
+                                  />
+                                </td>
+                                <td className="p-3 text-center">
+                                  <input type="number" min="0" value={row.deductions}
+                                    onChange={e => updateRow(w.id, "deductions", Number(e.target.value) || 0)}
+                                    className="w-20 text-center border border-slate-200 rounded-lg py-1.5 px-1 focus:outline-none font-semibold text-rose-600 focus:border-rose-400 text-xs"
+                                  />
+                                </td>
+                                <td className="p-3 text-center">
+                                  <input type="number" min="0" value={row.advance}
+                                    onChange={e => updateRow(w.id, "advance", Number(e.target.value) || 0)}
+                                    className="w-20 text-center border border-slate-200 rounded-lg py-1.5 px-1 focus:outline-none font-semibold text-orange-500 focus:border-orange-400 text-xs"
+                                  />
+                                </td>
+                                <td className="p-3 text-right">
+                                  <div className={`font-bold text-sm ${net >= 0 ? 'text-indigo-700' : 'text-rose-600'}`}>
+                                    {net.toFixed(0)} SAR
+                                  </div>
+                                  <div className="text-[9px] text-slate-400">{basicPay.toFixed(0)} basic{otPay > 0 ? ` + ${otPay.toFixed(0)} OT` : ""}</div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* ── Submit Footer ── */}
+                    <div className="border-t border-slate-200 bg-slate-50 px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <div className="text-sm text-slate-500">
+                        <span className="font-bold text-slate-800">{visibleWorkers.length} workers</span>
+                        {" · "}{MONTH_NAMES[filterMonth - 1]} {filterYear}
+                        <span className="ml-2 text-slate-400">— Total payable:{" "}
+                          <span className="font-bold text-indigo-700">
+                            {visibleWorkers.reduce((sum, w) => {
+                              const row = getRow(w);
+                              return sum + (row.total_hours * w.hourly_rate) + (row.overtime_hours * w.hourly_rate) + row.allowances - row.deductions - row.advance;
+                            }, 0).toLocaleString()} SAR
+                          </span>
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleSubmitAll}
+                        disabled={bulkLoading}
+                        className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 disabled:opacity-50 cursor-pointer shadow-md shadow-indigo-500/25 transition-all flex items-center gap-2 active:scale-95"
+                      >
+                        {bulkLoading ? (
+                          <><Loader2 size={16} className="animate-spin" /> Saving {visibleWorkers.length} records...</>
+                        ) : bulkSuccess ? (
+                          <><Check size={16} /> Saved Successfully!</>
+                        ) : (
+                          <><Check size={16} /> Submit All — {MONTH_NAMES[filterMonth - 1]} {filterYear}</>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ── Past Records Table ── */}
+                  <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                      <h3 className="font-bold text-slate-800">Submitted Records — {MONTH_NAMES[filterMonth - 1]} {filterYear}</h3>
+                      <button onClick={exportSalarySheet} className="text-sm text-emerald-700 font-semibold hover:underline flex items-center gap-1">
+                        <FileText size={14} /> Export CSV
+                      </button>
+                    </div>
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs">
+                        <tr>
+                          <th className="p-3">Worker</th>
+                          <th className="p-3">Project</th>
+                          <th className="p-3">Reg Hrs</th>
+                          <th className="p-3">OT Hrs</th>
+                          <th className="p-3">Rate</th>
+                          <th className="p-3">Net Payable</th>
+                          <th className="p-3">Payslip</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {hours.filter(h => h.month === filterMonth && h.year === filterYear).map(h => (
+                          <tr key={h.id} className="hover:bg-slate-50">
+                            <td className="p-3 font-bold text-slate-900">{h.erp_workers?.full_name}<br/><span className="font-mono font-normal text-xs text-slate-400">{h.erp_workers?.iqama_no}</span></td>
+                            <td className="p-3 text-slate-600">{h.erp_projects?.name || '-'}</td>
+                            <td className="p-3 text-slate-600">{h.total_hours}</td>
+                            <td className="p-3 text-slate-600">{h.overtime_hours}</td>
+                            <td className="p-3 text-slate-600">{h.hourly_rate} SAR/hr</td>
+                            <td className="p-3 font-bold text-indigo-700">{Number(h.net_payable).toLocaleString()} SAR</td>
+                            <td className="p-3">
+                              <button onClick={() => setPayslipData(h)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Download Payslip">
+                                <Download size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        {hours.filter(h => h.month === filterMonth && h.year === filterYear).length === 0 && (
+                          <tr><td colSpan={7} className="p-8 text-center text-slate-400 font-medium">No records for this month yet. Submit timesheets above.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
 
