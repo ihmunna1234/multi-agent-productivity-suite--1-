@@ -23,6 +23,42 @@ export default function ManpowerERP() {
     const [filterProjectId, setFilterProjectId] = useState<string>("");
   const [editingWorker, setEditingWorker] = useState<Worker | null>(null);
 
+    const exportSalarySheet = () => {
+    const filtered = hours.filter(h => h.month === filterMonth && h.year === filterYear);
+    if (filtered.length === 0) {
+      alert("No records to export for this month.");
+      return;
+    }
+    const headers = ["Worker Name", "Iqama No", "Project", "Month/Year", "Reg Hrs", "Overtime Hrs", "Hourly Rate", "Basic Pay", "Overtime Pay", "Allowances", "Advances", "Deductions", "Net Payable"];
+    
+    const rows = filtered.map(h => [
+      h.erp_workers?.full_name || "",
+      h.erp_workers?.iqama_no || "",
+      h.erp_projects?.name || "Unassigned",
+      `${h.month}/${h.year}`,
+      h.total_hours,
+      h.overtime_hours,
+      h.hourly_rate,
+      (h.total_hours * h.hourly_rate).toFixed(2),
+      (h.overtime_hours * h.hourly_rate).toFixed(2),
+      h.allowances || 0,
+      h.advance || 0,
+      h.deductions || 0,
+      h.net_payable
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map(r => r.map(x => `"${x}"`).join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    link.setAttribute("download", `Salary_Sheet_${monthNames[filterMonth - 1]}_${filterYear}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleDelete = async (url: string) => {
     if (!confirm("Are you sure you want to delete this record?")) return;
     try {
@@ -301,6 +337,7 @@ export default function ManpowerERP() {
                   <div className="w-px bg-slate-200 mx-2"></div>
                   <input type="number" value={filterYear} onChange={e => setFilterYear(Number(e.target.value))} className="bg-transparent border-none outline-none font-medium text-slate-700 w-20 text-center" />
                 </div>
+                <button onClick={exportSalarySheet} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"><FileText size={18} /> Export Salary Sheet</button>
                 <button onClick={() => setShowHoursModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"><Plus size={18} /> Add Timesheet</button>
               </div>
             </div>
