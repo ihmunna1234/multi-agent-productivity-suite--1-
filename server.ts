@@ -73,7 +73,7 @@ app.use((req, res, next) => {
     `img-src 'self' data: https: blob:; ` +
     `style-src 'self' 'unsafe-inline'; ` +
     `font-src 'self' data:; ` +
-    `connect-src 'self' https://places.googleapis.com;`
+    `connect-src 'self' https://places.googleapis.com https://*.supabase.co wss://*.supabase.co;`
   );
   next();
 });
@@ -1928,6 +1928,7 @@ app.post("/api/employee-management/timesheets", authMiddleware, async (req: expr
         deductions: deductions ?? 0,
         advance: advance ?? 0,
         notes: notes || null,
+        is_paid: isPaid ?? false,
       }, { onConflict: "id" });
 
     if (error) throw error;
@@ -1998,7 +1999,38 @@ app.post("/api/employee-management/images", authMiddleware, async (req: express.
   }
 });
 
-// Setup Vite Dev Server / Static Asset Handler
+// ─── GET /api/employee-management/timesheets/all ──────────────────────────────
+// Returns ALL timesheet records for a project (no year/month filter).
+// Used by the frontend to calculate outstanding "previous dues" for each employee.
+app.get("/api/employee-management/timesheets/all", authMiddleware, async (req: express.Request, res: express.Response) => {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      res.status(503).json({ error: "Supabase is not configured." });
+      return;
+    }
+
+    const projectId = req.query.projectId as string;
+    if (!projectId) {
+      res.status(400).json({ error: "projectId query parameter is required." });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("em_timesheets")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("year", { ascending: true })
+      .order("month", { ascending: true });
+
+    if (error) throw error;
+    res.json((data || []).map(mapTimesheetRow));
+  } catch (err: any) {
+    console.error("[Employee Mgmt] Failed to load all timesheets:", err.message);
+    res.status(500).json({ error: "Failed to load all timesheets from database." });
+  }
+});
+
 // ─── MANPOWER ERP ROUTES ────────────────────────────────────────────────────────
   
   // PROJECTS

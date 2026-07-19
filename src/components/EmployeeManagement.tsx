@@ -125,6 +125,7 @@ interface Employee {
   nationality?: string;
   trade: string;
   hourlyRate: number;
+  allowance?: number;
     createdAt: number;
 }
 
@@ -204,6 +205,7 @@ export default function EmployeeManagement() {
     nationality: "",
     trade: "Laborer",
     hourlyRate: 15,
+    allowance: 0,
   });
 
   // Card preview state
@@ -342,6 +344,7 @@ export default function EmployeeManagement() {
       nationality: "",
       trade: "Laborer",
       hourlyRate: 15,
+      allowance: 0,
     });
     setErrorMsg(null);
     setIsEmployeeModalOpen(true);
@@ -358,6 +361,7 @@ export default function EmployeeManagement() {
       nationality: emp.nationality || "",
       trade: emp.trade,
       hourlyRate: emp.hourlyRate,
+      allowance: emp.allowance ?? 0,
           });
     setErrorMsg(null);
     setIsEmployeeModalOpen(true);
@@ -385,6 +389,7 @@ export default function EmployeeManagement() {
         nationality: empForm.nationality.trim() || undefined,
         trade: empForm.trade,
         hourlyRate: Number(empForm.hourlyRate) || 0,
+        allowance: Number(empForm.allowance) || 0,
                 createdAt: Date.now(),
       };
 
@@ -541,8 +546,9 @@ export default function EmployeeManagement() {
 
       const basicPayEarned = hourlyRate * ts.regularHours;
       const overtimeEarned = hourlyRate * ts.overtimeHours;
-      const totalAllowance = ts.otherAllowances;
-      const netSalary = basicPayEarned + totalAllowance - ts.deductions - (ts.advance || 0);
+      const absentDeduction = ts.absentDays * 8 * hourlyRate; // 8 hours per absent day
+      const totalAllowance = ts.otherAllowances + (emp.allowance ?? 0);
+      const netSalary = basicPayEarned + overtimeEarned + totalAllowance - absentDeduction - ts.deductions - (ts.advance || 0);
 
       // Calculate previous due
       let previousDue = 0;
@@ -762,7 +768,7 @@ export default function EmployeeManagement() {
     doc.setFontSize(12);
     doc.setFont("Helvetica", "bold");
     doc.text("NET SALARY PAID / صافي الراتب المستحق", 20, 197);
-    doc.text(`${Math.round(netSalary * 100 / 100).toFixed(2)} SAR`, 150, 197);
+    doc.text(`${Math.round(row.netPayable * 100 / 100).toFixed(2)} SAR`, 150, 197);
 
     // Footer signatures
     doc.setTextColor(0, 0, 0);
@@ -1492,6 +1498,21 @@ export default function EmployeeManagement() {
                       value={empForm.hourlyRate}
                       onChange={(e) => setEmpForm({...empForm, hourlyRate: Number(e.target.value) || 0})}
                       className="w-full border border-outline-variant/60 rounded-xl py-2 pl-8 pr-3 focus:outline-none text-xs font-semibold text-primary"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-outline uppercase tracking-wider block">Monthly Allowance (SAR)</label>
+                  <div className="relative">
+                    <DollarSign size={14} className="absolute left-3 top-2.5 text-outline" />
+                    <input 
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={empForm.allowance}
+                      onChange={(e) => setEmpForm({...empForm, allowance: Number(e.target.value) || 0})}
+                      className="w-full border border-outline-variant/60 rounded-xl py-2 pl-8 pr-3 focus:outline-none text-xs font-semibold text-green-600"
+                      placeholder="0"
                     />
                   </div>
                 </div>
