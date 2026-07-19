@@ -3,11 +3,8 @@ import path from "path";
 import dotenv from "dotenv";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { createClient } from "@supabase/supabase-js";
 
 // OpenAI dependency removed — all AI features now use Google Gemini exclusively
-import { GoogleGenAI } from "@google/genai";
-const Type = { STRING: "string", NUMBER: "number", INTEGER: "integer", BOOLEAN: "boolean", ARRAY: "array", OBJECT: "object" };
 
 dotenv.config({ override: true });
 
@@ -26,21 +23,7 @@ console.error = (...args: any[]) => {
   originalError(`[${new Date().toISOString()}] [ERROR]`, ...args);
 };
 
-// Supabase client initialization wrapper
-let supabaseClient: any = null;
-function getSupabaseClient() {
-  if (!supabaseClient) {
-    const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_ANON_KEY;
-    if (!url || !key) {
-      console.warn("[Supabase] SUPABASE_URL or SUPABASE_ANON_KEY environment variables are missing. Supabase integrations are disabled.");
-      return null;
-    }
-    supabaseClient = createClient(url, key);
-    console.log("[Supabase] Client initialized successfully.");
-  }
-  return supabaseClient;
-}
+
 
 // Refuse to start if critical environment variables are missing or set to defaults
 const criticalApiKey = process.env.GEMINI_API_KEY;
@@ -56,7 +39,7 @@ const app = express();
 const PORT = 3000;
 
 // 1. Security Headers Middleware (VULN-06 fix: removed unsafe-eval, nonce-based CSP in production)
-app.use((req, res, next) => {
+app.use((_req, res, next) => {
   const nonce = crypto.randomBytes(16).toString("base64");
   res.locals.cspNonce = nonce;
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -180,108 +163,7 @@ function authMiddleware(
   }
 }
 
-// ─── VULN-05 fix: Server-side file validation ─────────────────────────────────
-const ALLOWED_IMAGE_MIME_TYPES = new Set([
-  "image/jpeg", "image/jpg", "image/png",
-  "image/webp", "image/gif", "image/bmp"
-]);
 
-function validateBase64Image(
-  imageBase64: string,
-  clientMimeType: string
-): { valid: boolean; mimeType: string; error?: string } {
-  // ~10MB decoded = ~13.4MB base64. Enforce hard cap.
-  if (imageBase64.length > 14_000_000) {
-    return { valid: false, mimeType: "", error: "Image exceeds the 10MB size limit." };
-  }
-
-  const safeMime = (clientMimeType || "").toLowerCase().trim();
-  if (!ALLOWED_IMAGE_MIME_TYPES.has(safeMime)) {
-    return {
-      valid: false,
-      mimeType: "",
-      error: "Invalid file type. Only JPEG, PNG, WebP, GIF, and BMP are allowed."
-    };
-  }
-
-  // Inspect actual magic bytes to confirm the claimed MIME type
-  try {
-    const decoded = Buffer.from(imageBase64.substring(0, 24), "base64");
-    const isJpeg = decoded[0] === 0xff && decoded[1] === 0xd8;
-    const isPng = decoded[0] === 0x89 && decoded[1] === 0x50 && decoded[2] === 0x4e && decoded[3] === 0x47;
-    const isGif = decoded[0] === 0x47 && decoded[1] === 0x49 && decoded[2] === 0x46;
-    // WebP: bytes 0-3 = RIFF, bytes 8-11 = WEBP
-    const isWebp = decoded[0] === 0x52 && decoded[1] === 0x49 && decoded[8] === 0x57 && decoded[9] === 0x45;
-    // BMP magic bytes
-    const isBmp = decoded[0] === 0x42 && decoded[1] === 0x4d;
-
-    if (!isJpeg && !isPng && !isGif && !isWebp && !isBmp) {
-      return {
-        valid: false,
-        mimeType: "",
-        error: "File content does not match a supported image format."
-      };
-    }
-  } catch {
-    return { valid: false, mimeType: "", error: "Could not read file content." };
-  }
-
-  return { valid: true, mimeType: safeMime };
-}
-
-// ─── VULN-07 fix: Input sanitizer for all user-controlled prompt parameters ───
-function sanitizePromptInput(input: unknown, maxLength = 500): string {
-  if (typeof input !== "string") return "";
-  return input
-    .trim()
-    .slice(0, maxLength)
-    // Strip control characters (could break prompt structure)
-    .replace(/[\u0000-\u001f\u007f]/g, "")
-    // Escape double-quotes used as JSON / prompt delimiters
-    .replace(/"/g, "'");
-}
-
-
-// Lazy initializer for the Google Gemini client (superior Arabic OCR)
-let geminiClient: GoogleGenAI | null = null;
-function getGeminiClient(): GoogleGenAI {
-  if (!geminiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || apiKey.trim() === "") {
-      throw new Error("GEMINI_API_KEY is not set. Add it to Vercel Environment Variables.");
-    }
-    geminiClient = new GoogleGenAI({ apiKey: apiKey.trim() });
-    console.log("[Gemini API] Client initialized for Arabic OCR.");
-  }
-  return geminiClient;
-}
-
-// Gemini retry helper — retries on transient 503 errors, immediately throws on 429 quota
-async function generateContentWithRetry(client: GoogleGenAI, params: any, maxAttempts = 3, initialDelayMs = 1200): Promise<any> {
-  let attempt = 0;
-  while (true) {
-    try {
-      attempt++;
-      const response = await client.models.generateContent(params);
-      return response;
-    } catch (err: any) {
-      const errMsg = err.message || String(err);
-      const statusCode = Number(err.status || err.statusCode || 0);
-
-      const isQuotaExceeded = statusCode === 429 || errMsg.includes("429") || errMsg.includes("quota") || errMsg.includes("RESOURCE_EXHAUSTED");
-      if (isQuotaExceeded) throw err;
-
-      const isTransient = statusCode === 503 || errMsg.includes("503") || errMsg.includes("UNAVAILABLE") || errMsg.includes("high demand");
-      if (isTransient && attempt < maxAttempts) {
-        const delay = initialDelayMs * Math.pow(2, attempt - 1);
-        console.log(`[Gemini Auto-Retry] Attempt ${attempt} failed (503). Retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      throw err;
-    }
-  }
-}
 
 
 
@@ -357,7 +239,7 @@ async function serveApp() {
     app.use(express.static(distPath));
     if (!process.env.VERCEL) {
       
-  app.get("*", (req, res) => {
+  app.get("*", (_req, res) => {
         res.sendFile(path.join(distPath, "index.html"));
       });
     }

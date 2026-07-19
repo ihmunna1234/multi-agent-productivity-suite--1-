@@ -10,13 +10,11 @@ import {
   ArrowRight,
   BookmarkCheck,
   MapPin,
-  TrendingUp,
-  Eraser,
-  PenTool,
   Combine,
   Scissors,
   Trash2,
-  ShieldAlert
+  ShieldAlert,
+  Eraser
 } from "lucide-react";
 
 

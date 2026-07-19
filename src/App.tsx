@@ -2,13 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { 
-  LayoutDashboard, 
   Database, 
   FileText, 
   FileCheck, 
   Search, 
   BrainCircuit,
-  ShieldCheck,
   Menu,
   X,
   Sparkles,
@@ -16,13 +14,11 @@ import {
   Moon,
   Contrast,
   Eraser,
-  PenTool,
   Combine,
   Scissors,
   Layers,
   MapPin,
-  LogOut,
-  Users
+  LogOut
 } from "lucide-react";
 
 // Import custom agents

@@ -2,20 +2,11 @@ import React, { useState, useRef } from "react";
 import { jsPDF } from "jspdf";
 import {
   Upload,
-  Download,
   Trash2,
   FileImage,
-  ArrowUp,
-  ArrowDown,
   FileText,
-  Settings,
-  X,
   FileCheck,
   Loader2,
-  ArrowRight,
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
   Check,
   GripVertical
 } from "lucide-react";
@@ -34,7 +25,7 @@ export default function ImgToPdf() {
   const [pageSize, setPageSize] = useState<"a4" | "letter" | "executive">("a4");
   const [orientation, setOrientation] = useState<"p" | "l">("p");
   const [margin, setMargin] = useState<number>(10);
-  const [fileName, setFileName] = useState<string>("Converted_Document");
+  const [fileName] = useState<string>("Converted_Document");
   const [compiling, setCompiling] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 

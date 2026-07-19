@@ -1,13 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
-  FileText,
   Loader2,
   Sparkles,
   Layers,
   Download,
   Trash2,
-  ArrowLeft,
-  ArrowRight,
   RotateCw
 } from "lucide-react";
 import { PDFDocument, degrees } from "pdf-lib";
@@ -163,16 +160,6 @@ export default function OrganizePdf() {
     newPages.splice(dropIndex, 0, draggedItem);
     setPages(newPages);
     setDraggedIndex(null);
-  };
-
-  const movePage = (index: number, direction: 'left' | 'right') => {
-    const newPages = [...pages];
-    if (direction === 'left' && index > 0) {
-      [newPages[index - 1], newPages[index]] = [newPages[index], newPages[index - 1]];
-    } else if (direction === 'right' && index < newPages.length - 1) {
-      [newPages[index + 1], newPages[index]] = [newPages[index], newPages[index + 1]];
-    }
-    setPages(newPages);
   };
 
   const removePage = (index: number) => {

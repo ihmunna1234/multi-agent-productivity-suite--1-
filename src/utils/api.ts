@@ -33,14 +33,6 @@ export async function login(passcode: string): Promise<boolean> {
 }
 
 /**
- * Clear the JWT and notify the app to show the login screen.
- */
-export function logout(): void {
-  localStorage.removeItem("workspace_token");
-  window.dispatchEvent(new Event("auth-unauthorized"));
-}
-
-/**
  * Make an authenticated fetch request. Attaches the Bearer JWT automatically.
  * Triggers logout event on 401 Unauthorized.
  */

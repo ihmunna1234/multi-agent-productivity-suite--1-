@@ -1,20 +1,10 @@
 import React, { useState, useRef } from "react";
 import {
   FileText,
-  Upload,
   Download,
   Loader2,
-  Image as ImageIcon,
   Check,
-  AlertCircle,
-  FileDown,
-  Sparkles,
-  ArrowRight,
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-  FileCheck,
-  Settings
+  Sparkles
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";

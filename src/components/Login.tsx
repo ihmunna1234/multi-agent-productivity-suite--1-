@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { Lock, ShieldCheck, ArrowRight, Loader2, BrainCircuit } from "lucide-react";
 import { login } from "../utils/api";
 

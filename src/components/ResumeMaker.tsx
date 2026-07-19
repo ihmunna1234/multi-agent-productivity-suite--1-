@@ -15,13 +15,11 @@ import {
   Printer, 
   Plus, 
   Trash2, 
-  RotateCcw, 
   Eye, 
   FileEdit, 
   ChevronRight, 
   CheckCircle2, 
   X,
-  ListRestart,
   Image,
   Camera
 } from "lucide-react";

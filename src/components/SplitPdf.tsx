@@ -2,11 +2,8 @@ import React, { useState, useRef } from "react";
 import {
   FileText,
   Loader2,
-  AlertTriangle,
-  Sparkles,
   Scissors,
-  Download,
-  Trash2
+  Download
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 import JSZip from "jszip";
