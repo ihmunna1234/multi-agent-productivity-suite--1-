@@ -103,7 +103,7 @@ export default function ManpowerERP() {
       for (let i = 1; i < lines.length; i++) {
         // Handle basic CSV splitting (ignoring commas inside quotes for now as it's a simple template)
         const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-        const worker: any = { id: crypto.randomUUID(), status: "ACTIVE" };
+        const worker: any = { status: "ACTIVE" };
         
         headers.forEach((header, index) => {
            if (header === 'iqama_no' || header === 'iqama') worker.iqama_no = values[index];

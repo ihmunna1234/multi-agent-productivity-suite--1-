@@ -2062,7 +2062,7 @@ app.post("/api/employee-management/images", authMiddleware, async (req: express.
       if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
       
       const { workers } = req.body;
-      const { error } = await supabase.from("erp_workers").upsert(workers);
+      const { error } = await supabase.from("erp_workers").upsert(workers, { onConflict: "iqama_no" });
       if (error) throw error;
       res.json({ success: true, count: workers.length });
     } catch (err: any) {
