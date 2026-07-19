@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { apiFetch } from "../utils/api";
 import { 
   Search, 
@@ -6,6 +6,8 @@ import {
   TrendingUp, 
   Loader2, 
   DollarSign, 
+  Users, 
+  Heart, 
   ExternalLink,
   Target,
   AlertCircle,
@@ -13,18 +15,22 @@ import {
   BookOpen,
   X,
   Store,
+  Coins,
   ChevronRight,
   Flame,
   Layers,
   Cpu,
+  Sliders,
   Percent,
   Filter,
+  Tag,
+  ShoppingBag,
   Globe,
   SlidersHorizontal,
   Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { ProductItem, ProductSearchResponse } from "../types";
+import { ProductItem, ProductSearchResponse, ProductSupplier } from "../types";
 
 interface IndustryCategory {
   id: string;

@@ -1,5 +1,6 @@
+import { ReactNode } from "react";
 
-
+export type ActiveAgent = "dashboard" | "pdf-to-img" | "img-to-pdf" | "pdf-to-word" | "watermark-remover" | "pdf-editor" | "extractor" | "products" | "resume-maker" | "maps-extractor" | "merge-pdf" | "split-pdf" | "organize-pdf" | "employee-management";
 
 export interface IqamaRecord {
   id: string;
@@ -39,11 +40,25 @@ export interface ProductItem {
   suppliers?: ProductSupplier[];
 }
 
+export interface GroundingSource {
+  title: string;
+  uri: string;
+}
+
 export interface ProductSearchResponse {
   trendReasonDescription: string;
   products: ProductItem[];
-  sources?: { title: string; uri: string }[];
+  sources: GroundingSource[];
   isFallback?: boolean;
+}
+
+export interface MetricCardProps {
+  id: string;
+  title: string;
+  value: string | number;
+  description: string;
+  icon: ReactNode;
+  color: string;
 }
 
 export interface ResumeWorkExperience {

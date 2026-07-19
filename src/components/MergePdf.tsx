@@ -1,8 +1,10 @@
 import React, { useState, useRef } from "react";
 import {
   FileText,
+  Upload,
   Download,
   Loader2,
+  AlertTriangle,
   Sparkles,
   ArrowUp,
   ArrowDown,

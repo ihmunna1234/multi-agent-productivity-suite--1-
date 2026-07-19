@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { 
+  LayoutDashboard, 
   Database, 
   FileText, 
   FileCheck, 
   Search, 
   BrainCircuit,
+  ShieldCheck,
   Menu,
   X,
   Sparkles,
@@ -14,11 +16,13 @@ import {
   Moon,
   Contrast,
   Eraser,
+  PenTool,
   Combine,
   Scissors,
   Layers,
   MapPin,
-  LogOut
+  LogOut,
+  Users
 } from "lucide-react";
 
 // Import custom agents
@@ -35,6 +39,8 @@ import MergePdf from "./components/MergePdf";
 import SplitPdf from "./components/SplitPdf";
 import OrganizePdf from "./components/OrganizePdf";
 import Login from "./components/Login";
+import EmployeeManagement from "./components/EmployeeManagement";
+import ManpowerERP from "./components/ManpowerERP";
 
 // ─── Auth Gate ───────────────────────────────────────────────────────────────
 // Returns true if there is a JWT token stored in localStorage.
@@ -86,6 +92,7 @@ function WorkspaceShell() {
     { path: "/product-scout", name: "Product Scout", icon: <Search size={16} />, pill: "Market" },
     { path: "/resume-studio", name: "Resume Studio", icon: <Sparkles size={16} />, pill: "Career" },
     { path: "/maps-extractor", name: "Leads Extractor", icon: <MapPin size={16} />, pill: "G-Maps" },
+    { path: "/employee-management", name: "Employee Management", icon: <Users size={16} />, pill: "Payroll" },
   ];
 
   const handleNavigate = (path: string) => {
@@ -220,6 +227,8 @@ function WorkspaceShell() {
             <Route path="/product-scout" element={<ProductFinder />} />
             <Route path="/resume-studio" element={<ResumeMaker />} />
             <Route path="/maps-extractor" element={<GoogleMapsExtractor />} />
+            <Route path="/employee-management" element={<EmployeeManagement />} />
+            <Route path="/manpower-erp" element={<ManpowerERP />} />
           </Routes>
         </div>
       </main>

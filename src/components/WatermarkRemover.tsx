@@ -6,15 +6,20 @@ import {
   Loader2,
   Trash2,
   Sliders,
+  Type,
   Check,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  Settings,
   Sparkles,
   RefreshCcw,
   Undo2,
+  Square,
   Paintbrush,
   Pipette,
   CheckCircle,
+  HelpCircle,
   FileCheck
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";

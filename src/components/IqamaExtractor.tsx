@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { apiFetch } from "../utils/api";
 import * as XLSX from "xlsx";
@@ -30,16 +30,17 @@ import {
   FileArchive,
   FileImage,
   Clock,
+  MessageSquare,
   Bell,
   Building,
   Hash,
   Briefcase
 } from "lucide-react";
 import { IqamaRecord } from "../types";
-import { saveIqamaImage, getIqamaImage, deleteIqamaImage, saveIqamaRecords, getIqamaRecords } from "../utils/idb";
+import { saveIqamaImage, getIqamaImage, deleteIqamaImage, clearAllIqamaImages, saveIqamaRecords, getIqamaRecords, clearAllIqamaRecords } from "../utils/idb";
 
 
-interface DuplicateNotification {
+export interface DuplicateNotification {
   id: string;
   iqamaNo: string;
   name: string;

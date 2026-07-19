@@ -1,17 +1,39 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { apiFetch } from "../utils/api";
 import {
   FileText,
+  Upload,
   Download,
   Loader2,
+  Sparkles,
   Clipboard,
   Check,
   FileType,
   FileCheck,
   Trash2,
+  Sliders,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Bold,
+  Italic,
+  Heading1,
+  Heading2,
+  List,
   AlertTriangle,
+  Type,
+  BookOpen,
+  Settings,
+  Scale,
+  RefreshCcw,
+  Heading,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
@@ -41,15 +63,19 @@ export default function PdfToWord() {
   const [conversionMode, setConversionMode] = useState<"standard" | "ocr">("standard");
 
   // Styling presets for Word Document Template
-  const [documentFont] = useState<"Calibri" | "Arial" | "Times New Roman" | "Georgia" | "Courier New">("Calibri");
-  const [documentTheme] = useState<"standard" | "professional" | "minimal" | "editorial">("standard");
-  const [lineSpacing] = useState<"1.0" | "1.15" | "1.5" | "2.0">("1.15");
-  const [addPageBreaks] = useState<boolean>(true);
+  const [documentFont, setDocumentFont] = useState<"Calibri" | "Arial" | "Times New Roman" | "Georgia" | "Courier New">("Calibri");
+  const [documentTheme, setDocumentTheme] = useState<"standard" | "professional" | "minimal" | "editorial">("standard");
+  const [lineSpacing, setLineSpacing] = useState<"1.0" | "1.15" | "1.5" | "2.0">("1.15");
+  const [addPageBreaks, setAddPageBreaks] = useState<boolean>(true);
+
+  // UI state for 3-state flow
+  const [showEditor, setShowEditor] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   // thumbnail for preview
   const [pdfThumbnail, setPdfThumbnail] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const editorRef = useRef<HTMLTextAreaElement>(null);
 
   // Cleanup copied alert
   useEffect(() => {
@@ -315,6 +341,8 @@ export default function PdfToWord() {
     setError(null);
     setPdfThumbnail("");
     setDownloadSuccess(false);
+    setShowEditor(false);
+    setShowSettings(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -411,6 +439,54 @@ export default function PdfToWord() {
     link.href = URL.createObjectURL(blob);
     link.download = `${pdfFile?.name.replace(".pdf", "") || "document"}_clean.txt`;
     link.click();
+  };
+
+  // Simple editor formatting helper actions
+  const applyTextTransformer = (action: "uppercase" | "lowercase" | "capitalize" | "heading" | "bullet") => {
+    if (!editedText || !editorRef.current) return;
+
+    const textarea = editorRef.current;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    if (start === end) {
+      alert("Please highlight/select a segment of text inside the editor viewport to format it.");
+      return;
+    }
+
+    const selectedText = editedText.substring(start, end);
+    let transformed = "";
+
+    switch (action) {
+      case "uppercase":
+        transformed = selectedText.toUpperCase();
+        break;
+      case "lowercase":
+        transformed = selectedText.toLowerCase();
+        break;
+      case "capitalize":
+        transformed = selectedText.replace(/\b\w/g, c => c.toUpperCase());
+        break;
+      case "heading":
+        transformed = `\r\n[HEADING] ${selectedText.replace(/\[HEADING\]/g, "").trim()}\r\n`;
+        break;
+      case "bullet":
+        transformed = selectedText.split(/\r?\n/).map(line => line.startsWith("- ") ? line : `- ${line}`).join("\n");
+        break;
+    }
+
+    const newText = editedText.substring(0, start) + transformed + editedText.substring(end);
+    setEditedText(newText);
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start, start + transformed.length);
+    }, 100);
+  };
+
+  const removePageBreaks = () => {
+    const updated = editedText.replace(/--- PAGE BREAK: PAGE \d+ ---\r?\n\s*/g, "");
+    setEditedText(updated.trim());
   };
 
   // Determine current flow state
