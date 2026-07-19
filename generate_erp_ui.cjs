@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+const fs = require('fs');
+
+const reactCode = `import React, { useState, useEffect } from "react";
 import { ArrowLeft, Plus, Users, Building2, Wallet, FileText, Download, Briefcase, Calculator } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -41,7 +43,7 @@ export default function ManpowerERP() {
     setLoading(true);
     try {
       const token = localStorage.getItem("workspace_token");
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+      const headers = { Authorization: \`Bearer \${token}\`, "Content-Type": "application/json" };
       
       const pRes = await fetch("/api/manpower-erp/projects", { headers });
       if (pRes.ok) setProjects(await pRes.json());
@@ -72,7 +74,7 @@ export default function ManpowerERP() {
       const res = await fetch("/api/manpower-erp/projects", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("workspace_token")}`,
+          "Authorization": \`Bearer \${localStorage.getItem("workspace_token")}\`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
@@ -103,7 +105,7 @@ export default function ManpowerERP() {
       const res = await fetch("/api/manpower-erp/workers", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("workspace_token")}`,
+          "Authorization": \`Bearer \${localStorage.getItem("workspace_token")}\`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
@@ -137,9 +139,9 @@ export default function ManpowerERP() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg capitalize transition-colors ${
+                className={\`px-4 py-2 text-sm font-semibold rounded-lg capitalize transition-colors \${
                   activeTab === tab ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
+                }\`}
               >
                 {tab.replace('-', ' ')}
               </button>
@@ -300,3 +302,7 @@ export default function ManpowerERP() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/components/ManpowerERP.tsx', reactCode);
+console.log('Successfully wrote ManpowerERP.tsx');

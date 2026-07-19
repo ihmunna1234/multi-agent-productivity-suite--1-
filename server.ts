@@ -2039,7 +2039,93 @@ async function serveApp() {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     if (!process.env.VERCEL) {
-      app.get("*", (req, res) => {
+      
+  // ─── MANPOWER ERP ROUTES ────────────────────────────────────────────────────────
+  
+  // PROJECTS
+  app.get("/api/manpower-erp/projects", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { data, error } = await supabase.from("erp_projects").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      res.json(data);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/manpower-erp/projects", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { id, name, client_name, location } = req.body;
+      const { error } = await supabase.from("erp_projects").upsert({ id, name, client_name, location });
+      if (error) throw error;
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/manpower-erp/projects/:id", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { error } = await supabase.from("erp_projects").delete().eq("id", req.params.id);
+      if (error) throw error;
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // WORKERS
+  app.get("/api/manpower-erp/workers", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { data, error } = await supabase.from("erp_workers").select("*, erp_projects(name)").order("created_at", { ascending: false });
+      if (error) throw error;
+      res.json(data);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/manpower-erp/workers", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { id, iqama_no, full_name, arabic_name, nationality, hourly_rate, status, trade, project_id, bank_name, iban } = req.body;
+      const { error } = await supabase.from("erp_workers").upsert({
+        id, iqama_no, full_name, arabic_name, nationality, hourly_rate, status, trade, project_id, bank_name, iban
+      });
+      if (error) throw error;
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/manpower-erp/workers/:id", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { error } = await supabase.from("erp_workers").delete().eq("id", req.params.id);
+      if (error) throw error;
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  app.get("*", (req, res) => {
         res.sendFile(path.join(distPath, "index.html"));
       });
     }
