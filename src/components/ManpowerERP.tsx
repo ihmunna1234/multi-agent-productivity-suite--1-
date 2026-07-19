@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Plus, Users, Building2, Wallet, FileText, Download, Briefcase, Calculator, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../utils/api";
 
 type Project = { id: string; name: string; client_name: string; location: string; created_at: string; };
 type Worker = { id: string; iqama_no: string; full_name: string; hourly_rate: number; trade: string; project_id: string; status: string; erp_projects?: { name: string }; };
@@ -27,22 +28,19 @@ export default function ManpowerERP() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("workspace_token");
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-      
-      const pRes = await fetch("/api/manpower-erp/projects", { headers });
+      const pRes = await apiFetch("/api/manpower-erp/projects");
       if (pRes.ok) setProjects(await pRes.json());
       
-      const wRes = await fetch("/api/manpower-erp/workers", { headers });
+      const wRes = await apiFetch("/api/manpower-erp/workers");
       if (wRes.ok) setWorkers(await wRes.json());
       
-      const hRes = await fetch("/api/manpower-erp/monthly-hours", { headers });
+      const hRes = await apiFetch("/api/manpower-erp/monthly-hours");
       if (hRes.ok) setHours(await hRes.json());
 
-      const payRes = await fetch("/api/manpower-erp/payments", { headers });
+      const payRes = await apiFetch("/api/manpower-erp/payments");
       if (payRes.ok) setPayments(await payRes.json());
 
-      const lRes = await fetch("/api/manpower-erp/ledger", { headers });
+      const lRes = await apiFetch("/api/manpower-erp/ledger");
       if (lRes.ok) setLedger(await lRes.json());
       
     } catch (e) {
@@ -55,9 +53,9 @@ export default function ManpowerERP() {
 
   const handlePost = async (url: string, payload: any, closeModal: () => void) => {
     try {
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${localStorage.getItem("workspace_token")}`, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
       if (res.ok) { closeModal(); fetchData(); }
