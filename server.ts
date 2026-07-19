@@ -1999,48 +1999,7 @@ app.post("/api/employee-management/images", authMiddleware, async (req: express.
 });
 
 // Setup Vite Dev Server / Static Asset Handler
-async function serveApp() {
-  if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-
-    app.use("*", async (req, res, next) => {
-      // Only serve index.html for GET page navigation requests, bypassing static assets / source files
-      if (req.method !== "GET" || (!req.headers.accept?.includes("text/html") && req.originalUrl.includes("."))) {
-        return next();
-      }
-      try {
-        const fs = await import("fs");
-        let template = fs.readFileSync(path.resolve(process.cwd(), "index.html"), "utf-8");
-        // Always transform using the base URL context to guarantee React Fast Refresh preamble is injected
-        template = await vite.transformIndexHtml(req.baseUrl || "/", template);
-        
-        // Force-inject synchronous preamble placeholders at the top of head to prevent plugin-react from crashing
-        const syncPreamble = `
-    <script>
-      window.$RefreshReg$ = () => {};
-      window.$RefreshSig$ = () => (type) => type;
-      window.__vite_plugin_react_preamble_installed__ = true;
-    </script>
-`;
-        template = template.replace("<head>", `<head>${syncPreamble}`);
-
-        res.status(200).set({ "Content-Type": "text/html" }).end(template);
-      } catch (e: any) {
-        vite.ssrFixStacktrace(e);
-        next(e);
-      }
-    });
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    if (!process.env.VERCEL) {
-      
-  // ─── MANPOWER ERP ROUTES ────────────────────────────────────────────────────────
+// ─── MANPOWER ERP ROUTES ────────────────────────────────────────────────────────
   
   // PROJECTS
   app.get("/api/manpower-erp/projects", authMiddleware, async (req: express.Request, res: express.Response) => {
@@ -2223,6 +2182,49 @@ async function serveApp() {
       res.status(500).json({ error: err.message });
     }
   });
+  
+
+async function serveApp() {
+  if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    app.use(vite.middlewares);
+
+    app.use("*", async (req, res, next) => {
+      // Only serve index.html for GET page navigation requests, bypassing static assets / source files
+      if (req.method !== "GET" || (!req.headers.accept?.includes("text/html") && req.originalUrl.includes("."))) {
+        return next();
+      }
+      try {
+        const fs = await import("fs");
+        let template = fs.readFileSync(path.resolve(process.cwd(), "index.html"), "utf-8");
+        // Always transform using the base URL context to guarantee React Fast Refresh preamble is injected
+        template = await vite.transformIndexHtml(req.baseUrl || "/", template);
+        
+        // Force-inject synchronous preamble placeholders at the top of head to prevent plugin-react from crashing
+        const syncPreamble = `
+    <script>
+      window.$RefreshReg$ = () => {};
+      window.$RefreshSig$ = () => (type) => type;
+      window.__vite_plugin_react_preamble_installed__ = true;
+    </script>
+`;
+        template = template.replace("<head>", `<head>${syncPreamble}`);
+
+        res.status(200).set({ "Content-Type": "text/html" }).end(template);
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
+  } else {
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+    if (!process.env.VERCEL) {
+      
   app.get("*", (req, res) => {
         res.sendFile(path.join(distPath, "index.html"));
       });
