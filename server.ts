@@ -2094,13 +2094,36 @@ app.get("/api/employee-management/timesheets/all", authMiddleware, async (req: e
       if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
       
       const { workers } = req.body;
-      const { error } = await supabase.from("erp_workers").upsert(workers, { onConflict: "iqama_no" });
-      if (error) throw error;
-      res.json({ success: true, count: workers.length });
+      if (!Array.isArray(workers) || workers.length === 0) {
+        return res.status(400).json({ error: "workers array is required and must not be empty." });
+      }
+
+      // Stamp a UUID on every worker that doesn't already have one.
+      // Supabase's REST upsert requires the PK to be present even when the
+      // column has a server-side DEFAULT, so we must supply it from Node.
+      const { randomUUID } = await import("crypto");
+      const workersWithIds = workers.map((w: any) => ({
+        ...w,
+        id: w.id || randomUUID(),
+        status: w.status || "ACTIVE",
+      }));
+
+      const { error } = await supabase
+        .from("erp_workers")
+        .upsert(workersWithIds, { onConflict: "iqama_no" });
+
+      if (error) {
+        console.error("[ManpowerERP] Bulk workers upsert failed:", error.message, error.details);
+        throw error;
+      }
+
+      res.json({ success: true, count: workersWithIds.length });
     } catch (err: any) {
+      console.error("[ManpowerERP] /workers/bulk error:", err.message);
       res.status(500).json({ error: err.message });
     }
   });
+
 
   app.post("/api/manpower-erp/workers", authMiddleware, async (req: express.Request, res: express.Response) => {
     try {
