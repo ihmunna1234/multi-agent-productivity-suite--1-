@@ -70,7 +70,8 @@ export default function Dashboard() {
     "All",
     "PDF Utilities",
     "Data & Crawlers",
-    "AI Systems"
+    "AI Systems",
+    "Enterprise ERP"
   ];
 
   const tools = [
@@ -173,6 +174,15 @@ export default function Dashboard() {
       icon: <MapPin size={24} />,
       bgClass: "bg-error-container text-on-error-container border border-error",
       pill: "G-Maps Leads"
+    },
+    {
+      path: "/manpower-erp",
+      title: "Manpower Management ERP",
+      category: "Enterprise ERP",
+      description: "Full-scale workforce management system for Saudi manpower suppliers. Track monthly hours, salaries, ledger payments, and worker documents.",
+      icon: <Database size={24} />,
+      bgClass: "bg-emerald-100 text-emerald-700 border border-emerald-300",
+      pill: "ERP System"
     }
   ];
 

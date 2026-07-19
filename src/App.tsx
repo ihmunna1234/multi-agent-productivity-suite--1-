@@ -40,6 +40,7 @@ import SplitPdf from "./components/SplitPdf";
 import OrganizePdf from "./components/OrganizePdf";
 import Login from "./components/Login";
 import EmployeeManagement from "./components/EmployeeManagement";
+import ManpowerERP from "./components/ManpowerERP";
 
 // ─── Auth Gate ───────────────────────────────────────────────────────────────
 // Returns true if there is a JWT token stored in localStorage.
@@ -227,6 +228,7 @@ function WorkspaceShell() {
             <Route path="/resume-studio" element={<ResumeMaker />} />
             <Route path="/maps-extractor" element={<GoogleMapsExtractor />} />
             <Route path="/employee-management" element={<EmployeeManagement />} />
+            <Route path="/manpower-erp" element={<ManpowerERP />} />
           </Routes>
         </div>
       </main>
