@@ -173,6 +173,25 @@ export default function IqamaExtractor() {
           if (Array.isArray(remoteRecords)) {
             setRecords(remoteRecords);
             setSupabaseStatus("synced");
+            
+            // Extract all unique categories from Supabase records so other devices see all category workspaces
+            const extractedCategories = Array.from(
+              new Set(
+                remoteRecords
+                  .map((r: any) => r.category || "General")
+                  .filter((c: any) => typeof c === "string" && c.trim().length > 0)
+              )
+            );
+            if (extractedCategories.length > 0) {
+              setCategories(prev => {
+                const combined = Array.from(new Set([...prev, ...extractedCategories]));
+                try {
+                  localStorage.setItem("agent_hub_categories", JSON.stringify(combined));
+                } catch {}
+                return combined;
+              });
+            }
+
             try {
               await saveIqamaRecords(remoteRecords);
             } catch (e) {}
@@ -200,6 +219,23 @@ export default function IqamaExtractor() {
           localStorage.removeItem("agent_hub_iqamas");
         }
         setRecords(storedRecords);
+
+        const extractedCategories = Array.from(
+          new Set(
+            storedRecords
+              .map((r: any) => r.category || "General")
+              .filter((c: any) => typeof c === "string" && c.trim().length > 0)
+          )
+        );
+        if (extractedCategories.length > 0) {
+          setCategories(prev => {
+            const combined = Array.from(new Set([...prev, ...extractedCategories]));
+            try {
+              localStorage.setItem("agent_hub_categories", JSON.stringify(combined));
+            } catch {}
+            return combined;
+          });
+        }
 
         if (storedRecords.length > 0) {
           apiFetch("/api/iqama-records", {
