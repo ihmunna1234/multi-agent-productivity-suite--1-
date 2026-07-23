@@ -161,9 +161,29 @@ export default function IqamaExtractor() {
     touchEndXRef.current = null;
   };
 
-  // Load history on initialization from IndexedDB (with automatic migration from localStorage if found)
+  const [supabaseStatus, setSupabaseStatus] = useState<"synced" | "disabled" | "error">("synced");
+
+  // Load history on initialization from Supabase (with fallback to IndexedDB)
   useEffect(() => {
     const loadHistory = async () => {
+      try {
+        const res = await apiFetch("/api/iqama-records");
+        if (res.ok) {
+          const remoteRecords = await res.json();
+          if (Array.isArray(remoteRecords)) {
+            setRecords(remoteRecords);
+            setSupabaseStatus("synced");
+            try {
+              await saveIqamaRecords(remoteRecords);
+            } catch (e) {}
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load records from Supabase, using local cache:", err);
+        setSupabaseStatus("error");
+      }
+
       try {
         let storedRecords = await getIqamaRecords();
         const legacyStored = localStorage.getItem("agent_hub_iqamas");
@@ -180,6 +200,14 @@ export default function IqamaExtractor() {
           localStorage.removeItem("agent_hub_iqamas");
         }
         setRecords(storedRecords);
+
+        if (storedRecords.length > 0) {
+          apiFetch("/api/iqama-records", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(storedRecords)
+          }).then(() => setSupabaseStatus("synced")).catch(() => {});
+        }
       } catch (e) {
         console.error("Failed loading local history from IndexedDB:", e);
       }
@@ -187,13 +215,29 @@ export default function IqamaExtractor() {
     loadHistory();
   }, []);
 
-  // Save records strictly to transient React state and persist to IndexedDB securely
+  // Save records to state, IndexedDB, and Supabase
   const saveRecords = async (newRecords: IqamaRecord[]) => {
     setRecords(newRecords);
     try {
       await saveIqamaRecords(newRecords);
     } catch (e) {
       console.error("Failed saving local history to IndexedDB:", e);
+    }
+
+    try {
+      const res = await apiFetch("/api/iqama-records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newRecords)
+      });
+      if (res.ok) {
+        setSupabaseStatus("synced");
+      } else {
+        setSupabaseStatus("error");
+      }
+    } catch (err) {
+      console.warn("Supabase record sync failed:", err);
+      setSupabaseStatus("error");
     }
   };
 
@@ -219,6 +263,12 @@ export default function IqamaExtractor() {
       }
     } catch (e) {
       console.warn("Failed to delete category images during category deletion:", e);
+    }
+
+    try {
+      await apiFetch(`/api/iqama-records?category=${encodeURIComponent(catToDelete)}`, { method: "DELETE" });
+    } catch (err) {
+      console.warn("Failed deleting category records from Supabase:", err);
     }
   };
 
@@ -857,6 +907,12 @@ export default function IqamaExtractor() {
     } catch (e) {
       console.error("Failed to delete card image from IndexedDB cache:", e);
     }
+
+    try {
+      await apiFetch(`/api/iqama-records/${id}`, { method: "DELETE" });
+    } catch (err) {
+      console.warn("Failed deleting record from Supabase:", err);
+    }
   };
 
   const startEditing = (record: Partial<IqamaRecord>) => {
@@ -930,6 +986,13 @@ export default function IqamaExtractor() {
       }
     } catch (e) {
       console.error("Failed to delete category images from IndexedDB:", e);
+    }
+
+    try {
+      const catParam = activeCategory ? `?category=${encodeURIComponent(activeCategory)}` : "";
+      await apiFetch(`/api/iqama-records${catParam}`, { method: "DELETE" });
+    } catch (err) {
+      console.warn("Failed clearing records from Supabase:", err);
     }
   };
 
@@ -1381,6 +1444,14 @@ export default function IqamaExtractor() {
             </span>
             <span className="text-xs font-bold uppercase tracking-wider text-slate-650 px-2.5 py-1 bg-surface-container rounded-DEFAULT flex items-center gap-1.5">
               📁 Category: <strong className="text-primary-container">{activeCategory}</strong>
+            </span>
+            <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-DEFAULT flex items-center gap-1.5 ${
+              supabaseStatus === "synced"
+                ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                : "bg-amber-100 text-amber-800 border border-amber-300"
+            }`}>
+              <Database size={13} />
+              {supabaseStatus === "synced" ? "Supabase Synced" : "Local Mode (Supabase Offline)"}
             </span>
           </div>
           <h2 className="text-2xl font-semibold text-on-surface tracking-tight mt-1.5 flex items-center gap-2">

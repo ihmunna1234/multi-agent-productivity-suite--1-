@@ -2251,6 +2251,121 @@ app.get("/api/employee-management/timesheets/all", authMiddleware, async (req: e
       res.status(500).json({ error: err.message });
     }
   });
+
+  // ─── IQAMA EXTRACTOR SUPABASE ROUTES ─────────────────────────────────────────
+  app.get("/api/iqama-records", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { data, error } = await supabase
+        .from("iqama_records")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      const mapped = (data || []).map((r: any) => ({
+        id: r.id,
+        iqamaNo: r.iqama_no,
+        name: r.name,
+        nameArabic: r.name_arabic,
+        expiryDate: r.expiry_date,
+        dob: r.dob,
+        nationality: r.nationality,
+        nationalityArabic: r.nationality_arabic,
+        occupation: r.occupation,
+        supplierName: r.supplier_name,
+        establishmentName: r.establishment_name,
+        establishmentNo: r.establishment_no,
+        category: r.category,
+        extractedAt: r.extracted_at || r.created_at,
+      }));
+      
+      res.json(mapped);
+    } catch (err: any) {
+      console.error("[Iqama Extractor] Failed to fetch iqama records:", err.message || err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/iqama-records", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const payload = req.body;
+      const recordsToSave = Array.isArray(payload) ? payload : [payload];
+      
+      const dbRows = recordsToSave.map((r: any) => ({
+        id: r.id || crypto.randomUUID(),
+        iqama_no: r.iqamaNo,
+        name: r.name,
+        name_arabic: r.nameArabic,
+        expiry_date: r.expiryDate,
+        dob: r.dob,
+        nationality: r.nationality,
+        nationality_arabic: r.nationalityArabic,
+        occupation: r.occupation,
+        supplier_name: r.supplierName,
+        establishment_name: r.establishmentName,
+        establishment_no: r.establishmentNo,
+        category: r.category || null,
+        extracted_at: r.extractedAt || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }));
+
+      const { data, error } = await supabase
+        .from("iqama_records")
+        .upsert(dbRows, { onConflict: "id" });
+
+      if (error) throw error;
+      res.json({ success: true, count: dbRows.length });
+    } catch (err: any) {
+      console.error("[Iqama Extractor] Failed to save iqama records:", err.message || err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/iqama-records/:id", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { id } = req.params;
+      const { error } = await supabase
+        .from("iqama_records")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/iqama-records", authMiddleware, async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      
+      const { category } = req.query;
+      let query = supabase.from("iqama_records").delete();
+      if (category && typeof category === "string") {
+        query = query.eq("category", category);
+      } else {
+        query = query.neq("id", "00000000-0000-0000-0000-000000000000"); // deletes all rows
+      }
+
+      const { error } = await query;
+      if (error) throw error;
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   
 
 async function serveApp() {
