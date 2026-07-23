@@ -2253,6 +2253,39 @@ app.get("/api/employee-management/timesheets/all", authMiddleware, async (req: e
   });
 
   // ─── IQAMA EXTRACTOR SUPABASE ROUTES ─────────────────────────────────────────
+  app.get("/api/iqama-records/health", async (req: express.Request, res: express.Response) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        return res.json({
+          status: "error",
+          supabaseConfigured: false,
+          message: "Supabase environment variables (SUPABASE_URL or SUPABASE_ANON_KEY) are missing."
+        });
+      }
+
+      const { data, error } = await supabase.from("iqama_records").select("id").limit(1);
+      if (error) {
+        return res.json({
+          status: "error",
+          supabaseConfigured: true,
+          tableExists: false,
+          dbError: error.message,
+          hint: "Please run iqama_schema.sql in your Supabase SQL Editor to create the iqama_records table."
+        });
+      }
+
+      res.json({
+        status: "ok",
+        supabaseConfigured: true,
+        tableExists: true,
+        message: "Supabase connection and iqama_records table are healthy!"
+      });
+    } catch (err: any) {
+      res.json({ status: "error", message: err.message });
+    }
+  });
+
   app.get("/api/iqama-records", authMiddleware, async (req: express.Request, res: express.Response) => {
     try {
       const supabase = getSupabaseClient();
