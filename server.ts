@@ -2325,34 +2325,51 @@ app.get("/api/employee-management/timesheets/all", authMiddleware, async (req: e
   app.post("/api/iqama-records", authMiddleware, async (req: express.Request, res: express.Response) => {
     try {
       const supabase = getSupabaseClient();
-      if (!supabase) return res.status(503).json({ error: "Supabase not configured." });
+      if (!supabase) return res.status(503).json({ error: "Supabase environment variables (SUPABASE_URL or SUPABASE_ANON_KEY) are missing in .env." });
       
       const payload = req.body;
       const recordsToSave = Array.isArray(payload) ? payload : [payload];
-      
-      const dbRows = recordsToSave.map((r: any) => ({
-        id: r.id || crypto.randomUUID(),
-        iqama_no: r.iqamaNo,
-        name: r.name,
-        name_arabic: r.nameArabic,
-        expiry_date: r.expiryDate,
-        dob: r.dob,
-        nationality: r.nationality,
-        nationality_arabic: r.nationalityArabic,
-        occupation: r.occupation,
-        supplier_name: r.supplierName,
-        establishment_name: r.establishmentName,
-        establishment_no: r.establishmentNo,
-        category: r.category || null,
-        extracted_at: r.extractedAt || new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }));
+      if (recordsToSave.length === 0) {
+        return res.json({ success: true, count: 0 });
+      }
+
+      const dbRows = recordsToSave.map((r: any) => {
+        let iqamaNo = r.iqamaNo ? String(r.iqamaNo).trim() : null;
+        if (!iqamaNo || iqamaNo === "N/A" || iqamaNo === "undefined" || iqamaNo === "null") {
+          iqamaNo = null; // NULL in PostgreSQL UNIQUE column allows multiple non-identified cards
+        }
+        return {
+          id: r.id || crypto.randomUUID(),
+          iqama_no: iqamaNo,
+          name: r.name || null,
+          name_arabic: r.nameArabic || null,
+          expiry_date: r.expiryDate || null,
+          dob: r.dob || null,
+          nationality: r.nationality || null,
+          nationality_arabic: r.nationalityArabic || null,
+          occupation: r.occupation || null,
+          supplier_name: r.supplierName || null,
+          establishment_name: r.establishmentName || null,
+          establishment_no: r.establishmentNo || null,
+          category: r.category || "General",
+          extracted_at: r.extractedAt || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      });
 
       const { data, error } = await supabase
         .from("iqama_records")
         .upsert(dbRows, { onConflict: "id" });
 
-      if (error) throw error;
+      if (error) {
+        console.error("[Iqama Supabase Save Error]:", error);
+        let errorMsg = error.message;
+        if (error.code === "42P01" || error.message.includes("does not exist")) {
+          errorMsg = "Table 'iqama_records' does not exist in your Supabase database. Please execute iqama_schema.sql in your Supabase SQL Editor.";
+        }
+        return res.status(400).json({ error: errorMsg, code: error.code, details: error.details });
+      }
+
       res.json({ success: true, count: dbRows.length });
     } catch (err: any) {
       console.error("[Iqama Extractor] Failed to save iqama records:", err.message || err);

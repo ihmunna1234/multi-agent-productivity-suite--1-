@@ -162,6 +162,7 @@ export default function IqamaExtractor() {
   };
 
   const [supabaseStatus, setSupabaseStatus] = useState<"synced" | "disabled" | "error">("synced");
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
 
   // Load history on initialization from Supabase (with fallback to IndexedDB)
   useEffect(() => {
@@ -173,6 +174,7 @@ export default function IqamaExtractor() {
           if (Array.isArray(remoteRecords)) {
             setRecords(remoteRecords);
             setSupabaseStatus("synced");
+            setSupabaseError(null);
             
             // Extract all unique categories from Supabase records so other devices see all category workspaces
             const extractedCategories = Array.from(
@@ -197,10 +199,14 @@ export default function IqamaExtractor() {
             } catch (e) {}
             return;
           }
+        } else {
+          const errJson = await res.json().catch(() => ({}));
+          setSupabaseError(errJson.error || `Server status ${res.status}`);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.warn("Failed to load records from Supabase, using local cache:", err);
         setSupabaseStatus("error");
+        setSupabaseError(err.message || "Could not connect to database");
       }
 
       try {
@@ -242,7 +248,13 @@ export default function IqamaExtractor() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(storedRecords)
-          }).then(() => setSupabaseStatus("synced")).catch(() => {});
+          }).then(() => {
+            setSupabaseStatus("synced");
+            setSupabaseError(null);
+          }).catch((err) => {
+            setSupabaseStatus("error");
+            setSupabaseError(err.message || "Failed syncing to database");
+          });
         }
       } catch (e) {
         console.error("Failed loading local history from IndexedDB:", e);
@@ -268,12 +280,18 @@ export default function IqamaExtractor() {
       });
       if (res.ok) {
         setSupabaseStatus("synced");
+        setSupabaseError(null);
       } else {
+        const errJson = await res.json().catch(() => ({}));
+        const errMsg = errJson.error || `Server status ${res.status}`;
+        console.warn("Supabase record sync failed:", errMsg);
         setSupabaseStatus("error");
+        setSupabaseError(errMsg);
       }
-    } catch (err) {
-      console.warn("Supabase record sync failed:", err);
+    } catch (err: any) {
+      console.warn("Supabase record sync exception:", err);
       setSupabaseStatus("error");
+      setSupabaseError(err.message || "Failed connecting to database API.");
     }
   };
 
@@ -1470,6 +1488,16 @@ export default function IqamaExtractor() {
         <title>Iqama & ID Extractor | AI OCR - Injamus's AI Workspace</title>
         <meta name="description" content="Securely extract names, dates, and ID numbers from Iqama and official ID cards using intelligent AI OCR processing." />
       </Helmet>
+
+      {supabaseStatus === "error" && supabaseError && (
+        <div className="bg-amber-50 border border-amber-300 rounded-DEFAULT p-4 flex items-start gap-3 text-amber-900 animate-fade-in text-xs shadow-sm">
+          <AlertCircle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-1">
+            <strong className="font-bold block text-amber-950">Supabase Storage Warning:</strong>
+            <p className="leading-relaxed">{supabaseError}</p>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-surface-container-highest pb-5">
